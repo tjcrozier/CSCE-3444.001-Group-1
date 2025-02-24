@@ -1,0 +1,14 @@
+{
+  "1stErrorType":{
+    "description":"Description of first error type",
+    "suggestion":"Suggestion to fix first error type"
+  },
+  "2ndErrorType":{
+    "description":"Description of second error type",
+    "suggestion":"Suggestion to fix second error type"
+  },
+  "3rdErrorType":{
+    "description":"Description of third error type",
+    "suggestion":"Suggestion to fix third error type"
+  }
+}

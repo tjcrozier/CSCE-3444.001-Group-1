@@ -1,6 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const fs = require('fs');
+const path = require('path');
+
+const errorMessagesPath = path.join(__dirname, 'errorMessages.json');
+const errorMessages = JSON.parse(fs.readFileSync(errorMessagesPath, 'utf8'));
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -22,9 +27,48 @@ function activate(context) {
 
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from EchoCode!');
+		
+		// Display a welcome page
+		var panel = vscode.window.createWebviewPanel(
+			'echoCode', // type of webview
+			'EchoCode Extension', // Panel title
+			vscode.ViewColumn.One,
+			{enableScripts:true}
+		);
+		panel.webview.html = getWebViewContent();
+
+		// Print all the possible error messages and their descriptions
+		printAllErrorMessages();
 	});
 
 	context.subscriptions.push(disposable);
+}
+
+function printAllErrorMessages() {
+	for (let errorKey in errorMessages) {
+		console.log(errorKey + ": " + errorMessages[errorKey]['description']);
+	}
+}
+
+function getWebViewContent() {
+	return `<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title></title>
+			<script>
+				const vscode = acquireVsCodeApi();
+				document.addEventListener('DOMContentLoaded', function() {
+					const p1 = document.getElementById('p1');
+					p1.style.color = 'red';
+				});
+				window.alert("Hello!");
+			</script>
+		</head>
+		<body>
+			<h1>Welcome to EchoCode!</h1>
+			<p id='p1'>Stuff stuff stuff</p>
+		</body>
+	</html>`
 }
 
 // This method is called when your extension is deactivated
