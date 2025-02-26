@@ -1,0 +1,24 @@
+# 🚀 Ignore VS Code workspace settings
+.vscode/
+
+# 🚀 Ignore Node.js dependencies (not needed in the packaged extension)
+node_modules/
+
+# 🚀 Ignore Git metadata
+.git/
+.gitignore
+
+# 🚀 Ignore VSIX build artifacts
+*.vsix
+
+# 🚀 Ignore test-related files
+.vscode-test/
+test/
+
+# 🚀 Ignore temporary or cache files
+**/*.map
+**/.vscode-test.*
+
+# 🚀 Ignore unnecessary config files
+**/jsconfig.json
+**/eslint.config.mjs
