@@ -36,13 +36,13 @@ Before using EchoCode, ensure the following are installed:
 
 ---
 
-## ⚙️ **Extension Settings**
+##  **Extension Settings**
 
 As of now, there are no additional settings. However, future versions will allow customization of:
 
-- 🔊 **Speech speed**  
-- 🔈 **Voice selection**  
-- 🎙️ **Verbosity level (brief/detailed explanations)**  
+-  **Speech speed**  
+-  **Voice selection**  
+- 🎙 **Verbosity level (brief/detailed explanations)**  
 
 ---
 
