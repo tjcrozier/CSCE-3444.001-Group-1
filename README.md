@@ -1,7 +1,5 @@
 
-=======
-
-EchoCode — Python Error Reader for Visually Impaired Programmers
+# EchoCode — Python Error Reader for Visually Impaired Programmers
 
 **EchoCode** is a Visual Studio Code extension designed to help **visually impaired beginner Python programmers** by reading out critical Python errors aloud using Pylint. It helps users debug their code with clear, concise, and actionable feedback.
 
