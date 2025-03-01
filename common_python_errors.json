@@ -1,0 +1,59 @@
+{
+    "errors": [
+      {
+        "code": "SyntaxError",
+        "description": "Raised when the parser encounters a syntax error.",
+        "example": "if a > 3 print('Hello')"
+      },
+      {
+        "code": "IndentationError",
+        "description": "Raised when there is an incorrect indentation.",
+        "example": "if a > 3:\nprint('Hello')"
+      },
+      {
+        "code": "TypeError",
+        "description": "Raised when an operation or function is applied to an object of inappropriate type.",
+        "example": "a = 'Hello'\nsum(a)"
+      },
+      {
+        "code": "NameError",
+        "description": "Raised when a local or global name is not found.",
+        "example": "print(a)"
+      },
+      {
+        "code": "IndexError",
+        "description": "Raised when a sequence subscript is out of range.",
+        "example": "a = [1, 2, 3]\nprint(a[3])"
+      },
+      {
+        "code": "KeyError",
+        "description": "Raised when a dictionary key is not found.",
+        "example": "a = {'name': 'John'}\nprint(a['age'])"
+      },
+      {
+        "code": "ValueError",
+        "description": "Raised when a function receives an argument of the right type but inappropriate value.",
+        "example": "int('Hello')"
+      },
+      {
+        "code": "AttributeError",
+        "description": "Raised when an attribute reference or assignment fails.",
+        "example": "a = 'Hello'\nprint(a.append('World'))"
+      },
+      {
+        "code": "ImportError",
+        "description": "Raised when an import statement fails to find the module definition or when a from ... import fails to find a name that is to be imported.",
+        "example": "import some_module"
+      },
+      {
+        "code": "ModuleNotFoundError",
+        "description": "Raised when a module could not be located.",
+        "example": "import some_module"
+      },
+      {
+        "code": "ZeroDivisionError",
+        "description": "Raised when the second argument of a division or modulo operation is zero.",
+        "example": "a = 1\nb = 0\nc = a / b"
+      }
+    ]
+  }
