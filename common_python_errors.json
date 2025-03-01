@@ -2,57 +2,57 @@
     "errors": [
       {
         "code": "SyntaxError",
-        "description": "Raised when the parser encounters a syntax error.",
+        "description": "This error occurs when there is a syntax error in the code. This could be due to an incorrect assignment, colon, or mismatched bracket .",
         "example": "if a > 3 print('Hello')"
       },
       {
         "code": "IndentationError",
-        "description": "Raised when there is an incorrect indentation.",
+        "description": "This error occurs when there is an incorrect indentation. This could be caused by a lack of an indentation or one that shouldn't exist.",
         "example": "if a > 3:\nprint('Hello')"
       },
       {
         "code": "TypeError",
-        "description": "Raised when an operation or function is applied to an object of inappropriate type.",
+        "description": "This error when an operation or function is applied to an object of incompatible type.",
         "example": "a = 'Hello'\nsum(a)"
       },
       {
         "code": "NameError",
-        "description": "Raised when a local or global name is not found.",
+        "description": "This error is caused when a local or global name is not found. This could be due to a typo or a variable that has not been defined.",
         "example": "print(a)"
       },
       {
         "code": "IndexError",
-        "description": "Raised when a sequence subscript is out of range.",
+        "description": "This error occurs when a sequence subscript is out of range. Make sure that the index is within the bounds of the sequence.",
         "example": "a = [1, 2, 3]\nprint(a[3])"
       },
       {
         "code": "KeyError",
-        "description": "Raised when a dictionary key is not found.",
+        "description": "This error occurs when a dictionary key is not found. Make sure that the key exists within the dictionary.",
         "example": "a = {'name': 'John'}\nprint(a['age'])"
       },
       {
         "code": "ValueError",
-        "description": "Raised when a function receives an argument of the right type but inappropriate value.",
+        "description": "This error occurs when a function receives an argument of the right type but inappropriate value. ",
         "example": "int('Hello')"
       },
       {
         "code": "AttributeError",
-        "description": "Raised when an attribute reference or assignment fails.",
+        "description": "This error occurs when an attribute reference or assignment fails. Make sure that the attribute exists for the object.",
         "example": "a = 'Hello'\nprint(a.append('World'))"
       },
       {
         "code": "ImportError",
-        "description": "Raised when an import statement fails to find the module definition or when a from ... import fails to find a name that is to be imported.",
+        "description": "This error occurs when an import statement fails to find the module definition or when a from ... import fails to find a name that is to be imported. Make sure that the module exists and is accessible.",
         "example": "import some_module"
       },
       {
         "code": "ModuleNotFoundError",
-        "description": "Raised when a module could not be located.",
+        "description": "This error occurs when a module could not be located. Make sure that the module exists and is accessible.",
         "example": "import some_module"
       },
       {
         "code": "ZeroDivisionError",
-        "description": "Raised when the second argument of a division or modulo operation is zero.",
+        "description": "This occurs when the second argument of a division or modulo operation is zero. Make sure that the divisor is not zero or make sure that the divisor can not be zero.",
         "example": "a = 1\nb = 0\nc = a / b"
       }
     ]
