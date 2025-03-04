@@ -1,0 +1,38 @@
+{
+  "name": "echo-code",
+  "displayName": "Echo Code",
+  "description": "Reads Python errors aloud using Pylint for visually impaired students.",
+  "version": "1.0.0",
+  "publisher": "Slitchie",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onSave"
+  ],
+  "main": "./extension.js",
+  "extensionDependencies": [
+    "ms-python.python"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "echocode.readErrors",
+        "title": "Read Python Errors Aloud"
+      }
+    ]
+  },
+  "scripts": {
+    "lint-python": "pylint **/*.py"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.97.0"
+  },
+  "dependencies": {
+    "say": "^0.16.0"
+  }
+}

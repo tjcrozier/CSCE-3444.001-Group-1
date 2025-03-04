@@ -1,1 +1,31 @@
+<<<<<<< HEAD
 .vscode/
+=======
+# 🚀 Ignore Node.js dependencies (everyone should run `npm install`)
+node_modules/
+
+# 🚀 Ignore local VS Code workspace settings (everyone has their own)
+.vscode/
+
+# 🚀 Ignore compiled VSIX package files (should be built, not committed)
+*.vsix
+
+# 🚀 Ignore VS Code test environment files
+.vscode-test/
+
+# 🚀 Ignore package lock files (optional, but ensures dependency flexibility)
+package-lock.json
+
+# 🚀 Ignore source map files (generated automatically)
+**/*.map
+
+# 🚀 Ignore test files if they shouldn't be committed
+test/
+
+# 🚀 Ignore linting & ESLint cache
+**/eslint.config.mjs
+
+# 🚀 Ignore OS-specific system files
+.DS_Store
+Thumbs.db
+>>>>>>> 8e90d0f (First commit of working EchoCode)
