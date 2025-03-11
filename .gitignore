@@ -19,9 +19,6 @@ package-lock.json
 # 🚀 Ignore source map files (generated automatically)
 **/*.map
 
-# 🚀 Ignore test files if they shouldn't be committed
-test/
-
 # 🚀 Ignore linting & ESLint cache
 **/eslint.config.mjs
 
