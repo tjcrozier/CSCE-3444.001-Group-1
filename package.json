@@ -24,6 +24,23 @@
         "command": "echocode.readErrors",
         "title": "Read Python Errors Aloud"
       }
+    ],
+    "configuration": {
+      "properties": {
+        "docstringGenerator.huggingFaceApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Add Hugging Face API key to your settings.json file."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "extension.generateDocstring",
+        "key": "ctrl+alt+space",
+        "mac": "cmd+alt+space",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      }
     ]
   },
   "scripts": {
@@ -33,6 +50,8 @@
     "@types/vscode": "^1.97.0"
   },
   "dependencies": {
+    "axios": "^1.8.3",
+    "dotenv": "^16.4.7",
     "say": "^0.16.0"
   }
 }
