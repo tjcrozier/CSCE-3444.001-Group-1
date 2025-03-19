@@ -15,11 +15,12 @@ function detectCurrentFunction(editor) {
     const funcDefLine = detectFunctionStart(editor, cursorPos);
 
     // Detect the end of the current function
-    const funcEndLine = detectFunctionEnd(editor, funcDefLine, lineCount);
+    const funcEndLine = detectFunctionEnd(editor, funcDefLine, lineCount, cursorLine);
 
     // Say if the cursor is inside a function
-    if (funcEndLine.lineNumber < cursorLine.lineNumber) {
+    if (!funcEndLine || funcEndLine.lineNumber < cursorLine.lineNumber) {
         console.log("Cursor is not inside a function.\n");
+        return null;
     } else {
         console.log("Cursor is inside of", funcDefLine.text + "\n");
     }
@@ -72,47 +73,54 @@ function detectFunctionStart(editor, cursorPos) {
     return funcDefLine;
 }
 
-function detectFunctionEnd(editor, funcDefLine, lineCount) {
-        // Get indentation of the function definition
-        const funcDefIndentation = countIndentation(funcDefLine);
+function detectFunctionEnd(editor, funcDefLine, lineCount, cursorLine) {
+    // Get indentation of the function definition
+    const funcDefIndentation = countIndentation(funcDefLine);
 
-        console.log("  Function definition on line:", funcDefLine.lineNumber + 1);
-        console.log("  Indentation of function definition:", funcDefIndentation);
+    console.log("  Function definition on line:", funcDefLine.lineNumber + 1);
+    console.log("  Indentation of function definition:", funcDefIndentation);
     
-        let lastLine = null;
-        let lastLineNo = funcDefLine.lineNumber;
-    
-        for (let i = funcDefLine.lineNumber + 1; i < lineCount; i++) {
-            const line = editor.document.lineAt(i);
-            const lineIndent = countIndentation(line);
-            const lineText = line.text.trim();
-    
-            // Skip blank lines
-            if (lineText === '') continue; // Skip blank lines
-    
-            // Stop at the first line with indentation <= function definition
-            if (lineIndent <= funcDefIndentation) {
-                break;
-            }
-    
-            lastLine = line;
-            lastLineNo = i;
-        }
-    
-        // Backtrack to last **non-blank** line (handles empty lines at the end)
-        while (lastLineNo > funcDefLine.lineNumber && editor.document.lineAt(lastLineNo).text.trim() === '') {
-            lastLineNo--;
-            lastLine = editor.document.lineAt(lastLineNo);
-        }
-    
-        // Log the last line of the function, if it exists
-        if (lastLine) {
-            console.log("  Last line of function:", lastLine.text);
-        } else {
-            console.log("  Function appears empty.");
-        }
+    let lastLine = null;
+    let lastLineNo = funcDefLine.lineNumber;
 
-    return lastLine;
+    for (let i = funcDefLine.lineNumber + 1; i < lineCount; i++) {
+        const line = editor.document.lineAt(i);
+        const lineIndent = countIndentation(line);
+        const lineText = line.text.trim();
+    
+        // Skip blank lines
+        if (lineText === '') continue; // Skip blank lines
+    
+        // Stop at the first line with indentation <= function definition
+        if (lineIndent <= funcDefIndentation) {
+            break;
+        }
+    
+        lastLine = line;
+        lastLineNo = i;
+    }
+    
+    // Backtrack to last **non-blank** line (handles empty lines at the end)
+    while (lastLineNo > funcDefLine.lineNumber && editor.document.lineAt(lastLineNo).text.trim() === '') {
+        lastLineNo--;
+        lastLine = editor.document.lineAt(lastLineNo);
+    }
+    
+    // Log the last line of the function, if it exists
+    if (lastLine) {
+        console.log("  Last line of function:", lastLine.text);
+    } else {
+        console.log("  Function appears empty.");
+    }
+
+    // Say if the cursor is inside a function
+    if (lastLine.lineNumber < cursorLine.lineNumber) {
+        console.log("Cursor is not inside a function.\n");
+        return null;
+    } else {
+        console.log("Cursor is inside of", funcDefLine.text + "\n");
+        return lastLine;
+    }    
 }
 
 function countIndentation(line) {
@@ -135,15 +143,19 @@ function countIndentation(line) {
 }
 
 function getFunctionText(editor, funcDefLine, funcEndLine) {
-    // Convert line numbers to Positions
-    const funcStartPos = editor.document.lineAt(funcDefLine.lineNumber).range.start;
-    const funcEndPos = editor.document.lineAt(funcEndLine.lineNumber).range.end;
+    while(funcEndLine) {
+        // Convert line numbers to Positions
+        const funcStartPos = editor.document.lineAt(funcDefLine.lineNumber).range.start;
+        const funcEndPos = editor.document.lineAt(funcEndLine.lineNumber).range.end;
 
-    // Create a range from start to end of the function
-    const range = new vscode.Range(funcStartPos, funcEndPos); 
-    const functionText = editor.document.getText(range);
+        // Create a range from start to end of the function
+        const range = new vscode.Range(funcStartPos, funcEndPos); 
+        const functionText = editor.document.getText(range);
 
-    return functionText;
+        return functionText;
+    }
+
+    return null;
 }
 
 
