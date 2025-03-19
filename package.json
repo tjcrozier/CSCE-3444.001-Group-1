@@ -36,7 +36,7 @@
     },
     "keybindings": [
       {
-        "command": "extension.generateDocstring",
+        "command": "echocode.generateDocstring",
         "key": "ctrl+alt+space",
         "mac": "cmd+alt+space",
         "when": "editorTextFocus && editorLangId == 'python'"
