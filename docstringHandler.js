@@ -16,7 +16,8 @@ function insertDocstring() {
         return;
     }
 
-    detectCurrentFunction(editor);
+    const functionText = detectCurrentFunction(editor);
+    console.log(functionText);
 }
 
 module.exports = { insertDocstring };
