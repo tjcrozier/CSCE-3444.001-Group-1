@@ -78,7 +78,6 @@ function detectFunctionStart(editor, cursorPos) {
     // Exit detectFunctionStart() early if no function definitions are detected
     if (!lastMatch) {
         console.log("  No function definition found before cursor."); 
-        console.log("    Cursor is not inside of a function");
         return null;
     }
 
