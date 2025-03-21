@@ -137,7 +137,7 @@ function detectFunctionEnd(editor, funcDefLine) {
     
     // Otherwise, return the last line of the function
     console.log("  Last line text:", lastLine.text);
-    console.log("  Function ends on line:", lastLine.lineNumber);
+    console.log("  Function ends on line:", lastLine.lineNumber + 1);
     return lastLine;
 }
 
