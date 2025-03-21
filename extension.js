@@ -2,7 +2,7 @@ const vscode = require('vscode');
 const { runPylint } = require('./pylintHandler');
 const { speakMessage } = require('./speechHandler');
 const { exec } = require('child_process')
-const { insertDocstring } = require('./docstringHandler.js');
+const { insertSingleDocstring } = require('./docstringHandler.js');
 
 let outputChannel;
 
@@ -56,7 +56,7 @@ async function activate(context) {
 
     // Command to insert a docstring in the current function
     let docstringGen = vscode.commands.registerCommand(
-        'echocode.generateDocstring', insertDocstring
+        'echocode.generateDocstring', insertSingleDocstring
     );
 
     context.subscriptions.push(disposable, docstringGen);
