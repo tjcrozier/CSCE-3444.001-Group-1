@@ -23,7 +23,27 @@
       {
         "command": "echocode.readErrors",
         "title": "Read Python Errors Aloud"
+      },
+      {
+        "command": "echocode.jumpToNextFunction",
+        "title": "Jump to Next Function"
+      },
+      {
+          "command": "echocode.jumpToPreviousFunction",
+          "title": "Jump to Previous Function"
       }
+    ],
+    "keybindings": [
+        {
+            "command": "echocode.jumpToNextFunction",
+            "key": "ctrl+alt+down",
+            "when": "editorTextFocus"
+        },
+        {
+            "command": "echocode.jumpToPreviousFunction",
+            "key": "ctrl+alt+up",
+            "when": "editorTextFocus"
+        }
     ]
   },
   "scripts": {
