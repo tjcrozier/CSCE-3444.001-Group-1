@@ -1,0 +1,15 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:  # Allow manually running the workflow
+
+jobs:
+  backend:
+    name: backend
+    runs-on: windows-latest
