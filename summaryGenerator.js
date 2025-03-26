@@ -32,16 +32,12 @@ function summarizeFunction() {
     console.error("Will generate summary for the following function:")
     console.log("---FUNCTION TEXT---\n", functionText, "\n---END FUNCTION TEXT---\n");
 
-    const summary = generateSummary(currentFunction);
-
-    speakMessage("Generating summary for" + summary);
+    generateSummary(currentFunction).then(summary => {
+        speakMessage("Generating summary for " + summary);
+    });
 }
 
 async function generateSummary(block) {
-
-
-
-
 
     return block.definition.text;
 }
