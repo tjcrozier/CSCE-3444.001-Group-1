@@ -2,7 +2,7 @@ const vscode = require('vscode');
 const { runPylint } = require('./pylintHandler');
 const { speakMessage } = require('./speechHandler');
 const { exec } = require('child_process')
-const { insertSingleDocstring } = require('./docstringHandler.js');
+const { summarizeFunction } = require('./summaryGenerator.js');
 
 let outputChannel;
 
@@ -54,12 +54,16 @@ async function activate(context) {
         }
     });
 
-    // Command to insert a docstring in the current function
-    let docstringGen = vscode.commands.registerCommand(
-        'echocode.generateDocstring', insertSingleDocstring
+    // Summarize the current block
+
+    // Summarize the current function
+    let functionSummary = vscode.commands.registerCommand(
+        'echocode.summarizeFunction', summarizeFunction
     );
 
-    context.subscriptions.push(disposable, docstringGen);
+    // Summarize the program
+
+    context.subscriptions.push(disposable, functionSummary);
 }
 
 async function handlePythonErrors(filePath) {

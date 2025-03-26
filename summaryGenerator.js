@@ -1,7 +1,8 @@
 const vscode = require('vscode'); // VSCode API
 const { detectCurrentFunction } = require('./codeParser');
+const { speakMessage } = require('./speechHandler')
 
-function insertSingleDocstring() {
+function summarizeFunction() {
     const editor = vscode.window.activeTextEditor;
 
     // Ensure there is an editor open
@@ -21,14 +22,28 @@ function insertSingleDocstring() {
 
     // Cannot insert docstring if the cursor is not in a function
     if (!currentFunction.cursorInFunction) {
-        console.error("Cursor is not in a function. No docstring generated.\n");
+        console.error("Cursor is not in a function. No summary generated.\n");
+        speakMessage("Cursor is not inside a function.")
         return;
     }
 
     // Otherwise, print the text of the current function to the console (for now)
     const functionText = currentFunction.functionText;
-    console.error("Will generate docstring for the following function:")
+    console.error("Will generate summary for the following function:")
     console.log("---FUNCTION TEXT---\n", functionText, "\n---END FUNCTION TEXT---\n");
+
+    const summary = generateSummary(currentFunction);
+
+    speakMessage("Generating summary for" + summary);
 }
 
-module.exports = { insertSingleDocstring };
+async function generateSummary(block) {
+
+
+
+
+
+    return block.definition.text;
+}
+
+module.exports = { summarizeFunction };

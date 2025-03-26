@@ -25,20 +25,23 @@
         "title": "Read Python Errors Aloud"
       }
     ],
-    "configuration": {
-      "properties": {
-        "docstringGenerator.huggingFaceApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Add Hugging Face API key to your settings.json file."
-        }
-      }
-    },
     "keybindings": [
       {
-        "command": "echocode.generateDocstring",
-        "key": "ctrl+alt+space",
-        "mac": "cmd+alt+space",
+        "command": "echocode.summarizeBlock",
+        "key": "ctrl+alt+space B",
+        "mac": "cmd+alt+space B",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.summarizeFunction",
+        "key": "ctrl+alt+space F",
+        "mac": "cmd+alt+space F",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.summarizeProgram",
+        "key": "ctrl+alt+space P",
+        "mac": "cmd+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
       }
     ]
