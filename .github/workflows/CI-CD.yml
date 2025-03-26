@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI Pipeline
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:  # Allow manually running the workflow
 
 jobs:
-  test_job:
+  build-and-test:
     name: test CI/CD
     runs-on: windows-latest
 
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: '22.x'
 
-#      - name: Install Dependencies
-#        run: 
-#          npm install say
-        
+      - name: Install Dependencies
+        run: 
+          npm install say
+
