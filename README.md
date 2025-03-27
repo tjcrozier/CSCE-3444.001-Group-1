@@ -33,7 +33,12 @@ Before using EchoCode, ensure the following are installed:
    pip install pylint
    ```
 3. **[Python Extension for VS Code](https://marketplace.visualstudio.com/items?itemName=ms-python.python)** (auto-installed if missing)
+---
+## **How to Use**
 
+To Navigate from Function to Function: 
+- press ctrl + alt + down arrow to move from function to function in descending order.
+- press ctrl + alt + up arrow to move from function to function in asscending order. 
 ---
 
 ##  **Extension Settings**
