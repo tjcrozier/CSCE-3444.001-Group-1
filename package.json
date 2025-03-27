@@ -18,7 +18,8 @@
   ],
   "main": "./extension.js",
   "extensionDependencies": [
-    "ms-python.python"
+    "ms-python.python",
+    "GitHub.copilot"
   ],
   "contributes": {
     "commands": [
