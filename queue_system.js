@@ -1,4 +1,5 @@
 const player = require("play-sound")();
+const { exec } = require("child_process");
 
 class Queue {
   constructor() {
@@ -42,23 +43,15 @@ class Queue {
     this.items = [];
   }
   playSound() {
-    player.play("./audio_pings/ping1.mp3", function (err) {
+    console.log("Attempting to play sound...");
+    exec('ffplay -nodisp -autoexit "./audio_pings/ping1.mp3"', (err) => {
       if (err) {
         console.error("Error playing sound:", err);
+      } else {
+        console.log("Sound played successfully!");
       }
     });
   }
 }
-
-const queue = new Queue();
-queue.enqueue(1);
-queue.enqueue(2);
-queue.enqueue(3);
-console.log(queue.dequeue()); // Output: 1
-console.log(queue.peek()); // Output: 2
-console.log(queue.size()); // Output: 2
-console.log(queue.isEmpty()); // Output: false
-queue.clear();
-console.log(queue.isEmpty()); // Output: true
 
 module.exports = Queue;
