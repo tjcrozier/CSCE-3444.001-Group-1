@@ -49,11 +49,11 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.97.0",
     "@eslint/js": "^9.13.0",
     "@stylistic/eslint-plugin": "^2.9.0",
     "@types/mocha": "^10.0.7",
     "@types/node": "20.x",
+    "@types/vscode": "^1.97.0",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.4.0",
     "eslint": "^9.13.0",
@@ -61,6 +61,7 @@
     "typescript-eslint": "^8.26.0"
   },
   "dependencies": {
+    "play-sound": "^1.1.6",
     "say": "^0.16.0"
   }
 }

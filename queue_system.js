@@ -1,3 +1,5 @@
+const player = require("play-sound")();
+
 class Queue {
   constructor() {
     this.items = [];
@@ -6,6 +8,7 @@ class Queue {
   // Add an element to the queue
   enqueue(element) {
     this.items.push(element);
+    this.playSound();
   }
 
   // Remove and return the front element of the queue
@@ -37,6 +40,13 @@ class Queue {
   // Clear the queue
   clear() {
     this.items = [];
+  }
+  playSound() {
+    player.play("./audio_pings/ping1.mp3", function (err) {
+      if (err) {
+        console.error("Error playing sound:", err);
+      }
+    });
   }
 }
 
