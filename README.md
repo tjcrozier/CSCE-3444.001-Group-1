@@ -4,22 +4,25 @@
 **EchoCode** is a Visual Studio Code extension designed to help **visually impaired beginner Python programmers** by reading out critical Python errors aloud using Pylint. It helps users debug their code with clear, concise, and actionable feedback.
 
 ---
- **Features**
+**Features**
 
--  **Automatic Python Error Detection**  
+- **Automatic Python Error Detection**  
   Automatically detects errors using Pylint when a Python file is saved.
 
--  **Reads Critical Errors Aloud**  
+- **Reads Critical Errors Aloud**  
   Uses text-to-speech to read only essential errors (e.g., syntax errors, undefined variables).
 
--  **Output Panel Logging**  
+- **Output Panel Logging**  
   Displays all detected errors in the VS Code Output Panel for visual reference.
 
--  **Simplified Error Messages**  
+- **Simplified Error Messages**  
   Provides clear, concise explanations without overwhelming beginners.
 
--  **Auto-Detection of Missing Tools**  
+- **Auto-Detection of Missing Tools**  
   Automatically prompts users to install **Pylint** if it’s not found.
+
+- **Function Navigation via Hotkeys**  
+  Use **Ctrl+Alt+Up/Down Arrow** to navigate between function definitions, with automatic speech announcing the current function.
 
 ---
 
@@ -55,12 +58,10 @@ As of now, there are no additional settings. However, future versions will allow
 
 ## **Release Notes**
 
-### **1.0.0**  
-- Initial release of EchoCode  
-- Detects and reads Python errors aloud  
-- Simplified error messages with clear explanations  
-- Automatically prompts for missing dependencies  
-
+### **1.1.0**
+- Added keyboard navigation for moving between Python functions using Ctrl+Alt+Up/Down
+- Automatically announces the function name upon navigation
+- Prevents overlapping speech if navigating quickly
 ---
 
 ## **Author & License**
