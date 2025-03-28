@@ -1,0 +1,107 @@
+[
+    {
+      "id": "missing-parentheses-print",
+      "description": "Detects print statements without parentheses, which is Python 2.x syntax.",
+      "regex": "^\\s*print\\s+[^\\(].*$",
+      "severity": "high",
+      "suggestion": "Add parentheses to the print statement (e.g., 'print(x)' instead of 'print x') for Python 3 compatibility."
+    },
+    {
+      "id": "unused-variable",
+      "description": "Detects variable assignments that are never used later in the visible code.",
+      "regex": "^\\s*([a-zA-Z_]\\w*)\\s*=\\s*[^\\n]*$",
+      "severity": "medium",
+      "suggestion": "Consider removing or using the variable '{variable}' to avoid cluttering the code."
+    },
+    {
+      "id": "long-line",
+      "description": "Detects lines exceeding 79 characters, per PEP 8.",
+      "regex": "^.{80,}$",
+      "severity": "medium",
+      "suggestion": "Shorten this line to 79 characters or less to follow PEP 8 guidelines for better readability."
+    },
+    {
+      "id": "multiple-spaces",
+      "description": "Detects multiple consecutive spaces between tokens.",
+      "regex": "\\s{2,}",
+      "severity": "low",
+      "suggestion": "Replace multiple spaces with a single space to improve code consistency."
+    },
+    {
+      "id": "trailing-whitespace",
+      "description": "Detects trailing whitespace at the end of a line.",
+      "regex": "\\s+$",
+      "severity": "low",
+      "suggestion": "Remove trailing whitespace for cleaner code."
+    },
+    {
+      "id": "missing-colon",
+      "description": "Detects missing colons after control structures (if, for, while, etc.).",
+      "regex": "^\\s*(if|for|while|def|class)\\s+[^:]*[^:\\s]$",
+      "severity": "high",
+      "suggestion": "Add a colon ':' after the '{keyword}' statement to fix the syntax."
+    },
+    {
+      "id": "inconsistent-indentation",
+      "description": "Detects lines with tabs instead of spaces or mixed indentation.",
+      "regex": "^\\t+",
+      "severity": "medium",
+      "suggestion": "Use 4 spaces for indentation instead of tabs to follow PEP 8."
+    },
+    {
+      "id": "old-style-string-format",
+      "description": "Detects old-style % string formatting instead of .format() or f-strings.",
+      "regex": "\"[^\"]*%\\s*\\([^)]*\\)[^\"]*\"",
+      "severity": "medium",
+      "suggestion": "Consider using f-strings (e.g., f'{var}') or .format() for more readable string formatting."
+    },
+    {
+      "id": "bare-except",
+      "description": "Detects bare 'except' clauses that catch all exceptions.",
+      "regex": "^\\s*except\\s*:",
+      "severity": "high",
+      "suggestion": "Specify an exception type (e.g., 'except ValueError:') instead of a bare 'except' to avoid masking unexpected errors."
+    },
+    {
+      "id": "mutable-default-arg",
+      "description": "Detects mutable default arguments in function definitions.",
+      "regex": "^\\s*def\\s+[a-zA-Z_]\\w*\\s*\\([^)]*\\b(list|dict|set)\\s*=\\s*(\\[\\]|{}|\\(\\))",
+      "severity": "high",
+      "suggestion": "Avoid using mutable default arguments like '{type}'. Use None and initialize inside the function to prevent unexpected behavior."
+    },
+    {
+      "id": "single-letter-variable",
+      "description": "Detects single-letter variable names outside loops.",
+      "regex": "^\\s*([a-zA-Z])\\s*=\\s*[^\\n]*$",
+      "severity": "medium",
+      "suggestion": "Use a more descriptive name instead of '{variable}' to improve code readability."
+    },
+    {
+      "id": "magic-number",
+      "description": "Detects hardcoded numeric literals that could be constants.",
+      "regex": "\\b\\d{2,}\\b",
+      "severity": "medium",
+      "suggestion": "Replace the magic number '{number}' with a named constant for better maintainability."
+    },
+    {
+      "id": "camel-case-variable",
+      "description": "Detects camelCase variable names instead of snake_case.",
+      "regex": "^\\s*[a-z]+[A-Z][a-zA-Z]*\\s*=\\s*[^\\n]*$",
+      "severity": "medium",
+      "suggestion": "Use snake_case (e.g., 'my_variable') instead of camelCase ('{variable}') to follow Python naming conventions."
+    },
+    {
+      "id": "missing-docstring",
+      "description": "Detects functions or classes without a docstring.",
+      "regex": "^\\s*(def|class)\\s+[a-zA-Z_]\\w*\\s*\\([^)]*\\):\\s*$",
+      "severity": "medium",
+      "suggestion": "Add a docstring after '{keyword} {name}' to document its purpose and improve code clarity."
+    },
+    {
+      "id": "comparison-with-none",
+      "description": "Detects comparisons with None using == instead of is.",
+      "regex": "\\b==\\s*None\\b",
+      "severity": "medium",
+      "suggestion": "Use 'is None' instead of '== None' for proper identity comparison in Python."
+    }
+  ]
