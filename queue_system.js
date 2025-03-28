@@ -1,5 +1,6 @@
 const player = require("play-sound")();
 const { exec } = require("child_process");
+const path = require("path");
 
 class Queue {
   constructor() {
@@ -50,8 +51,10 @@ class Queue {
     this.items = [];
   }
   playSound() {
-    console.log("Attempting to play sound...");
-    exec('ffplay -nodisp -autoexit "./audio_pings/ping1.mp3"', (err) => {
+    const soundFilePath = path.resolve(__dirname, "audio_pings/ping1.mp3"); // Use absolute path
+    console.log("Attempting to play sound from:", soundFilePath);
+
+    player.play(soundFilePath, (err) => {
       if (err) {
         console.error("Error playing sound:", err);
       } else {

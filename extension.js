@@ -51,6 +51,7 @@ async function activate(context) {
     if (document.languageId === "python") {
       handlePythonErrorsOnSave(document.uri.fsPath);
     }
+    //errorQueue.playSound(); // Play the sound
   });
 
   vscode.workspace.onDidChangeTextDocument((event) => {
@@ -75,7 +76,7 @@ async function activate(context) {
           "Debounce timer expired, calling handlePythonErrorsOnChange"
         );
         handlePythonErrorsOnChange(document.uri.fsPath);
-      }, 500); // Adjust the delay (in milliseconds) as needed
+      }, 1000); // Adjust the delay (in milliseconds) as needed
     }
   });
 
@@ -160,7 +161,8 @@ async function handlePythonErrorsOnChange(filePath) {
       const message = `Line ${error.line}: ${error.message}`;
       console.log("Enqueuing error:", message); // Log the error being enqueued
       errorQueue.enqueue(message); // Add the error to the queue
-      errorQueue.playSound(); // Play the sound
+      //console.log("Error enqueued successfully, attempting to play sound...");
+      //errorQueue.playSound(); // Play the sound
     }
   } catch (err) {
     console.error(`Failed to run Pylint on change: ${err}`);
