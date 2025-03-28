@@ -8,8 +8,15 @@ class Queue {
 
   // Add an element to the queue
   enqueue(element) {
-    this.items.push(element);
-    this.playSound();
+    if (!this.items.includes(element)) {
+      // Check for duplicates
+      this.items.push(element);
+      console.log("Enqueued:", element);
+      this.playSound();
+      console.log("Sound played!");
+    } else {
+      console.log("Duplicate detected, not enqueuing:", element);
+    }
   }
 
   // Remove and return the front element of the queue
