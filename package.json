@@ -28,6 +28,17 @@
         "command": "code-tutor.annotate",
         "title": "Toggle Tutor Annotations",
         "icon": "$(comment)"
+      },
+      {
+        "command": "echocode.readAllErrors",
+        "title": "Read All Python Errors Aloud"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "echocode.readAllErrors",
+        "key": "ctrl+alt+\\",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {

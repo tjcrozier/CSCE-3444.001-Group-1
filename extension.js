@@ -90,7 +90,17 @@ async function activate(context) {
     }
   );
 
-  context.subscriptions.push(disposable);
+  let readAllErrorsDisposable = vscode.commands.registerCommand(
+    "echocode.readAllErrors",
+    async () => {
+      console.log("Reading all errors aloud...");
+      const errors = errorQueue.items; // Access the errors in the queue
+      for (const error of errors) {
+        await speakMessage(error); // Read each error aloud
+      }
+    }
+  );
+  context.subscriptions.push(disposable, readAllErrorsDisposable);
 }
 
 /**
@@ -134,19 +144,28 @@ async function handlePythonErrorsOnSave(filePath) {
 /**
  * Handles Pylint errors on text change.
  */
-function handlePythonErrorsOnChange(filePath) {
+async function handlePythonErrorsOnChange(filePath) {
   console.log("handlePythonErrorsOnChange triggered for:", filePath);
-  errorQueue.playSound();
-}
 
-function deactivate() {
-  console.log("EchoCode deactivated.");
-}
+  try {
+    const errors = await runPylint(filePath); // Run Pylint to get errors
+    if (errors.length === 0) {
+      console.log("✅ No issues detected on change.");
+      return;
+    }
 
-module.exports = {
-  activate,
-  deactivate,
-};
+    console.log(`📢 Found ${errors.length} Pylint error(s) on change:`);
+
+    for (const error of errors) {
+      const message = `Line ${error.line}: ${error.message}`;
+      console.log("Enqueuing error:", message); // Log the error being enqueued
+      errorQueue.enqueue(message); // Add the error to the queue
+      errorQueue.playSound(); // Play the sound
+    }
+  } catch (err) {
+    console.error(`Failed to run Pylint on change: ${err}`);
+  }
+}
 
 function deactivate() {
   console.log("EchoCode deactivated.");
