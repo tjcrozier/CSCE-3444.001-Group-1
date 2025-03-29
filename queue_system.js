@@ -1,6 +1,8 @@
-const player = require("play-sound")();
+//const player = require("play-sound")();
 const { exec } = require("child_process");
 const path = require("path");
+const audioPlay = require("audio-play");
+const audioLoader = require("audio-loader");
 
 class Queue {
   constructor() {
@@ -50,17 +52,17 @@ class Queue {
   clear() {
     this.items = [];
   }
-  playSound() {
-    const soundFilePath = path.resolve(__dirname, "audio_pings/ping1.mp3"); // Use absolute path
+  async playSound() {
+    const soundFilePath = path.resolve(__dirname, "audio_pings/ping1.wav"); // Use .mp3 or .wav
     console.log("Attempting to play sound from:", soundFilePath);
 
-    player.play(soundFilePath, (err) => {
-      if (err) {
-        console.error("Error playing sound:", err);
-      } else {
-        console.log("Sound played successfully!");
-      }
-    });
+    try {
+      const audioBuffer = await audioLoader(soundFilePath); // Load the audio file
+      audioPlay(audioBuffer); // Play the audio
+      console.log("Sound played successfully!");
+    } catch (err) {
+      console.error("Error playing sound:", err);
+    }
   }
 }
 
