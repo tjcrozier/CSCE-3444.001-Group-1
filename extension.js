@@ -116,9 +116,9 @@ async function activate(context) {
 
   // Command to manually trigger error reading
   let disposableReadErrors = vscode.commands.registerCommand(
-    "echocode.readErrors",
+    "code-tutor.readErrors",
     () => {
-      outputChannel.appendLine("echocode.readErrors command triggered");
+      outputChannel.appendLine("code-tutor.readErrors command triggered");
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document.languageId === "python") {
         handlePythonErrors(editor.document.uri.fsPath);
@@ -170,7 +170,7 @@ async function activate(context) {
 
   context.subscriptions.push(disposableReadErrors, disposableAnnotate);
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, code-tutor.annotate"
+    "Commands registered: code-tutor.readErrors, code-tutor.annotate"
   );
 }
 
