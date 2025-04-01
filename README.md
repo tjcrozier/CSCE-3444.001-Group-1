@@ -41,7 +41,7 @@ Before using EchoCode, ensure the following are installed:
 
 To Navigate from Function to Function: 
 - Press **Ctrl + Alt + Down Arrow** to move from function to function in descending order.
-- Press **ctrl + Alt + Up Arrow** to move from function to function in asscending order. 
+- Press **Ctrl + Alt + Up Arrow** to move from function to function in asscending order. 
 ---
 
 ##  **Extension Settings**
