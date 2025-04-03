@@ -42,6 +42,11 @@
         "command": "echocode.readAllErrors",
         "key": "ctrl+alt+\\",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "code-tutor.speakNextAnnotation",
+        "key": "ctrl+alt+s",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
