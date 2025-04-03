@@ -9,6 +9,7 @@ let debounceTimer = null;
 let isRunning = false;
 
 const errorQueue = new Queue(); // Create an instance of the Queue class
+const annotationQueue = new Queue(); // Queue for annotations
 
 const ANNOTATION_PROMPT = `You are a code tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object. It is not necessary to wrap your response in triple backticks. Here is an example of what your response should look like:
 
@@ -168,9 +169,22 @@ async function activate(context) {
     }
   );
 
-  context.subscriptions.push(disposableReadErrors, disposableAnnotate);
+  // Command to speak the next annotation from the queue.
+  let speakNextAnnotationDisposable = vscode.commands.registerCommand(
+    "code-tutor.speakNextAnnotation",
+    async () => {
+      if (!annotationQueue.isEmpty()) {
+        const nextAnnotation = annotationQueue.dequeue();
+        await speakMessage(`Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`);
+      } else {
+        vscode.window.showInformationMessage("No more annotations to read.");
+      }
+    }
+  );
+
+  context.subscriptions.push(disposableReadErrors, disposableAnnotate, speakNextAnnotationDisposable);
   outputChannel.appendLine(
-    "Commands registered: code-tutor.readErrors, code-tutor.annotate"
+    "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
   );
 }
 
@@ -287,8 +301,7 @@ function applyDecoration(editor, line, suggestion) {
     new vscode.Position(line - 1, lineLength),
     new vscode.Position(line - 1, lineLength)
   );
-  const decoration = { range: range, hoverMessage: suggestion };
-  editor.setDecorations(decorationType, [decoration]);
+  editor.setDecorations(decorationType, [{ range: range, hoverMessage: suggestion }]);
 }
 
 function deactivate() {
