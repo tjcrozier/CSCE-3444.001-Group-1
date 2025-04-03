@@ -1,4 +1,4 @@
-# EchoCode — AI-Assisted Python Debugging for Visually Impaired Programmers
+# Echo Code — AI-Assisted Python Debugging for Visually Impaired Programmers
 
 **Echo Code** is a Visual Studio Code extension that combines **AI-powered code tutoring** with **audible Python error reporting**. Designed to assist **visually impaired students**, this tool reads out Python errors detected by **Pylint** and provides annotation features to guide users in understanding their code.
 
@@ -66,6 +66,11 @@ Before using Echo Code, ensure the following are installed:
 - Detects and reads Python errors aloud using Pylint.  
 - Provides AI-powered tutoring annotations.  
 - Supports keyboard shortcuts for accessibility.
+
+### **1.1.0**  
+- Added support for reading annotations aloud, including line numbers.  
+- Improved text-to-speech clarity for errors and annotations.  
+- Refactored code for better performance and maintainability.
 
 ---
 ## **Author & License**
