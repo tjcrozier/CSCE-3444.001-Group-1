@@ -1,31 +1,40 @@
+# EchoCode — AI-Assisted Python Debugging for Visually Impaired Programmers
 
-# EchoCode — Python Error Reader for Visually Impaired Programmers
-
-**EchoCode** is a Visual Studio Code extension designed to help **visually impaired beginner Python programmers** by reading out critical Python errors aloud using Pylint. It helps users debug their code with clear, concise, and actionable feedback.
+**Echo Code** is a Visual Studio Code extension that combines **AI-powered code tutoring** with **audible Python error reporting**. Designed to assist **visually impaired students**, this tool reads out Python errors detected by **Pylint** and provides annotation features to guide users in understanding their code.
 
 ---
- **Features**
+## **Features**
 
--  **Automatic Python Error Detection**  
-  Automatically detects errors using Pylint when a Python file is saved.
+- **Automatic Python Error Detection**  
+  Detects errors in Python files automatically using Pylint upon saving.
 
--  **Reads Critical Errors Aloud**  
-  Uses text-to-speech to read only essential errors (e.g., syntax errors, undefined variables).
+- **Reads Python Errors Aloud**  
+  Uses text-to-speech to read **critical Python errors**, such as syntax errors and undefined variables.
 
--  **Output Panel Logging**  
+- **AI Code Tutoring Annotations**  
+  Provides inline annotations explaining **common coding mistakes** and suggesting improvements.
+
+- **Output Panel Logging**  
   Displays all detected errors in the VS Code Output Panel for visual reference.
 
--  **Simplified Error Messages**  
-  Provides clear, concise explanations without overwhelming beginners.
-
--  **Auto-Detection of Missing Tools**  
+- **Auto-Detection of Missing Tools**  
   Automatically prompts users to install **Pylint** if it’s not found.
 
+- **Integration with GitHub Copilot**  
+  Leverages GitHub Copilot for additional AI-powered coding assistance.
+
 ---
+## **Keyboard Shortcuts**
 
-##  **Requirements**
+| Shortcut | Command | Description |
+|----------|---------|-------------|
+| `Ctrl+Alt+\\` | `echocode.readAllErrors` | Reads **all** detected Python errors aloud. |
+| `Ctrl+Alt+S` | `code-tutor.speakNextAnnotation` | Reads the next annotation, including line number and suggestion. |
 
-Before using EchoCode, ensure the following are installed:
+---
+## **Installation & Requirements**
+
+Before using Echo Code, ensure the following are installed:
 
 1. **[Python](https://www.python.org/downloads/)** (version 3.6 or higher)
 2. **Pylint** (automatically detected; will prompt for installation if missing):
@@ -35,35 +44,30 @@ Before using EchoCode, ensure the following are installed:
 3. **[Python Extension for VS Code](https://marketplace.visualstudio.com/items?itemName=ms-python.python)** (auto-installed if missing)
 
 ---
+## **Extension Commands**
 
-##  **Extension Settings**
-
-As of now, there are no additional settings. However, future versions will allow customization of:
-
--  **Speech speed**  
--  **Voice selection**  
-- 🎙 **Verbosity level (brief/detailed explanations)**  
+| Command | Description |
+|---------|-------------|
+| `echocode.readErrors` | Reads the most recent Python errors aloud. |
+| `code-tutor.annotate` | Toggles tutor annotations for explanations and suggestions. |
+| `echocode.readAllErrors` | Reads all detected Python errors aloud. |
 
 ---
-
-##  **Known Issues**
+## **Known Issues**
 
 - Non-critical errors (e.g., missing docstrings) are logged but not read aloud.
-- Currently only works on WindowOS machines.
+- Currently, the extension only works on Windows OS machines.
 
 ---
-
 ## **Release Notes**
 
 ### **1.0.0**  
-- Initial release of EchoCode  
-- Detects and reads Python errors aloud  
-- Simplified error messages with clear explanations  
-- Automatically prompts for missing dependencies  
+- Initial release of Echo Code.  
+- Detects and reads Python errors aloud using Pylint.  
+- Provides AI-powered tutoring annotations.  
+- Supports keyboard shortcuts for accessibility.
 
 ---
-
 ## **Author & License**
 
 Developed by Group 1 - Team Jacob  
->>>>>>> 8e90d0f (First commit of working EchoCode)
