@@ -281,6 +281,11 @@ async function parseChatResponse(chatResponse, textEditor) {
       try {
         const annotation = JSON.parse(accumulatedResponse);
         applyDecoration(textEditor, annotation.line, annotation.suggestion);
+        // Enqueue the annotation (with line info) for later playback.
+        const annotationData = { line: annotation.line, suggestion: annotation.suggestion };
+        annotationQueue.enqueue(annotationData);
+        // Immediately speak the annotation including the line number.
+        await speakMessage(`Annotation on line ${annotation.line}: ${annotation.suggestion}`);
         accumulatedResponse = "";
       } catch {
         // Ignore incomplete JSON
