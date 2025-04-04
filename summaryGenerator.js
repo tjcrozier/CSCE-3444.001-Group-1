@@ -1,6 +1,7 @@
 const vscode = require('vscode'); // VSCode API
 const { Selection } = require('./codeParser');
-const { speakMessage } = require('./speechHandler')
+const { speakMessage } = require('./speechHandler');
+const { analyzeAI } = require('./AIrequest');
 
 function summarizeFunction(editor) {
     // Attempt to retrieve the current function
@@ -19,13 +20,11 @@ function summarizeFunction(editor) {
     console.error("Will generate summary for the following function:")
     console.log("---FUNCTION TEXT---\n", functionText, "\n---END FUNCTION TEXT---\n");
 
-    generateSummary(currentFunction.name).then(summary => {
-        speakMessage("Generating summary for " + summary);
+    // Calls the function 
+    analyzeAI(functionText).then(summary =>{
+        speakMessage(summary)
     });
 }
 
-async function generateSummary(blockName) {
-   return blockName; // Dummy output
-}
 
 module.exports = { summarizeFunction };
