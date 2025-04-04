@@ -36,6 +36,20 @@ function ensurePylintInstalled() {
 async function activate(context) {
     outputChannel = vscode.window.createOutputChannel('EchoCode');
     outputChannel.appendLine('EchoCode activated.');
+    
+    const editor = vscode.window.activeTextEditor;
+    
+    // Ensure there is an editor open
+    if(!editor) {
+        console.error("No editor open.");
+        return;
+    }
+        
+    // Ensure the current document is in Python
+    if (editor.document.languageId !== 'python') {
+        console.error("EchoCode only works for Python code.");
+        return;
+    }
 
     await ensurePylintInstalled();
 
@@ -48,7 +62,7 @@ async function activate(context) {
 
     // Command to manually trigger error reading
     let disposable = vscode.commands.registerCommand('echocode.readErrors', () => {
-        const editor = vscode.window.activeTextEditor;
+//        const editor = vscode.window.activeTextEditor;
         if (editor && editor.document.languageId === 'python') {
             handlePythonErrors(editor.document.uri.fsPath);
         }
@@ -58,7 +72,9 @@ async function activate(context) {
 
     // Summarize the current function
     let functionSummary = vscode.commands.registerCommand(
-        'echocode.summarizeFunction', summarizeFunction
+        'echocode.summarizeFunction',  () => {
+            summarizeFunction(editor);
+        }
     );
 
     // Summarize the program
