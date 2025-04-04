@@ -1,144 +1,158 @@
 const vscode = require('vscode'); // VSCode API
 
-function detectCurrentFunction(editor) {
-    // To store the function as an object. definition and last line are stored
-    // as vscode line objects
-    const functionObject = {
-        definition: null,
-        lastLine: null,
-        functionText: "No function text found",
-        cursorInFunction: true
-    };
+class Selection {
+    // TextLine objects
+    firstLine;
+    lastLine;
 
-    // Get current position of the cursor
-    const cursorPos = editor.selection.active;
-    const cursorLine = editor.document.lineAt(cursorPos);
-    console.log("Cursor at line:", cursorLine.lineNumber + 1);
+    // Is the cursor actually inside the selection, or just below it?
+    cursorInSelection;
 
-    // Detect the last function definition before the cursor
-    functionObject.definition = detectFunctionStart(editor, cursorPos);
+    // Text
+    blockType;
+    name;
+    text;
 
-    // If no function definition was found, return default values
-    if (!functionObject.definition) {
-        functionObject.cursorInFunction = false;
-        return functionObject;
+    // Is the selection inside of another structure?
+    selectionInClass;
+
+    // Types of blocks to select and regexes matching their first lines
+    #headerPatterns = {
+        class: '^\\s*class\\s+(\\w+)(\\(.*\\))?:',
+        function: '^\\s*def\\s+(\\w+)\\(.*\\):'
     }
 
-    // Detect the end of the current function
-    functionObject.lastLine = detectFunctionEnd(
-        editor, functionObject.definition
-    );
-
-    // If the cursor is after the last line of the function, it is not inside a
-    // function
-    if (cursorLine.lineNumber > functionObject.lastLine.lineNumber) {
-        functionObject.cursorInFunction = false;
-        return functionObject;
+    constructor(blockType) {
+        this.firstLine = null;
+        this.lastLine = null;
+        this.cursorInSelection = true;
+        this.blockType = blockType;
+        this.name = "";
+        this.text = "";
+        this.selectionInClass = true;
     }
 
-    // Retrieve the function text
-    functionObject.functionText = getFunctionText(
-        editor, functionObject.definition, functionObject.lastLine
-    );
+    detectCurrentBlock(editor) {
+        // Get current position of the cursor
+        const cursorPos = editor.selection.active;
+        const cursorLineNo = editor.document.lineAt(cursorPos).lineNumber;
+        console.log("Cursor at line:", cursorLineNo + 1);
 
-    return functionObject;
-}
+        // Detect the last header line of specified type before the cursor
+        this.firstLine = this.#detectFirstLine(
+            editor, cursorPos, this.#headerPatterns[this.blockType]
+        );
 
-function detectFunctionStart(editor, cursorPos) {
-    // Matches Python function definitions
-    const funcDefRegEx = /def\s+(\w+)\(.*\):/g;
+        // If no matching headers are found, cursor is not inside block of
+        // specified type
+        if (!this.firstLine) {
+            this.cursorInSelection = false;
+            return;
+        }
 
-    // Get the current line
-    const cursorLine = editor.document.lineAt(cursorPos);
+        // Detect the end of the selected block
+        this.lastLine = this.#detectLastLine(editor, this.firstLine);
 
-    // Check if the cursor line itself is a function definition
-    if (funcDefRegEx.test(cursorLine.text)) {
-        console.log("  Cursor is on a function definition:", cursorLine.text);
-        return cursorLine;
+        // If the cursor is after the last line of the selection, is is not 
+        // inside the selection.
+        if (cursorLineNo > this.lastLine.lineNumber) {
+            this.cursorInSelection = false;
+            return;
+        }
+
+        // Retrieve the name/header of the selection
+        this.name = this.#getName(editor, this.firstLine);
+
+        // Retrieve the selected text
+        this.text = this.#getSelectedText(
+            editor, this.firstLine.lineNumber, this.lastLine.lineNumber
+        );
     }
 
-    // Get all text before the cursor position
-    const beginPos = new vscode.Position(0, 0); // Beginning of the document
-    const range = new vscode.Range(beginPos, cursorPos); 
-    const textBeforeCursor = editor.document.getText(range);
+    #detectFirstLine(editor, cursorPos, headerPattern) {
+        const headerRegEx = new RegExp(headerPattern);
 
-    // Begin RegEx search at beginning of the document
-    funcDefRegEx.lastIndex = 0;
+        // Start from the cursor's line and move upward
+        for (let lineNo = cursorPos.line; lineNo >= 0; lineNo--) {
+            const line = editor.document.lineAt(lineNo);
+            if (headerRegEx.test(line.text)) {
+                console.log(
+                    "  Found", this.blockType, "header on line", lineNo + 1 + ":", line.text
+                );
+                return line;
+            }
+        }
 
-    // Find the last function definition before the position of the cursor
-    let match;                  // Store a string matching the RegEx
-    let lastMatch = null;       // Store the last string that matches the RegEx
-    let lastMatchPos = null;    // Store the position of the matched string
-    
-    while ((match = funcDefRegEx.exec(textBeforeCursor)) !== null) {
-        lastMatch = match;
-        lastMatchPos = match.index;
-    }
-
-    // Exit detectFunctionStart() early if no function definitions are detected
-    if (!lastMatch) {
-        console.log("  No function definition found before cursor."); 
+        console.log("  No", this.blockType, "header found before cursor.");
         return null;
     }
 
-    // Otherwise, return the detected function definition
-    console.log("  Last function definition before cursor:", lastMatch[0]);
+    #detectLastLine(editor, firstLine) {
+        const lineCount = getNumberOfLines(editor);
 
-    const funcDefPos = editor.document.positionAt(lastMatchPos);
-    const funcDefLine = editor.document.lineAt(funcDefPos.line);
-    console.log("  Function definition on line:", funcDefLine.lineNumber + 1);
+        // Get indentation of the function definition
+        const firstLineIndent = countIndentation(firstLine);
 
-    return funcDefLine;
-}
+        console.log("  Indentation of header:", firstLineIndent);
+        
+        let lastLine = null;
+        let lastLineNo = firstLine.lineNumber;
 
-function detectFunctionEnd(editor, funcDefLine) {
-    const lineCount = getNumberOfLines(editor);
-
-    // Get indentation of the function definition
-    const funcDefIndentation = countIndentation(funcDefLine);
-
-//    console.log("  Function definition on line:", funcDefLine.lineNumber + 1);
-    console.log("  Indentation of function definition:", funcDefIndentation);
-    
-    let lastLine = null;
-    let lastLineNo = funcDefLine.lineNumber;
-
-    for (let i = funcDefLine.lineNumber + 1; i < lineCount; i++) {
-        const line = editor.document.lineAt(i);
-        const lineIndent = countIndentation(line);
-        const lineText = line.text.trim();
-    
-        // Skip blank lines
-        if (lineText === '') {
-            continue; // Skip blank lines
+        for (let i = firstLine.lineNumber + 1; i < lineCount; i++) {
+            const line = editor.document.lineAt(i);
+            const lineIndent = countIndentation(line);
+            const lineText = line.text.trim();
+        
+            // Skip blank lines
+            if (lineText === '') {
+                continue; // Skip blank lines
+            }
+        
+            // Stop at the first line with indentation <= function definition
+            if (lineIndent <= firstLineIndent) {
+                break;
+            }
+        
+            lastLine = line;
+            lastLineNo = i;
         }
-    
-        // Stop at the first line with indentation <= function definition
-        if (lineIndent <= funcDefIndentation) {
-            break;
+        
+        // Backtrack to last **non-blank** line (handles empty lines at the end)
+        while (lastLineNo > firstLine.lineNumber &&
+                        editor.document.lineAt(lastLineNo).text.trim() === '') {
+            lastLineNo--;
+            lastLine = editor.document.lineAt(lastLineNo);
         }
-    
-        lastLine = line;
-        lastLineNo = i;
+        
+        // Return the first line if the function is empty
+        if (!lastLine) {
+            console.log("  Block appears empty. Header is also last line");
+            return firstLine;   
+        }
+        
+        // Otherwise, return the last line of the function
+        console.log("  Last line text:", lastLine.text);
+        console.log("  Selection ends on line:", lastLine.lineNumber + 1);
+        return lastLine;
     }
-    
-    // Backtrack to last **non-blank** line (handles empty lines at the end)
-    while (lastLineNo > funcDefLine.lineNumber &&
-                    editor.document.lineAt(lastLineNo).text.trim() === '') {
-        lastLineNo--;
-        lastLine = editor.document.lineAt(lastLineNo);
+
+    #getName(editor, firstLine) {
+        const headerRegEx = new RegExp(this.#headerPatterns[this.blockType]);
+        const match = firstLine.text.match(headerRegEx);
+        return match ? match[1] : "";
     }
-    
-    // Return the first line if the function is empty
-    if (!lastLine) {
-        console.log("  Function appears empty. Definition is last line");
-        return funcDefLine;   
+
+    #getSelectedText(editor, firstLineNo, lastLineNo) {
+        // Convert line numbers to Positions
+        const selectionStart = editor.document.lineAt(firstLineNo).range.start;
+        const selectionEnd = editor.document.lineAt(lastLineNo).range.end;
+
+        // Create a range from start to end of the function
+        const range = new vscode.Range(selectionStart, selectionEnd); 
+        const selectionText = editor.document.getText(range);
+
+        return selectionText;
     }
-    
-    // Otherwise, return the last line of the function
-    console.log("  Last line text:", lastLine.text);
-    console.log("  Function ends on line:", lastLine.lineNumber + 1);
-    return lastLine;
 }
 
 function getNumberOfLines(editor) {
@@ -166,17 +180,4 @@ function countIndentation(line) {
     return indentation;
 }
 
-function getFunctionText(editor, funcDefLine, funcEndLine) {    
-    // Convert line numbers to Positions
-    const funcStartPos = editor.document.lineAt(funcDefLine.lineNumber).range.start;
-    const funcEndPos = editor.document.lineAt(funcEndLine.lineNumber).range.end;
-
-    // Create a range from start to end of the function
-    const range = new vscode.Range(funcStartPos, funcEndPos); 
-    const functionText = editor.document.getText(range);
-
-    return functionText;
-}
-
-
-module.exports = { detectCurrentFunction };
+module.exports = { Selection };
