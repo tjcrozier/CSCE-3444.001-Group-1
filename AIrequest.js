@@ -1,10 +1,12 @@
 const vscode = require('vscode'); // VSCode API
 
-async function analyzeAI (code) {
+async function analyzeAI (code, instructionPrompt) {
     var chatRequest;
     const craftedPrompt = [
         vscode.LanguageModelChatMessage.User(
-        'Give a brief explanation of the flow of execution of the provided python function'
+        // Default prompt
+        // 'Give a brief explanation of the flow of execution of the provided python function'
+            instructionPrompt
         ),
         vscode.LanguageModelChatMessage.User(code)
     ];

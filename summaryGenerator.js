@@ -17,12 +17,16 @@ function summarizeFunction(editor) {
 
     // Otherwise, print the text of the current function to the console (for now)
     const functionText = currentFunction.text;
+
+    // replace with different prompts
+    const instructionPrompt = 'Give a brief explanation of the flow of execution of the provided python function';
+    
     console.error("Will generate summary for the following function:")
     console.log("---FUNCTION TEXT---\n", functionText, "\n---END FUNCTION TEXT---\n");
 
     // Calls the function 
     analyzeAI(functionText).then(summary =>{
-        speakMessage(summary)
+        speakMessage(summary, instructionPrompt)
     });
 }
 
