@@ -1,0 +1,26 @@
+name: CI Pipeline
+
+on:
+  workflow_call:
+
+jobs:
+  build-and-test:
+    name: test CI/CD
+    runs-on: windows-latest
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+
+      - name: Say Hello
+        run: echo "Hello World!"
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install Dependencies
+        run: 
+          npm install say
+

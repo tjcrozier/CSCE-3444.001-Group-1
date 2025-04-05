@@ -1,8 +1,9 @@
 const vscode = require('vscode');
 const { runPylint } = require('./pylintHandler');
 const { speakMessage } = require('./speechHandler');
-const { exec } = require('child_process')
+const { exec } = require('child_process');
 const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
+const { moveCursorToFunction } = require('./navigationHandler');
 
 let outputChannel;
 
@@ -30,9 +31,7 @@ function ensurePylintInstalled() {
     });
 }
 
-/**
- * Activates the extension.
- */
+
 async function activate(context) {
     outputChannel = vscode.window.createOutputChannel('EchoCode');
     outputChannel.appendLine('EchoCode activated.');
@@ -73,6 +72,15 @@ async function activate(context) {
             }
         }
     );
+
+    // Add navigation commands
+    let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
+        moveCursorToFunction("next");
+    });
+
+    let prevFunction = vscode.commands.registerCommand('echocode.jumpToPreviousFunction', () => {
+        moveCursorToFunction("previous");
+    });
 
     context.subscriptions.push(disposable, classSummary, functionSummary);
 }

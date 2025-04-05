@@ -2,8 +2,9 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.0.0",
-  "publisher": "Slitchie",
+  "version": "1.1.0",
+  "icon": "images/icon.png",
+  "publisher": "EchoCode",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -26,6 +27,14 @@
         "title": "Read Python Errors Aloud"
       },
       {
+        "command": "echocode.jumpToNextFunction",
+        "title": "Jump to Next Function"
+      },
+      {
+        "command": "echocode.jumpToPreviousFunction",
+        "title": "Jump to Previous Function"
+      },
+      {
         "command": "echocode.summarizeClass",
         "title": "Summarize Current Class"
       },
@@ -36,21 +45,28 @@
     ],
     "keybindings": [
       {
+        "command": "echocode.jumpToNextFunction",
+        "key": "ctrl+alt+down",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.jumpToPreviousFunction",
+        "key": "ctrl+alt+up",
+        "when": "editorTextFocus"
+      },
+       {
         "command": "echocode.summarizeClass",
         "key": "ctrl+alt+space C",
-        "mac": "cmd+alt+space C",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
         "command": "echocode.summarizeFunction",
         "key": "ctrl+alt+space F",
-        "mac": "cmd+alt+space F",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
-        "mac": "cmd+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
       }
     ]

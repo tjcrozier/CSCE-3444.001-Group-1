@@ -1,0 +1,13 @@
+name: Main CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+  workflow_dispatch:  # Allow manually running the workflow
+
+jobs:
+  call-ci:
+    uses: ./.github/workflows/ci.yml
