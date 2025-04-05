@@ -58,7 +58,9 @@ async function activate(context) {
     let classSummary = vscode.commands.registerCommand(
         'echocode.summarizeClass',  () => {
             const editor = vscode.window.activeTextEditor;
-            summarizeClass(editor);
+            if (editor && editor.document.languageId === 'python') {
+                summarizeClass(editor);
+            }
         }
     );
 
@@ -66,11 +68,11 @@ async function activate(context) {
     let functionSummary = vscode.commands.registerCommand(
         'echocode.summarizeFunction',  () => {
             const editor = vscode.window.activeTextEditor;
-            summarizeFunction(editor);
+            if (editor && editor.document.languageId === 'python') {
+                summarizeFunction(editor);
+            }
         }
     );
-
-    // Summarize the program
 
     context.subscriptions.push(disposable, classSummary, functionSummary);
 }
