@@ -39,7 +39,7 @@ async function analyzeAI (code, instructionPrompt) {
         }
     }
 
-    var results;
+    var results = '';
     for await (const fragment of chatRequest.text) {
         results += fragment;
     }
