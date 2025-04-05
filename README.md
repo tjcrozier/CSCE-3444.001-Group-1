@@ -18,6 +18,9 @@
 - **Simplified Error Messages**  
   Provides clear, concise explanations without overwhelming beginners.
 
+- **Summarize functions and classes**  
+  Automatically generates brief summaries for functions and classes using AI, with output delivered by text-to-speech (TTS).
+
 - **Auto-Detection of Missing Tools**  
   Automatically prompts users to install **Pylint** if it’s not found.
 
@@ -36,12 +39,20 @@ Before using EchoCode, ensure the following are installed:
    pip install pylint
    ```
 3. **[Python Extension for VS Code](https://marketplace.visualstudio.com/items?itemName=ms-python.python)** (auto-installed if missing)
+4. **[GitHub Copilot Extension for VS Code](https://marketplace.visualstudio.com/items/?itemName=GitHub.copilot)**
+5. Consent for Copilot to access LLM when prompted
 ---
 ## **How to Use**
 
 To Navigate from Function to Function: 
 - Press **Ctrl + Alt + Down Arrow** to move from function to function in descending order.
-- Press **Ctrl + Alt + Up Arrow** to move from function to function in asscending order. 
+- Press **Ctrl + Alt + Up Arrow** to move from function to function in asscending order.
+
+To hear a brief summary of the current Python class:
+- Press "Ctrl + Alt + Space" followed by "C"
+
+To hear a brief summary of the current Python function:
+- Press "Ctrl + Alt + Space" followed by "F"
 ---
 
 ##  **Extension Settings**
@@ -58,6 +69,7 @@ As of now, there are no additional settings. However, future versions will allow
 
 - Non-critical errors (e.g., missing docstrings) are logged but not read aloud.
 - Currently only works on WindowOS machines.
+- When generating code summaries, multiple TTS triggers will still overlap.
 
 ---
 
