@@ -20,7 +20,7 @@ function summarizeClass(editor) {
     console.error("Will generate summary for the following class:")
     console.log("---CLASS TEXT---\n", classText, "\n---END CLASS TEXT---\n");
 
-    const prompt = "Give a brief summary of this python class. Mention the names of variables and functions defined therein. Do not use any markup language or emojis in your generated summary.";
+    const prompt = "Give a brief summary of this python class. Mention thename of the class as well as the names of variables and functions defined therein. Do not use any markup language or emojis in your generated summary.";
 
     // Calls the function 
     analyzeAI(classText, prompt).then(summary =>{
@@ -44,7 +44,7 @@ function summarizeFunction(editor) {
     const functionText = currentFunction.text;
 
     // replace with different prompts
-    const instructionPrompt = 'Give a brief summary of the following python function. Do not use any markup language or emojis in your generated summary.';
+    const instructionPrompt = 'Give a brief summary of the following python function. Be sure to mention the name of the function being summarized. Do not use any markup language or emojis in your generated summary.';
     
     console.error("Will generate summary for the following function:")
     console.log("---FUNCTION TEXT---\n", functionText, "\n---END FUNCTION TEXT---\n");
