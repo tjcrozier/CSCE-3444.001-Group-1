@@ -12,7 +12,8 @@
   ],
   "activationEvents": [
     "onLanguage:python",
-    "onSave"
+    "onSave",
+    "onLanguageModel"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
@@ -23,13 +24,21 @@
       {
         "command": "echocode.readErrors",
         "title": "Read Python Errors Aloud"
+      },
+      {
+        "command": "echocode.summarizeClass",
+        "title": "Summarize Current Class"
+      },
+      {
+        "command": "echocode.summarizeFunction",
+        "title": "Summarize Current Function"
       }
     ],
     "keybindings": [
       {
-        "command": "echocode.summarizeBlock",
-        "key": "ctrl+alt+space B",
-        "mac": "cmd+alt+space B",
+        "command": "echocode.summarizeClass",
+        "key": "ctrl+alt+space C",
+        "mac": "cmd+alt+space C",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {

@@ -2,7 +2,7 @@ const vscode = require('vscode');
 const { runPylint } = require('./pylintHandler');
 const { speakMessage } = require('./speechHandler');
 const { exec } = require('child_process')
-const { summarizeFunction } = require('./summaryGenerator.js');
+const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
 
 let outputChannel;
 
@@ -37,20 +37,6 @@ async function activate(context) {
     outputChannel = vscode.window.createOutputChannel('EchoCode');
     outputChannel.appendLine('EchoCode activated.');
     
-    const editor = vscode.window.activeTextEditor;
-    
-    // Ensure there is an editor open
-    if(!editor) {
-        console.error("No editor open.");
-        return;
-    }
-        
-    // Ensure the current document is in Python
-    if (editor.document.languageId !== 'python') {
-        console.error("EchoCode only works for Python code.");
-        return;
-    }
-
     await ensurePylintInstalled();
 
     // Trigger on file save
@@ -62,24 +48,31 @@ async function activate(context) {
 
     // Command to manually trigger error reading
     let disposable = vscode.commands.registerCommand('echocode.readErrors', () => {
-//        const editor = vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
         if (editor && editor.document.languageId === 'python') {
             handlePythonErrors(editor.document.uri.fsPath);
         }
     });
 
-    // Summarize the current block
+    // Summarize the current class
+    let classSummary = vscode.commands.registerCommand(
+        'echocode.summarizeClass',  () => {
+            const editor = vscode.window.activeTextEditor;
+            summarizeClass(editor);
+        }
+    );
 
     // Summarize the current function
     let functionSummary = vscode.commands.registerCommand(
         'echocode.summarizeFunction',  () => {
+            const editor = vscode.window.activeTextEditor;
             summarizeFunction(editor);
         }
     );
 
     // Summarize the program
 
-    context.subscriptions.push(disposable, functionSummary);
+    context.subscriptions.push(disposable, classSummary, functionSummary);
 }
 
 async function handlePythonErrors(filePath) {
