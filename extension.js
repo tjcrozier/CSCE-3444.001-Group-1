@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const { runPylint } = require('./pylintHandler');
 const { speakMessage } = require('./speechHandler');
 const { exec } = require('child_process');
+const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
 const { moveCursorToFunction } = require('./navigationHandler');
 
 let outputChannel;
@@ -34,7 +35,7 @@ function ensurePylintInstalled() {
 async function activate(context) {
     outputChannel = vscode.window.createOutputChannel('EchoCode');
     outputChannel.appendLine('EchoCode activated.');
-
+    
     await ensurePylintInstalled();
 
     // Trigger on file save
@@ -52,6 +53,26 @@ async function activate(context) {
         }
     });
 
+    // Summarize the current class
+    let classSummary = vscode.commands.registerCommand(
+        'echocode.summarizeClass',  () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'python') {
+                summarizeClass(editor);
+            }
+        }
+    );
+
+    // Summarize the current function
+    let functionSummary = vscode.commands.registerCommand(
+        'echocode.summarizeFunction',  () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'python') {
+                summarizeFunction(editor);
+            }
+        }
+    );
+
     // Add navigation commands
     let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
         moveCursorToFunction("next");
@@ -61,7 +82,7 @@ async function activate(context) {
         moveCursorToFunction("previous");
     });
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable, classSummary, functionSummary);
 }
 
 async function handlePythonErrors(filePath) {

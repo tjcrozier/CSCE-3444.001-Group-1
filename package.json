@@ -13,7 +13,8 @@
   ],
   "activationEvents": [
     "onLanguage:python",
-    "onSave"
+    "onSave",
+    "onLanguageModel"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
@@ -30,21 +31,44 @@
         "title": "Jump to Next Function"
       },
       {
-          "command": "echocode.jumpToPreviousFunction",
-          "title": "Jump to Previous Function"
+        "command": "echocode.jumpToPreviousFunction",
+        "title": "Jump to Previous Function"
+      },
+      {
+        "command": "echocode.summarizeClass",
+        "title": "Summarize Current Class"
+      },
+      {
+        "command": "echocode.summarizeFunction",
+        "title": "Summarize Current Function"
       }
     ],
     "keybindings": [
-        {
-            "command": "echocode.jumpToNextFunction",
-            "key": "ctrl+alt+down",
-            "when": "editorTextFocus"
-        },
-        {
-            "command": "echocode.jumpToPreviousFunction",
-            "key": "ctrl+alt+up",
-            "when": "editorTextFocus"
-        }
+      {
+        "command": "echocode.jumpToNextFunction",
+        "key": "ctrl+alt+down",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.jumpToPreviousFunction",
+        "key": "ctrl+alt+up",
+        "when": "editorTextFocus"
+      },
+       {
+        "command": "echocode.summarizeClass",
+        "key": "ctrl+alt+space C",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.summarizeFunction",
+        "key": "ctrl+alt+space F",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.summarizeProgram",
+        "key": "ctrl+alt+space P",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      }
     ]
   },
   "scripts": {
@@ -54,6 +78,8 @@
     "@types/vscode": "^1.97.0"
   },
   "dependencies": {
+    "axios": "^1.8.3",
+    "dotenv": "^16.4.7",
     "say": "^0.16.0"
   }
 }
