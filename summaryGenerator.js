@@ -52,8 +52,8 @@ function summarizeFunction(editor) {
     speakMessage("Generating summary for " + currentFunction.name);
 
     // Calls the function 
-    analyzeAI(functionText).then(summary =>{
-        speakMessage(summary, instructionPrompt)
+    analyzeAI(functionText, instructionPrompt).then(summary =>{
+        speakMessage(summary)
     });
 }
 
