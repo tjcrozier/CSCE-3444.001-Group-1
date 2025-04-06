@@ -163,8 +163,27 @@ async function activate(context) {
       }
     }
   );
+  let readAllAnnotationsDisposable = vscode.commands.registerCommand(
+    "echocode.readAllAnnotations",
+    async () => {
+      console.log("Reading all annotations aloud...");
+      const annotations = annotationQueue.items; // Access the annotations in the queue
+      if (annotations.length === 0) {
+        vscode.window.showInformationMessage(
+          "No annotations available to read."
+        );
+        return;
+      }
+      for (const annotation of annotations) {
+        await speakMessage(
+          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+        ); // Read each annotation aloud
+      }
+    }
+  );
 
   context.subscriptions.push(
+    readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
     speakNextAnnotationDisposable
