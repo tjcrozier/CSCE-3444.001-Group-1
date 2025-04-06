@@ -12,9 +12,7 @@
   ],
   "activationEvents": [
     "onLanguage:python",
-    "onSave",
-    "onCommand:echocode.readErrors",
-    "onCommand:code-tutor.annotate"
+    "onSave"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
@@ -39,13 +37,18 @@
     ],
     "keybindings": [
       {
-        "command": "echocode.readAllErrors",
-        "key": "ctrl+alt+\\",
+        "command": "code-tutor.speakNextAnnotation",
+        "key": "ctrl+alt+s",
         "when": "editorTextFocus"
       },
       {
-        "command": "code-tutor.speakNextAnnotation",
-        "key": "ctrl+alt+s",
+        "command": "code-tutor.annotate",
+        "key": "ctrl+alt+a",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.readAllAnnotations",
+        "key": "ctrl+alt+q",
         "when": "editorTextFocus"
       }
     ],

@@ -28,8 +28,9 @@
 
 | Shortcut | Command | Description |
 |----------|---------|-------------|
-| `Ctrl+Alt+\\` | `echocode.readAllErrors` | Reads **all** detected Python errors aloud. |
+| `Ctrl+Alt+A` | `code-tutor.Annotate` | Generates the annotations. |
 | `Ctrl+Alt+S` | `code-tutor.speakNextAnnotation` | Reads the next annotation, including line number and suggestion. |
+| `Ctrl+Alt+Q` | `code-tutor.readAllAnnotation` | Reads all the annotations in the queue. |
 
 ---
 ## **Installation & Requirements**

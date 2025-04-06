@@ -8,7 +8,6 @@ let outputChannel;
 let debounceTimer = null;
 let isRunning = false;
 
-const errorQueue = new Queue(); // Create an instance of the Queue class
 const annotationQueue = new Queue(); // Queue for annotations
 
 const ANNOTATION_PROMPT = `You are a code tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object. It is not necessary to wrap your response in triple backticks. Here is an example of what your response should look like:
@@ -57,7 +56,6 @@ async function activate(context) {
     if (document.languageId === "python") {
       handlePythonErrorsOnSave(document.uri.fsPath);
     }
-    //errorQueue.playSound(); // Play the sound
   });
 
   vscode.workspace.onDidChangeTextDocument((event) => {
@@ -96,24 +94,6 @@ async function activate(context) {
       }
     }
   );
-
-  let readAllErrorsDisposable = vscode.commands.registerCommand(
-    "echocode.readAllErrors",
-    async () => {
-      console.log("Reading all errors aloud...");
-      const errors = errorQueue.items; // Access the errors in the queue
-      for (const error of errors) {
-        await speakMessage(error); // Read each error aloud
-      }
-    }
-  );
-  context.subscriptions.push(disposable, readAllErrorsDisposable);
-  // Trigger on file save for Python files
-  vscode.workspace.onDidSaveTextDocument((document) => {
-    if (document.languageId === "python") {
-      handlePythonErrors(document.uri.fsPath);
-    }
-  });
 
   // Command to manually trigger error reading
   let disposableReadErrors = vscode.commands.registerCommand(
@@ -175,14 +155,39 @@ async function activate(context) {
     async () => {
       if (!annotationQueue.isEmpty()) {
         const nextAnnotation = annotationQueue.dequeue();
-        await speakMessage(`Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`);
+        await speakMessage(
+          `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`
+        );
       } else {
         vscode.window.showInformationMessage("No more annotations to read.");
       }
     }
   );
+  let readAllAnnotationsDisposable = vscode.commands.registerCommand(
+    "echocode.readAllAnnotations",
+    async () => {
+      console.log("Reading all annotations aloud...");
+      const annotations = annotationQueue.items; // Access the annotations in the queue
+      if (annotations.length === 0) {
+        vscode.window.showInformationMessage(
+          "No annotations available to read."
+        );
+        return;
+      }
+      for (const annotation of annotations) {
+        await speakMessage(
+          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+        ); // Read each annotation aloud
+      }
+    }
+  );
 
-  context.subscriptions.push(disposableReadErrors, disposableAnnotate, speakNextAnnotationDisposable);
+  context.subscriptions.push(
+    readAllAnnotationsDisposable,
+    disposableReadErrors,
+    disposableAnnotate,
+    speakNextAnnotationDisposable
+  );
   outputChannel.appendLine(
     "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
   );
@@ -229,29 +234,6 @@ async function handlePythonErrorsOnSave(filePath) {
 /**
  * Handles Pylint errors on text change.
  */
-async function handlePythonErrorsOnChange(filePath) {
-  console.log("handlePythonErrorsOnChange triggered for:", filePath);
-
-  try {
-    const errors = await runPylint(filePath); // Run Pylint to get errors
-    if (errors.length === 0) {
-      console.log("✅ No issues detected on change.");
-      return;
-    }
-
-    console.log(`📢 Found ${errors.length} Pylint error(s) on change:`);
-
-    for (const error of errors) {
-      const message = `Line ${error.line}: ${error.message}`;
-      console.log("Enqueuing error:", message); // Log the error being enqueued
-      errorQueue.enqueue(message); // Add the error to the queue
-      //console.log("Error enqueued successfully, attempting to play sound...");
-      //errorQueue.playSound(); // Play the sound
-    }
-  } catch (err) {
-    console.error(`Failed to run Pylint on change: ${err}`);
-  }
-}
 
 function deactivate() {
   if (outputChannel) {
@@ -282,10 +264,15 @@ async function parseChatResponse(chatResponse, textEditor) {
         const annotation = JSON.parse(accumulatedResponse);
         applyDecoration(textEditor, annotation.line, annotation.suggestion);
         // Enqueue the annotation (with line info) for later playback.
-        const annotationData = { line: annotation.line, suggestion: annotation.suggestion };
+        const annotationData = {
+          line: annotation.line,
+          suggestion: annotation.suggestion,
+        };
         annotationQueue.enqueue(annotationData);
         // Immediately speak the annotation including the line number.
-        await speakMessage(`Annotation on line ${annotation.line}: ${annotation.suggestion}`);
+        //await speakMessage(
+        //  `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+        //);
         accumulatedResponse = "";
       } catch {
         // Ignore incomplete JSON
@@ -306,7 +293,9 @@ function applyDecoration(editor, line, suggestion) {
     new vscode.Position(line - 1, lineLength),
     new vscode.Position(line - 1, lineLength)
   );
-  editor.setDecorations(decorationType, [{ range: range, hoverMessage: suggestion }]);
+  editor.setDecorations(decorationType, [
+    { range: range, hoverMessage: suggestion },
+  ]);
 }
 
 function deactivate() {
