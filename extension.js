@@ -251,9 +251,9 @@ async function parseChatResponse(chatResponse, textEditor) {
         };
         annotationQueue.enqueue(annotationData);
         // Immediately speak the annotation including the line number.
-        await speakMessage(
-          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
-        );
+        //await speakMessage(
+        //  `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+        //);
         accumulatedResponse = "";
       } catch {
         // Ignore incomplete JSON
