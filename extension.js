@@ -1,8 +1,12 @@
-const vscode = require("vscode");
-const { runPylint } = require("./pylintHandler");
-const { speakMessage } = require("./speechHandler");
-const { exec } = require("child_process");
+
+const vscode = require('vscode');
+const { runPylint } = require('./pylintHandler');
+const { speakMessage } = require('./speechHandler');
+const { exec } = require('child_process');
+const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
+const { moveCursorToFunction } = require('./navigationHandler');
 const Queue = require("./queue_system"); // Import the Queue class
+
 
 let outputChannel;
 let debounceTimer = null;
@@ -43,10 +47,9 @@ function ensurePylintInstalled() {
   });
 }
 
-/**
- * Activates the extension.
- */
+
 async function activate(context) {
+
   outputChannel = vscode.window.createOutputChannel("EchoCode");
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
@@ -57,6 +60,7 @@ async function activate(context) {
       handlePythonErrorsOnSave(document.uri.fsPath);
     }
   });
+
 
   vscode.workspace.onDidChangeTextDocument((event) => {
     console.log("onDidChangeTextDocument triggered");
@@ -149,6 +153,7 @@ async function activate(context) {
     }
   );
 
+
   // Command to speak the next annotation from the queue.
   let speakNextAnnotationDisposable = vscode.commands.registerCommand(
     "code-tutor.speakNextAnnotation",
@@ -191,6 +196,37 @@ async function activate(context) {
   outputChannel.appendLine(
     "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
   );
+
+    // Summarize the current class
+    let classSummary = vscode.commands.registerCommand(
+        'echocode.summarizeClass',  () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'python') {
+                summarizeClass(editor);
+            }
+        }
+    );
+
+    // Summarize the current function
+    let functionSummary = vscode.commands.registerCommand(
+        'echocode.summarizeFunction',  () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'python') {
+                summarizeFunction(editor);
+            }
+        }
+    );
+
+    // Add navigation commands
+    let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
+        moveCursorToFunction("next");
+    });
+
+    let prevFunction = vscode.commands.registerCommand('echocode.jumpToPreviousFunction', () => {
+        moveCursorToFunction("previous");
+    });
+
+    context.subscriptions.push(disposable, classSummary, functionSummary);
 }
 
 /**

@@ -1,9 +1,10 @@
 {
-  "name": "echo-code-tutor",
-  "displayName": "Echo Code Tutor",
-  "description": "Combines AI code tutoring with reading Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.0.0",
-  "publisher": "Slitchie",
+  "name": "echo-code",
+  "displayName": "Echo Code",
+  "description": "Reads Python errors aloud using Pylint for visually impaired students.",
+  "version": "1.1.0",
+  "icon": "images/icon.png",
+  "publisher": "EchoCode",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -12,7 +13,8 @@
   ],
   "activationEvents": [
     "onLanguage:python",
-    "onSave"
+    "onSave",
+    "onLanguageModel"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
@@ -26,6 +28,7 @@
         "title": "Read Python Errors Aloud"
       },
       {
+
         "command": "code-tutor.annotate",
         "title": "Toggle Tutor Annotations",
         "icon": "$(comment)"
@@ -33,6 +36,21 @@
       {
         "command": "echocode.readAllErrors",
         "title": "Read All Python Errors Aloud"
+      },
+        "command": "echocode.jumpToNextFunction",
+        "title": "Jump to Next Function"
+      },
+      {
+        "command": "echocode.jumpToPreviousFunction",
+        "title": "Jump to Previous Function"
+      },
+      {
+        "command": "echocode.summarizeClass",
+        "title": "Summarize Current Class"
+      },
+      {
+        "command": "echocode.summarizeFunction",
+        "title": "Summarize Current Function"
       }
     ],
     "keybindings": [
@@ -50,6 +68,30 @@
         "command": "echocode.readAllAnnotations",
         "key": "ctrl+alt+q",
         "when": "editorTextFocus"
+      },
+        "command": "echocode.jumpToNextFunction",
+        "key": "ctrl+alt+down",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.jumpToPreviousFunction",
+        "key": "ctrl+alt+up",
+        "when": "editorTextFocus"
+      },
+       {
+        "command": "echocode.summarizeClass",
+        "key": "ctrl+alt+space C",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.summarizeFunction",
+        "key": "ctrl+alt+space F",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.summarizeProgram",
+        "key": "ctrl+alt+space P",
+        "when": "editorTextFocus && editorLangId == 'python'"
       }
     ],
     "menus": {
@@ -87,6 +129,8 @@
     "audio-play": "^2.3.1",
     "node-aplay": "^1.0.3",
     "play-sound": "^1.1.6",
+    "axios": "^1.8.3",
+    "dotenv": "^16.4.7",
     "say": "^0.16.0"
   }
 }

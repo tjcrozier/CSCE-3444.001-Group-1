@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-.vscode/
-=======
 # 🚀 Ignore Node.js dependencies (everyone should run `npm install`)
 node_modules/
 
@@ -25,4 +22,7 @@ package-lock.json
 # 🚀 Ignore OS-specific system files
 .DS_Store
 Thumbs.db
->>>>>>> 8e90d0f (First commit of working EchoCode)
+
+# Morgan is using this file for reference
+*-messy.js
+
