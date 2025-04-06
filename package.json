@@ -37,6 +37,7 @@
         "command": "echocode.readAllErrors",
         "title": "Read All Python Errors Aloud"
       },
+      {
         "command": "echocode.jumpToNextFunction",
         "title": "Jump to Next Function"
       },
@@ -68,7 +69,7 @@
         "command": "echocode.readAllAnnotations",
         "key": "ctrl+alt+q",
         "when": "editorTextFocus"
-      },
+      },{
         "command": "echocode.jumpToNextFunction",
         "key": "ctrl+alt+down",
         "when": "editorTextFocus"
