@@ -90,10 +90,13 @@ To hear a brief summary of the current Python function:
 ## **Release Notes**
 
 
-### **1.1.0**
-- Added keyboard navigation for moving between Python functions using Ctrl+Alt+Up/Down
-- Automatically announces the function name upon navigation
-- Prevents overlapping speech if navigating quickly
+### **1.2.0**
+- Added summarization for classes and functions
+- Added annotations for error
+- Added dependency for copilot
+- Added audible alert when annotations are created
+- Added hotkey functionality for summarization
+- Added hotkey functionality for annotations, navigating annotations, and iterating the navigation queue
 ---
 
 
