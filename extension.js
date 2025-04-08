@@ -1,27 +1,26 @@
-
 const vscode = require('vscode');
 const { runPylint } = require('./pylintHandler');
 const { speakMessage } = require('./speechHandler');
 const { exec } = require('child_process');
 const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
 const { moveCursorToFunction } = require('./navigationHandler');
-const Queue = require("./queue_system"); // Import the Queue class
-
+const Queue = require("./queue_system");
 
 let outputChannel;
 let debounceTimer = null;
 let isRunning = false;
 
-const annotationQueue = new Queue(); // Queue for annotations
+const annotationQueue = new Queue();
 
-const ANNOTATION_PROMPT = `You are a code tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object. It is not necessary to wrap your response in triple backticks. Here is an example of what your response should look like:
+const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object. It is not necessary to wrap your response in triple backticks. Here is an example of what your response should look like:
 
 { "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }{ "line": 12, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
 `;
 
-/**
- * Checks if Pylint is installed.
- */
+const BASE_PROMPT = 'You are a helpful code tutor. Your job is to teach the user with simple descriptions and sample code of the concept. Respond with a guided overview of the concept in a series of messages. Do not give the user the answer directly, but guide them to find the answer themselves. If the user asks a non-programming question, politely decline to respond.';
+
+const EXERCISES_PROMPT = 'You are a helpful tutor. Your job is to teach the user with fun, simple exercises that they can complete in the editor. Your exercises should start simple and get more complex as the user progresses. Move one concept at a time, and do not move on to the next concept until the user provides the correct answer. Give hints in your exercises to help the user learn. If the user is stuck, you can provide the answer and explain why it is the answer. If the user asks a non-programming question, politely decline to respond.';
+
 function ensurePylintInstalled() {
   return new Promise((resolve, reject) => {
     exec(`python -m pylint --version`, (error) => {
@@ -47,20 +46,52 @@ function ensurePylintInstalled() {
   });
 }
 
-
 async function activate(context) {
-
   outputChannel = vscode.window.createOutputChannel("EchoCode");
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
-  // Trigger on file save
+  const handler = async (request, chatContext, stream, token) => {
+    let prompt = BASE_PROMPT;
+
+    if (request.command === 'exercise') {
+      prompt = EXERCISES_PROMPT;
+    }
+
+    const messages = [
+      vscode.LanguageModelChatMessage.User(prompt),
+    ];
+
+    const previousMessages = chatContext.history.filter(
+      (h) => h instanceof vscode.ChatResponseTurn
+    );
+
+    previousMessages.forEach((m) => {
+      let fullMessage = '';
+      m.response.forEach((r) => {
+        const mdPart = r;
+        fullMessage += mdPart.value.value;
+      });
+      messages.push(vscode.LanguageModelChatMessage.Assistant(fullMessage));
+    });
+
+    messages.push(vscode.LanguageModelChatMessage.User(request.prompt));
+
+    const chatResponse = await request.model.sendRequest(messages, {}, token);
+
+    for await (const fragment of chatResponse.text) {
+      stream.markdown(fragment);
+    }
+  };
+
+  const tutor = vscode.chat.createChatParticipant("echocode.tutor", handler);
+  tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
+
   vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "python") {
       handlePythonErrorsOnSave(document.uri.fsPath);
     }
   });
-
 
   vscode.workspace.onDidChangeTextDocument((event) => {
     console.log("onDidChangeTextDocument triggered");
@@ -72,23 +103,20 @@ async function activate(context) {
         document.uri.fsPath
       );
 
-      // Clear the previous debounce timer
       if (debounceTimer) {
         console.log("Clearing previous debounce timer");
         clearTimeout(debounceTimer);
       }
 
-      // Set a new debounce timer
       debounceTimer = setTimeout(() => {
         console.log(
           "Debounce timer expired, calling handlePythonErrorsOnChange"
         );
         handlePythonErrorsOnChange(document.uri.fsPath);
-      }, 1000); // Adjust the delay (in milliseconds) as needed
+      }, 1000);
     }
   });
 
-  // Command to manually trigger error reading
   let disposable = vscode.commands.registerCommand(
     "echocode.readErrors",
     () => {
@@ -99,11 +127,10 @@ async function activate(context) {
     }
   );
 
-  // Command to manually trigger error reading
   let disposableReadErrors = vscode.commands.registerCommand(
-    "code-tutor.readErrors",
+    "echocode.readErrors",
     () => {
-      outputChannel.appendLine("code-tutor.readErrors command triggered");
+      outputChannel.appendLine("echocode.readErrors command triggered");
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document.languageId === "python") {
         handlePythonErrors(editor.document.uri.fsPath);
@@ -115,11 +142,10 @@ async function activate(context) {
     }
   );
 
-  // Command to annotate code
   let disposableAnnotate = vscode.commands.registerTextEditorCommand(
-    "code-tutor.annotate",
+    "echocode.annotate",
     async (textEditor) => {
-      outputChannel.appendLine("code-tutor.annotate command triggered");
+      outputChannel.appendLine("echocode.annotate command triggered");
       try {
         const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
         const [model] = await vscode.lm.selectChatModels({
@@ -134,7 +160,7 @@ async function activate(context) {
           return;
         }
         const messages = [
-          new vscode.LanguageModelChatMessage(0, ANNOTATION_PROMPT), // 0 = User role
+          new vscode.LanguageModelChatMessage(0, ANNOTATION_PROMPT),
           new vscode.LanguageModelChatMessage(0, codeWithLineNumbers),
         ];
         const chatResponse = await model.sendRequest(
@@ -153,10 +179,8 @@ async function activate(context) {
     }
   );
 
-
-  // Command to speak the next annotation from the queue.
   let speakNextAnnotationDisposable = vscode.commands.registerCommand(
-    "code-tutor.speakNextAnnotation",
+    "echocode.speakNextAnnotation",
     async () => {
       if (!annotationQueue.isEmpty()) {
         const nextAnnotation = annotationQueue.dequeue();
@@ -168,11 +192,12 @@ async function activate(context) {
       }
     }
   );
+
   let readAllAnnotationsDisposable = vscode.commands.registerCommand(
     "echocode.readAllAnnotations",
     async () => {
       console.log("Reading all annotations aloud...");
-      const annotations = annotationQueue.items; // Access the annotations in the queue
+      const annotations = annotationQueue.items;
       if (annotations.length === 0) {
         vscode.window.showInformationMessage(
           "No annotations available to read."
@@ -182,58 +207,54 @@ async function activate(context) {
       for (const annotation of annotations) {
         await speakMessage(
           `Annotation on line ${annotation.line}: ${annotation.suggestion}`
-        ); // Read each annotation aloud
+        );
       }
     }
   );
+
+  let classSummary = vscode.commands.registerCommand(
+    'echocode.summarizeClass',  () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === 'python') {
+        summarizeClass(editor);
+      }
+    }
+  );
+
+  let functionSummary = vscode.commands.registerCommand(
+    'echocode.summarizeFunction',  () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === 'python') {
+        summarizeFunction(editor);
+      }
+    }
+  );
+
+  let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
+    moveCursorToFunction("next");
+  });
+
+  let prevFunction = vscode.commands.registerCommand('echocode.jumpToPreviousFunction', () => {
+    moveCursorToFunction("previous");
+  });
 
   context.subscriptions.push(
     readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
-    speakNextAnnotationDisposable
+    speakNextAnnotationDisposable,
+    disposable,
+    classSummary,
+    functionSummary,
+    nextFunction,
+    prevFunction
   );
   outputChannel.appendLine(
-    "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation"
   );
-
-    // Summarize the current class
-    let classSummary = vscode.commands.registerCommand(
-        'echocode.summarizeClass',  () => {
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === 'python') {
-                summarizeClass(editor);
-            }
-        }
-    );
-
-    // Summarize the current function
-    let functionSummary = vscode.commands.registerCommand(
-        'echocode.summarizeFunction',  () => {
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === 'python') {
-                summarizeFunction(editor);
-            }
-        }
-    );
-
-    // Add navigation commands
-    let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
-        moveCursorToFunction("next");
-    });
-
-    let prevFunction = vscode.commands.registerCommand('echocode.jumpToPreviousFunction', () => {
-        moveCursorToFunction("previous");
-    });
-
-    context.subscriptions.push(disposable, classSummary, functionSummary);
 }
 
-/**
- * Handles Pylint errors on file save.
- */
 async function handlePythonErrorsOnSave(filePath) {
-  // Prevent overlapping calls
   if (isRunning) {
     return;
   }
@@ -263,18 +284,7 @@ async function handlePythonErrorsOnSave(filePath) {
   } catch (err) {
     vscode.window.showErrorMessage(`Failed to run Pylint: ${err}`);
   } finally {
-    isRunning = false; // Reset the flag
-  }
-}
-
-/**
- * Handles Pylint errors on text change.
- */
-
-function deactivate() {
-  if (outputChannel) {
-    outputChannel.appendLine("EchoCodeTutor deactivated.");
-    outputChannel.dispose();
+    isRunning = false;
   }
 }
 
@@ -299,19 +309,13 @@ async function parseChatResponse(chatResponse, textEditor) {
       try {
         const annotation = JSON.parse(accumulatedResponse);
         applyDecoration(textEditor, annotation.line, annotation.suggestion);
-        // Enqueue the annotation (with line info) for later playback.
         const annotationData = {
           line: annotation.line,
           suggestion: annotation.suggestion,
         };
         annotationQueue.enqueue(annotationData);
-        // Immediately speak the annotation including the line number.
-        //await speakMessage(
-        //  `Annotation on line ${annotation.line}: ${annotation.suggestion}`
-        //);
         accumulatedResponse = "";
       } catch {
-        // Ignore incomplete JSON
       }
     }
   }
@@ -336,7 +340,7 @@ function applyDecoration(editor, line, suggestion) {
 
 function deactivate() {
   if (outputChannel) {
-    outputChannel.appendLine("EchoCodeTutor deactivated.");
+    outputChannel.appendLine("EchoCode deactivated.");
     outputChannel.dispose();
   }
 }
