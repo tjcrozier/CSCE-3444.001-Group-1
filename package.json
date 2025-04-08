@@ -18,13 +18,24 @@
   ],
   "main": "./extension.js",
   "extensionDependencies": [
-    "ms-python.python"
+    "ms-python.python",
+    "GitHub.copilot"
   ],
   "contributes": {
     "commands": [
       {
         "command": "echocode.readErrors",
         "title": "Read Python Errors Aloud"
+      },
+      {
+
+        "command": "code-tutor.annotate",
+        "title": "Toggle Tutor Annotations",
+        "icon": "$(comment)"
+      },
+      {
+        "command": "echocode.readAllErrors",
+        "title": "Read All Python Errors Aloud"
       },
       {
         "command": "echocode.jumpToNextFunction",
@@ -45,6 +56,20 @@
     ],
     "keybindings": [
       {
+        "command": "code-tutor.speakNextAnnotation",
+        "key": "ctrl+alt+s",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "code-tutor.annotate",
+        "key": "ctrl+alt+a",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.readAllAnnotations",
+        "key": "ctrl+alt+q",
+        "when": "editorTextFocus"
+      },{
         "command": "echocode.jumpToNextFunction",
         "key": "ctrl+alt+down",
         "when": "editorTextFocus"
@@ -69,15 +94,42 @@
         "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "code-tutor.annotate",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
-    "lint-python": "pylint **/*.py"
+    "lint-python": "pylint **/*.py",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint",
+    "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.97.0"
+    "@eslint/js": "^9.13.0",
+    "@stylistic/eslint-plugin": "^2.9.0",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.97.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^9.13.0",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0"
   },
   "dependencies": {
+    "audio-loader": "^1.0.3",
+    "audio-play": "^2.3.1",
+    "node-aplay": "^1.0.3",
+    "play-sound": "^1.1.6",
     "axios": "^1.8.3",
     "dotenv": "^16.4.7",
     "say": "^0.16.0"
