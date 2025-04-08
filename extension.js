@@ -262,6 +262,22 @@ async function activate(context) {
     moveCursorToFunction("previous");
   });
 
+  let openChatDisposable = vscode.commands.registerCommand(
+    'echocode.openChat',
+    async () => {
+      outputChannel.appendLine("echocode.openChat command triggered");
+      try {
+        // Open the Chat view
+        await vscode.commands.executeCommand('workbench.action.chat.open');
+        outputChannel.appendLine("Chat view opened successfully");
+        // Since echocode.tutor is sticky, it should be visible; no direct API to select it
+      } catch (error) {
+        outputChannel.appendLine(`Failed to open chat: ${error.message}`);
+        vscode.window.showErrorMessage("Failed to open EchoCode Tutor chat.");
+      }
+    }
+  );
+
   context.subscriptions.push(
     disposableReadErrors,
     disposableAnnotate,
@@ -271,10 +287,11 @@ async function activate(context) {
     functionSummary,
     nextFunction,
     prevFunction,
+    openChatDisposable,
     tutor
   );
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction"
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat"
   );
 }
 
