@@ -1,7 +1,7 @@
 {
   "name": "echo-code",
   "displayName": "Echo Code",
-  "description": "Reads Python errors aloud using Pylint for visually impaired students.",
+  "description": "Reads Python errors aloud using Pylint for visually impaired students and provides interactive coding tutorials.",
   "version": "1.1.0",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
@@ -28,9 +28,8 @@
         "title": "Read Python Errors Aloud"
       },
       {
-
-        "command": "code-tutor.annotate",
-        "title": "Toggle Tutor Annotations",
+        "command": "echocode.annotate",
+        "title": "Toggle EchoCode Annotations",
         "icon": "$(comment)"
       },
       {
@@ -56,12 +55,12 @@
     ],
     "keybindings": [
       {
-        "command": "code-tutor.speakNextAnnotation",
+        "command": "echocode.speakNextAnnotation",
         "key": "ctrl+alt+s",
         "when": "editorTextFocus"
       },
       {
-        "command": "code-tutor.annotate",
+        "command": "echocode.annotate",
         "key": "ctrl+alt+a",
         "when": "editorTextFocus"
       },
@@ -69,7 +68,8 @@
         "command": "echocode.readAllAnnotations",
         "key": "ctrl+alt+q",
         "when": "editorTextFocus"
-      },{
+      },
+      {
         "command": "echocode.jumpToNextFunction",
         "key": "ctrl+alt+down",
         "when": "editorTextFocus"
@@ -79,7 +79,7 @@
         "key": "ctrl+alt+up",
         "when": "editorTextFocus"
       },
-       {
+      {
         "command": "echocode.summarizeClass",
         "key": "ctrl+alt+space C",
         "when": "editorTextFocus && editorLangId == 'python'"
@@ -98,11 +98,26 @@
     "menus": {
       "editor/title": [
         {
-          "command": "code-tutor.annotate",
+          "command": "echocode.annotate",
           "group": "navigation"
         }
       ]
-    }
+    },
+    "chatParticipants": [
+      {
+        "id": "echocode.tutor",
+        "fullName": "EchoCode Tutor",
+        "name": "tutor",
+        "description": "What can I teach you?",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "exercise",
+            "description": "Provide exercises to practice a concept."
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "lint-python": "pylint **/*.py",
@@ -122,6 +137,8 @@
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.4.0",
     "eslint": "^9.13.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.0"
   },
