@@ -17,9 +17,9 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 { "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }{ "line": 12, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
 `;
 
-const BASE_PROMPT = 'You are a helpful assistant focused on the specific file the user is working on. Your job is to answer questions about the code in the active file, providing clear explanations and relevant examples specific to that file’s content. Do not give direct solutions unless asked, but guide the user to understand and solve their issue themselves. If the user asks a question unrelated to the active file or a non-programming question, politely decline to respond.';
+const BASE_PROMPT = `You are a helpful assistant focused on the specific file the user is working on. I will provide the content of the active file below. Your job is to answer questions about that code, providing clear explanations and relevant examples specific to the file’s content. Do not give direct solutions unless explicitly asked, but guide the user to understand and solve their issue themselves. If the user asks a question unrelated to the provided file content or a non-programming question, politely decline to respond. Here is the file content:\n\n`;
 
-const EXERCISES_PROMPT = 'You are a helpful assistant focused on the specific file the user is working on. Your job is to provide fun, simple exercises tailored to the code in the active file, helping the user practice and improve their understanding of that file’s concepts. Start with simple exercises and increase complexity as the user progresses. Do not move to a new concept until the user provides the correct answer. Offer hints to guide learning, and if the user is stuck, provide the answer with an explanation. If the user asks a question unrelated to the active file or a non-programming question, politely decline to respond.';
+const EXERCISES_PROMPT = `You are a helpful assistant focused on the specific file the user is working on. I will provide the content of the active file below. Your job is to provide fun, simple exercises tailored to that code, helping the user practice and improve their understanding of the file’s concepts. Start with simple exercises and increase complexity as the user progresses. Do not move to a new concept until the user provides the correct answer. Offer hints to guide learning, and if the user is stuck, provide the answer with an explanation. If the user asks a question unrelated to the provided file content or a non-programming question, politely decline to respond. Here is the file content:\n\n`;
 
 function ensurePylintInstalled() {
   return new Promise((resolve, reject) => {
@@ -53,11 +53,22 @@ async function activate(context) {
 
   const handler = async (request, chatContext, stream, token) => {
     try {
-      let prompt = BASE_PROMPT;
+      let prompt = request.command === 'exercise' ? EXERCISES_PROMPT : BASE_PROMPT;
 
-      if (request.command === 'exercise') {
-        prompt = EXERCISES_PROMPT;
+      // Get the active file content
+      const editor = vscode.window.activeTextEditor;
+      let fileContent = '';
+      if (editor && editor.document) {
+        fileContent = editor.document.getText();
+        outputChannel.appendLine("Active file content retrieved for chat");
+      } else {
+        stream.markdown("No active file is open. Please open a file to get help with its code.");
+        outputChannel.appendLine("No active file found for chat");
+        return;
       }
+
+      // Append file content to the prompt
+      prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
 
       const messages = [
         vscode.LanguageModelChatMessage.User(prompt),
@@ -267,10 +278,8 @@ async function activate(context) {
     async () => {
       outputChannel.appendLine("echocode.openChat command triggered");
       try {
-        // Open the Chat view
         await vscode.commands.executeCommand('workbench.action.chat.open');
         outputChannel.appendLine("Chat view opened successfully");
-        // Since echocode.tutor is sticky, it should be visible; no direct API to select it
       } catch (error) {
         outputChannel.appendLine(`Failed to open chat: ${error.message}`);
         vscode.window.showErrorMessage("Failed to open EchoCode Tutor chat.");
