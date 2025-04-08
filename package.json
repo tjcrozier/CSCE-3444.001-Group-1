@@ -2,24 +2,28 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students and provides interactive coding tutorials.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
     "vscode": "^1.97.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "AI",
+    "Chat"
   ],
   "activationEvents": [
     "onLanguage:python",
     "onSave",
-    "onLanguageModel"
+    "onLanguageModel",
+    "onChatParticipant:echocode.tutor"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
     "ms-python.python",
-    "GitHub.copilot"
+    "GitHub.copilot",
+    "github.copilot-chat"
   ],
   "contributes": {
     "commands": [
@@ -33,8 +37,8 @@
         "icon": "$(comment)"
       },
       {
-        "command": "echocode.readAllErrors",
-        "title": "Read All Python Errors Aloud"
+        "command": "echocode.readAllAnnotations",
+        "title": "Read All Annotations Aloud"
       },
       {
         "command": "echocode.jumpToNextFunction",
@@ -87,11 +91,6 @@
       {
         "command": "echocode.summarizeFunction",
         "key": "ctrl+alt+space F",
-        "when": "editorTextFocus && editorLangId == 'python'"
-      },
-      {
-        "command": "echocode.summarizeProgram",
-        "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
       }
     ],

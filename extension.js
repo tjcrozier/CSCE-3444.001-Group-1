@@ -52,40 +52,63 @@ async function activate(context) {
   await ensurePylintInstalled();
 
   const handler = async (request, chatContext, stream, token) => {
-    let prompt = BASE_PROMPT;
+    try {
+      let prompt = BASE_PROMPT;
 
-    if (request.command === 'exercise') {
-      prompt = EXERCISES_PROMPT;
-    }
+      if (request.command === 'exercise') {
+        prompt = EXERCISES_PROMPT;
+      }
 
-    const messages = [
-      vscode.LanguageModelChatMessage.User(prompt),
-    ];
+      const messages = [
+        vscode.LanguageModelChatMessage.User(prompt),
+      ];
 
-    const previousMessages = chatContext.history.filter(
-      (h) => h instanceof vscode.ChatResponseTurn
-    );
+      const previousMessages = chatContext.history.filter(
+        (h) => h instanceof vscode.ChatResponseTurn
+      );
 
-    previousMessages.forEach((m) => {
-      let fullMessage = '';
-      m.response.forEach((r) => {
-        const mdPart = r;
-        fullMessage += mdPart.value.value;
+      previousMessages.forEach((m) => {
+        let fullMessage = '';
+        m.response.forEach((r) => {
+          const mdPart = r;
+          fullMessage += mdPart.value.value;
+        });
+        messages.push(vscode.LanguageModelChatMessage.Assistant(fullMessage));
       });
-      messages.push(vscode.LanguageModelChatMessage.Assistant(fullMessage));
-    });
 
-    messages.push(vscode.LanguageModelChatMessage.User(request.prompt));
+      messages.push(vscode.LanguageModelChatMessage.User(request.prompt));
 
-    const chatResponse = await request.model.sendRequest(messages, {}, token);
+      const [model] = await vscode.lm.selectChatModels({
+        vendor: "copilot",
+        family: "gpt-4o",
+      });
 
-    for await (const fragment of chatResponse.text) {
-      stream.markdown(fragment);
+      if (!model) {
+        stream.markdown("No language model available. Please ensure GitHub Copilot is enabled.");
+        outputChannel.appendLine("No language model available for chat");
+        return;
+      }
+
+      const chatResponse = await model.sendRequest(messages, {}, token);
+
+      for await (const fragment of chatResponse.text) {
+        stream.markdown(fragment);
+      }
+    } catch (error) {
+      stream.markdown("Sorry, I encountered an error while processing your request.");
+      outputChannel.appendLine(`Chat handler error: ${error.message}`);
     }
   };
 
-  const tutor = vscode.chat.createChatParticipant("echocode.tutor", handler);
-  tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
+  let tutor;
+  try {
+    tutor = vscode.chat.createChatParticipant("echocode.tutor", handler);
+    tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
+    outputChannel.appendLine("Chat participant echocode.tutor registered successfully");
+  } catch (error) {
+    outputChannel.appendLine(`Failed to register chat participant: ${error.message}`);
+    vscode.window.showErrorMessage("Failed to initialize EchoCode Tutor chat.");
+  }
 
   vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "python") {
@@ -117,7 +140,6 @@ async function activate(context) {
     }
   });
 
-  // Consolidated readErrors command
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
     () => {
@@ -197,7 +219,7 @@ async function activate(context) {
       }
       for (const annotation of annotations) {
         await speakMessage(
-          `Annotation on line ${annotation.line}: ${nextAnnotation.suggestion}`
+          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
         );
       }
     }
@@ -301,7 +323,6 @@ async function handlePythonErrors(filePath) {
 }
 
 function handlePythonErrorsOnChange(filePath) {
-  // Placeholder for change-based error handling
   console.log("Handling Python errors on change for:", filePath);
 }
 
