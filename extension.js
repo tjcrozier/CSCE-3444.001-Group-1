@@ -117,23 +117,14 @@ async function activate(context) {
     }
   });
 
-  let disposable = vscode.commands.registerCommand(
-    "echocode.readErrors",
-    () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "python") {
-        handlePythonErrorsOnSave(editor.document.uri.fsPath);
-      }
-    }
-  );
-
+  // Consolidated readErrors command
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
     () => {
       outputChannel.appendLine("echocode.readErrors command triggered");
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document.languageId === "python") {
-        handlePythonErrors(editor.document.uri.fsPath);
+        handlePythonErrorsOnSave(editor.document.uri.fsPath);
       } else {
         vscode.window.showWarningMessage(
           "Please open a Python file to read errors."
@@ -206,7 +197,7 @@ async function activate(context) {
       }
       for (const annotation of annotations) {
         await speakMessage(
-          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+          `Annotation on line ${annotation.line}: ${nextAnnotation.suggestion}`
         );
       }
     }
@@ -239,18 +230,18 @@ async function activate(context) {
   });
 
   context.subscriptions.push(
-    readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
     speakNextAnnotationDisposable,
-    disposable,
+    readAllAnnotationsDisposable,
     classSummary,
     functionSummary,
     nextFunction,
-    prevFunction
+    prevFunction,
+    tutor
   );
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation"
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction"
   );
 }
 
@@ -286,6 +277,32 @@ async function handlePythonErrorsOnSave(filePath) {
   } finally {
     isRunning = false;
   }
+}
+
+async function handlePythonErrors(filePath) {
+  try {
+    const errors = await runPylint(filePath);
+    if (errors.length === 0) {
+      vscode.window.showInformationMessage("✅ No issues detected!");
+      return;
+    }
+
+    outputChannel.appendLine(`📢 Found ${errors.length} Pylint error(s):`);
+
+    for (const error of errors) {
+      const message = `Line ${error.line}: ${error.message}`;
+      outputChannel.appendLine(message);
+    }
+
+    outputChannel.show();
+  } catch (err) {
+    vscode.window.showErrorMessage(`Failed to run Pylint: ${err}`);
+  }
+}
+
+function handlePythonErrorsOnChange(filePath) {
+  // Placeholder for change-based error handling
+  console.log("Handling Python errors on change for:", filePath);
 }
 
 function getVisibleCodeWithLineNumbers(textEditor) {
