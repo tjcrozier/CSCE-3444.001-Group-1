@@ -17,9 +17,9 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 { "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }{ "line": 12, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
 `;
 
-const BASE_PROMPT = 'You are a helpful code tutor. Your job is to teach the user with simple descriptions and sample code of the concept. Respond with a guided overview of the concept in a series of messages. Do not give the user the answer directly, but guide them to find the answer themselves. If the user asks a non-programming question, politely decline to respond.';
+const BASE_PROMPT = 'You are a helpful assistant focused on the specific file the user is working on. Your job is to answer questions about the code in the active file, providing clear explanations and relevant examples specific to that file’s content. Do not give direct solutions unless asked, but guide the user to understand and solve their issue themselves. If the user asks a question unrelated to the active file or a non-programming question, politely decline to respond.';
 
-const EXERCISES_PROMPT = 'You are a helpful tutor. Your job is to teach the user with fun, simple exercises that they can complete in the editor. Your exercises should start simple and get more complex as the user progresses. Move one concept at a time, and do not move on to the next concept until the user provides the correct answer. Give hints in your exercises to help the user learn. If the user is stuck, you can provide the answer and explain why it is the answer. If the user asks a non-programming question, politely decline to respond.';
+const EXERCISES_PROMPT = 'You are a helpful assistant focused on the specific file the user is working on. Your job is to provide fun, simple exercises tailored to the code in the active file, helping the user practice and improve their understanding of that file’s concepts. Start with simple exercises and increase complexity as the user progresses. Do not move to a new concept until the user provides the correct answer. Offer hints to guide learning, and if the user is stuck, provide the answer with an explanation. If the user asks a question unrelated to the active file or a non-programming question, politely decline to respond.';
 
 function ensurePylintInstalled() {
   return new Promise((resolve, reject) => {
@@ -103,7 +103,18 @@ async function activate(context) {
   let tutor;
   try {
     tutor = vscode.chat.createChatParticipant("echocode.tutor", handler);
-    tutor.iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
+    try {
+      const iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
+      const fs = require('fs');
+      if (fs.existsSync(iconPath.fsPath)) {
+        tutor.iconPath = iconPath;
+        outputChannel.appendLine("Chat participant icon set to tutor.jpeg");
+      } else {
+        outputChannel.appendLine("tutor.jpeg not found; using default icon");
+      }
+    } catch (iconError) {
+      outputChannel.appendLine(`Failed to set chat icon: ${iconError.message}`);
+    }
     outputChannel.appendLine("Chat participant echocode.tutor registered successfully");
   } catch (error) {
     outputChannel.appendLine(`Failed to register chat participant: ${error.message}`);
