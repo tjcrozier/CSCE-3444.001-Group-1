@@ -1,15 +1,13 @@
-
-const vscode = require('vscode');
-const { runPylint } = require('./pylintHandler');
-const { speakMessage } = require('./speechHandler');
-const { exec } = require('child_process');
-const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
-const { moveCursorToFunction } = require('./navigationHandler');
-const Queue = require("./queue_system"); // Import the Queue class
-
+const vscode = require("vscode");
+const { runPylint } = require("./pylintHandler");
+const { speakMessage } = require("./speechHandler");
+const { exec } = require("child_process");
+const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
+const { moveCursorToFunction } = require("./navigationHandler");
+const Queue = require("./queue_system"); 
 
 let outputChannel;
-let debounceTimer = null;
+let debounceTimer = null; 
 let isRunning = false;
 
 const annotationQueue = new Queue(); // Queue for annotations
@@ -47,9 +45,7 @@ function ensurePylintInstalled() {
   });
 }
 
-
 async function activate(context) {
-
   outputChannel = vscode.window.createOutputChannel("EchoCode");
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
@@ -60,7 +56,6 @@ async function activate(context) {
       handlePythonErrorsOnSave(document.uri.fsPath);
     }
   });
-
 
   vscode.workspace.onDidChangeTextDocument((event) => {
     console.log("onDidChangeTextDocument triggered");
@@ -153,7 +148,6 @@ async function activate(context) {
     }
   );
 
-
   // Command to speak the next annotation from the queue.
   let speakNextAnnotationDisposable = vscode.commands.registerCommand(
     "code-tutor.speakNextAnnotation",
@@ -170,6 +164,7 @@ async function activate(context) {
   );
   let readAllAnnotationsDisposable = vscode.commands.registerCommand(
     "echocode.readAllAnnotations",
+
     async () => {
       console.log("Reading all annotations aloud...");
       const annotations = annotationQueue.items; // Access the annotations in the queue
@@ -197,36 +192,44 @@ async function activate(context) {
     "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
   );
 
-    // Summarize the current class
-    let classSummary = vscode.commands.registerCommand(
-        'echocode.summarizeClass',  () => {
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === 'python') {
-                summarizeClass(editor);
-            }
-        }
-    );
+  // Summarize the current class
+  let classSummary = vscode.commands.registerCommand(
+    "echocode.summarizeClass",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeClass(editor);
+      }
+    }
+  );
 
-    // Summarize the current function
-    let functionSummary = vscode.commands.registerCommand(
-        'echocode.summarizeFunction',  () => {
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.languageId === 'python') {
-                summarizeFunction(editor);
-            }
-        }
-    );
+  // Summarize the current function
+  let functionSummary = vscode.commands.registerCommand(
+    "echocode.summarizeFunction",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeFunction(editor);
+      }
+    }
+  );
 
-    // Add navigation commands
-    let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
-        moveCursorToFunction("next");
-    });
+  // Add navigation commands
+  let nextFunction = vscode.commands.registerCommand(
+    "echocode.jumpToNextFunction",
+    () => {
+      moveCursorToFunction("next");
+    }
+  );
 
-    let prevFunction = vscode.commands.registerCommand('echocode.jumpToPreviousFunction', () => {
-        moveCursorToFunction("previous");
-    });
+  let prevFunction = vscode.commands.registerCommand(
+    "echocode.jumpToPreviousFunction",
+    () => {
+      moveCursorToFunction("previous");
+    }
+  );
 
-    context.subscriptions.push(disposable, classSummary, functionSummary);
+  context.subscriptions.push(disposable, classSummary, functionSummary);
 }
 
 /**
