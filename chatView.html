@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoCode</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        #chat-output {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: white;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user-message {
+            color: #0078d4;
+            font-weight: bold;
+        }
+        .tutor-message {
+            color: #333;
+        }
+        #input-container {
+            display: flex;
+        }
+        #chat-input {
+            flex-grow: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #send-button {
+            padding: 5px 10px;
+            margin-left: 5px;
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #send-button:hover {
+            background-color: #005a9e;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-output"></div>
+        <div id="input-container">
+            <input type="text" id="chat-input" placeholder="Ask a question about your code or type /exercise">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        const chatOutput = document.getElementById('chat-output');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + (isUser ? 'user-message' : 'tutor-message');
+            messageDiv.textContent = text;
+            chatOutput.appendChild(messageDiv);
+            chatOutput.scrollTop = chatOutput.scrollHeight;
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (text) {
+                addMessage(text, true);
+                vscode.postMessage({ type: 'userInput', text });
+                chatInput.value = '';
+            }
+        }
+
+        window.addEventListener('message', (event) => {
+            const message = event.data;
+            if (message.type === 'response') {
+                addMessage(message.text);
+            }
+        });
+    </script>
+</body>
+</html>
