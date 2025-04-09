@@ -51,86 +51,96 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
-  const handler = async (request, chatContext, stream, token) => {
-    try {
-      let prompt = request.command === 'exercise' ? EXERCISES_PROMPT : BASE_PROMPT;
+  let chatPanel = null;
 
-      // Get the active file content
-      const editor = vscode.window.activeTextEditor;
-      let fileContent = '';
-      if (editor && editor.document) {
-        fileContent = editor.document.getText();
-        outputChannel.appendLine("Active file content retrieved for chat");
-      } else {
-        stream.markdown("No active file is open. Please open a file to get help with its code.");
-        outputChannel.appendLine("No active file found for chat");
-        return;
-      }
+  const openChatDisposable = vscode.commands.registerCommand('echocode.openChat', async () => {
+    outputChannel.appendLine("echocode.openChat command triggered");
 
-      // Append file content to the prompt
-      prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
-
-      const messages = [
-        vscode.LanguageModelChatMessage.User(prompt),
-      ];
-
-      const previousMessages = chatContext.history.filter(
-        (h) => h instanceof vscode.ChatResponseTurn
-      );
-
-      previousMessages.forEach((m) => {
-        let fullMessage = '';
-        m.response.forEach((r) => {
-          const mdPart = r;
-          fullMessage += mdPart.value.value;
-        });
-        messages.push(vscode.LanguageModelChatMessage.Assistant(fullMessage));
-      });
-
-      messages.push(vscode.LanguageModelChatMessage.User(request.prompt));
-
-      const [model] = await vscode.lm.selectChatModels({
-        vendor: "copilot",
-        family: "gpt-4o",
-      });
-
-      if (!model) {
-        stream.markdown("No language model available. Please ensure GitHub Copilot is enabled.");
-        outputChannel.appendLine("No language model available for chat");
-        return;
-      }
-
-      const chatResponse = await model.sendRequest(messages, {}, token);
-
-      for await (const fragment of chatResponse.text) {
-        stream.markdown(fragment);
-      }
-    } catch (error) {
-      stream.markdown("Sorry, I encountered an error while processing your request.");
-      outputChannel.appendLine(`Chat handler error: ${error.message}`);
+    if (chatPanel) {
+      chatPanel.reveal();
+      return;
     }
-  };
 
-  let tutor;
-  try {
-    tutor = vscode.chat.createChatParticipant("echocode.tutor", handler);
-    try {
-      const iconPath = vscode.Uri.joinPath(context.extensionUri, 'tutor.jpeg');
-      const fs = require('fs');
-      if (fs.existsSync(iconPath.fsPath)) {
-        tutor.iconPath = iconPath;
-        outputChannel.appendLine("Chat participant icon set to tutor.jpeg");
-      } else {
-        outputChannel.appendLine("tutor.jpeg not found; using default icon");
+    chatPanel = vscode.window.createWebviewPanel(
+      'echoCodeChat', // Identifier
+      'EchoCode Tutor', // Title
+      vscode.ViewColumn.Beside, // Show next to the editor
+      {
+        enableScripts: true, // Allow JavaScript in the Webview
       }
-    } catch (iconError) {
-      outputChannel.appendLine(`Failed to set chat icon: ${iconError.message}`);
-    }
-    outputChannel.appendLine("Chat participant echocode.tutor registered successfully");
-  } catch (error) {
-    outputChannel.appendLine(`Failed to register chat participant: ${error.message}`);
-    vscode.window.showErrorMessage("Failed to initialize EchoCode Tutor chat.");
-  }
+    );
+
+    const htmlPath = vscode.Uri.joinPath(context.extensionUri, 'chatView.html');
+    chatPanel.webview.html = require('fs').readFileSync(htmlPath.fsPath, 'utf8');
+
+    let conversationHistory = [];
+
+    chatPanel.webview.onDidReceiveMessage(
+      async (message) => {
+        if (message.type === 'userInput') {
+          const userInput = message.text;
+          const isExercise = userInput.startsWith('/exercise');
+          let prompt = isExercise ? EXERCISES_PROMPT : BASE_PROMPT;
+
+          const editor = vscode.window.activeTextEditor;
+          let fileContent = '';
+          if (editor && editor.document) {
+            fileContent = editor.document.getText();
+            outputChannel.appendLine("Active file content retrieved for chat");
+            prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
+          } else {
+            prompt = `You are a helpful coding assistant. The user has asked: "${userInput}". Since no active file is open, provide a general explanation or ask for more context (e.g., code) to give a specific answer. Do not give direct solutions unless explicitly asked, and guide the user to understand the concept.`;
+            outputChannel.appendLine("No active file; using general prompt");
+          }
+
+          const messages = [
+            vscode.LanguageModelChatMessage.User(prompt),
+          ];
+
+          conversationHistory.forEach((entry) => {
+            messages.push(vscode.LanguageModelChatMessage.User(entry.user));
+            messages.push(vscode.LanguageModelChatMessage.Assistant(entry.response));
+          });
+
+          messages.push(vscode.LanguageModelChatMessage.User(userInput));
+
+          const [model] = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "gpt-4o",
+          });
+
+          if (!model) {
+            chatPanel.webview.postMessage({
+              type: 'response',
+              text: "No language model available. Please ensure GitHub Copilot is enabled."
+            });
+            outputChannel.appendLine("No language model available for chat");
+            return;
+          }
+
+          const chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
+          let responseText = '';
+          for await (const fragment of chatResponse.text) {
+            responseText += fragment;
+          }
+
+          conversationHistory.push({ user: userInput, response: responseText });
+          chatPanel.webview.postMessage({
+            type: 'response',
+            text: responseText
+          });
+        }
+      },
+      undefined,
+      context.subscriptions
+    );
+
+    chatPanel.onDidDispose(() => {
+      chatPanel = null;
+      conversationHistory = [];
+      outputChannel.appendLine("Chat panel disposed");
+    }, null, context.subscriptions);
+  });
 
   vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "python") {
@@ -273,20 +283,6 @@ async function activate(context) {
     moveCursorToFunction("previous");
   });
 
-  let openChatDisposable = vscode.commands.registerCommand(
-    'echocode.openChat',
-    async () => {
-      outputChannel.appendLine("echocode.openChat command triggered");
-      try {
-        await vscode.commands.executeCommand('workbench.action.chat.open');
-        outputChannel.appendLine("Chat view opened successfully");
-      } catch (error) {
-        outputChannel.appendLine(`Failed to open chat: ${error.message}`);
-        vscode.window.showErrorMessage("Failed to open EchoCode Tutor chat.");
-      }
-    }
-  );
-
   context.subscriptions.push(
     disposableReadErrors,
     disposableAnnotate,
@@ -296,8 +292,7 @@ async function activate(context) {
     functionSummary,
     nextFunction,
     prevFunction,
-    openChatDisposable,
-    tutor
+    openChatDisposable
   );
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat"
