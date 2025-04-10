@@ -56,6 +56,10 @@
       {
         "command": "echocode.openChat",
         "title": "Open EchoCode Tutor Chat"
+      },
+      {
+        "command": "echocode.startVoiceInput",
+        "title": "Start Voice Input"
       }
     ],
     "keybindings": [
@@ -97,6 +101,11 @@
       {
         "command": "echocode.openChat",
         "key": "ctrl+alt+c",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.startVoiceInput",
+        "key": "ctrl+alt+v",
         "when": "editorTextFocus"
       }
     ],

@@ -89,8 +89,8 @@
       border-color: #0078d4;
     }
 
-    /* Send button styling */
-    #send-button {
+    /* Buttons styling */
+    #send-button, #voice-button {
       margin-left: 10px;
       padding: 10px 20px;
       background-color: #0078d4;
@@ -101,7 +101,7 @@
       cursor: pointer;
       transition: background-color 0.2s ease-in-out;
     }
-    #send-button:hover {
+    #send-button:hover, #voice-button:hover {
       background-color: #005a9e;
     }
 
@@ -116,7 +116,8 @@
   <div id="chat-container">
     <div id="chat-output"></div>
     <div id="input-container">
-      <input type="text" id="chat-input" placeholder="Ask a question about your code or type /exercise">
+      <input type="text" id="chat-input" placeholder="Ask a question" />
+      <button id="voice-button" title="Speak your question">Voice</button>
       <button id="send-button">Send</button>
     </div>
   </div>
@@ -126,6 +127,7 @@
     const chatOutput = document.getElementById('chat-output');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
+    const voiceButton = document.getElementById('voice-button');
 
     function addMessage(text, isUser = false) {
       const messageDiv = document.createElement('div');
@@ -134,11 +136,6 @@
       chatOutput.appendChild(messageDiv);
       chatOutput.scrollTop = chatOutput.scrollHeight;
     }
-
-    sendButton.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
 
     function sendMessage() {
       const text = chatInput.value.trim();
@@ -149,10 +146,57 @@
       }
     }
 
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Voice recognition integration using Web Speech API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        chatInput.value = transcript;
+        addMessage("Voice input: " + transcript, true);
+        vscode.postMessage({ type: 'userInput', text: transcript });
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+      };
+    } else {
+      console.warn("Speech Recognition API is not supported in this browser.");
+    }
+
+    function startVoiceInput() {
+      if (recognition) {
+        recognition.start();
+      } else {
+        alert("Voice recognition is not supported in your browser.");
+      }
+    }
+
+    // Event listener for the "Voice" button click
+    voiceButton.addEventListener('click', startVoiceInput);
+
+    // Listen for messages from the extension
     window.addEventListener('message', (event) => {
       const message = event.data;
       if (message.type === 'response') {
         addMessage(message.text);
+      }
+      // Listen for the startVoiceInput command from the extension
+      if (message.type === 'startVoiceInput') {
+        startVoiceInput();
       }
     });
   </script>

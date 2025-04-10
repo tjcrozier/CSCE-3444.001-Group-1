@@ -9,6 +9,7 @@ const Queue = require("./queue_system");
 let outputChannel;
 let debounceTimer = null;
 let isRunning = false;
+let chatPanel = null;
 
 const annotationQueue = new Queue();
 
@@ -17,7 +18,7 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 { "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }{ "line": 12, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
 `;
 
-const BASE_PROMPT = `You are a helpful assistant focused on the file the user is working on. Answer questions with brief, clear explanations and relevant suggestions specific to this file. Always avoid giving full code snippets even if explicitly requested. Instead, guide the user to understand and solve their issue themselves. Politely decline to respond to questions unrelated to the file, non-programming questions, or non-Python inquiries. Keep responses very concise and easy to follow for text-to-speech systems. Don't format the response in markdown because it will be read aloud. Don't use punctuation in the response because it will be read aloud. Don't format the response in code blocks because it will be read aloud. Make sure the response is clear and easy to understand. Below is the content of the active file. Here is the file content:\n\n`;
+const BASE_PROMPT = `You are a helpful assistant focused on the file the user is working on. Answer questions with brief, clear explanations and relevant suggestions specific to this file. Always avoid giving full code snippets even if explicitly requested. Instead, guide the user to understand and solve their issue themselves. Politely decline to respond to questions unrelated to the file, non-programming questions, or non-Python inquiries. Keep responses very concise and easy to follow for text-to-speech systems. Don't format the response in markdown because it will be read aloud. Don't format the response in code blocks because it will be read aloud. Make sure the response is clear and easy to understand. Below is the content of the active file. Here is the file content:\n\n`;
 
 function ensurePylintInstalled() {
   return new Promise((resolve, reject) => {
@@ -49,8 +50,7 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
-  let chatPanel = null;
-
+  // Register the command to open the chat panel
   const openChatDisposable = vscode.commands.registerCommand('echocode.openChat', async () => {
     outputChannel.appendLine("echocode.openChat command triggered");
 
@@ -75,6 +75,7 @@ async function activate(context) {
 
     chatPanel.webview.onDidReceiveMessage(
       async (message) => {
+        // New message type for starting voice input is handled in chatView.html
         if (message.type === 'userInput') {
           const userInput = message.text;
           let prompt = BASE_PROMPT;
@@ -82,7 +83,6 @@ async function activate(context) {
           // Try to get an active Python editor
           let editor = vscode.window.activeTextEditor;
           if (!editor || !editor.document || editor.document.languageId !== "python") {
-            // If activeTextEditor isn't available or not Python, check among visible editors
             const visibleEditors = vscode.window.visibleTextEditors;
             editor = visibleEditors.find(ed => ed.document && ed.document.languageId === "python");
             outputChannel.appendLine(editor
@@ -145,7 +145,7 @@ async function activate(context) {
           });
           outputChannel.appendLine("Chat response: " + responseText);
 
-          // Integrate voice output for the chat response
+          // Speak the chat response aloud
           await speakMessage(responseText);
           outputChannel.appendLine("Spoken chat response.");
         }
@@ -159,6 +159,18 @@ async function activate(context) {
       conversationHistory = [];
       outputChannel.appendLine("Chat panel disposed");
     }, null, context.subscriptions);
+  });
+
+  // Register a new command to start voice input (triggered via keyboard shortcut or button)
+  const startVoiceInputDisposable = vscode.commands.registerCommand('echocode.startVoiceInput', () => {
+    if (chatPanel) {
+      // Send a message to the webview to start voice input
+      chatPanel.webview.postMessage({ type: 'startVoiceInput' });
+      outputChannel.appendLine("Voice input triggered via command.");
+    } else {
+      vscode.window.showInformationMessage("Please open the chat panel to use voice input.");
+      outputChannel.appendLine("Voice input command invoked with no active chat panel.");
+    }
   });
 
   vscode.workspace.onDidSaveTextDocument((document) => {
@@ -294,18 +306,17 @@ async function activate(context) {
     functionSummary,
     nextFunction,
     prevFunction,
-    openChatDisposable
+    openChatDisposable,
+    startVoiceInputDisposable
   );
-  outputChannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat");
+  outputChannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput");
 }
 
 async function handlePythonErrorsOnSave(filePath) {
   if (isRunning) {
     return;
   }
-
   isRunning = true;
-
   try {
     const errors = await runPylint(filePath);
     if (errors.length === 0) {
@@ -313,18 +324,14 @@ async function handlePythonErrorsOnSave(filePath) {
       isRunning = false;
       return;
     }
-
     outputChannel.appendLine(`📢 Found ${errors.length} Pylint error(s):`);
-
     for (const error of errors) {
       const message = `Line ${error.line}: ${error.message}`;
       outputChannel.appendLine(message);
-
       if (error.critical) {
         await speakMessage(message);
       }
     }
-
     outputChannel.show();
   } catch (err) {
     vscode.window.showErrorMessage(`Failed to run Pylint: ${err}`);
@@ -340,14 +347,11 @@ async function handlePythonErrors(filePath) {
       vscode.window.showInformationMessage("✅ No issues detected!");
       return;
     }
-
     outputChannel.appendLine(`📢 Found ${errors.length} Pylint error(s):`);
-
     for (const error of errors) {
       const message = `Line ${error.line}: ${error.message}`;
       outputChannel.appendLine(message);
     }
-
     outputChannel.show();
   } catch (err) {
     vscode.window.showErrorMessage(`Failed to run Pylint: ${err}`);
