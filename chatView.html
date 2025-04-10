@@ -1,104 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EchoCode</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 10px;
-            background-color: #f0f0f0;
-        }
-        #chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 90vh;
-        }
-        #chat-output {
-            flex-grow: 1;
-            border: 1px solid #ccc;
-            padding: 10px;
-            overflow-y: auto;
-            background-color: white;
-            margin-bottom: 10px;
-        }
-        .message {
-            margin: 5px 0;
-        }
-        .user-message {
-            color: #0078d4;
-            font-weight: bold;
-        }
-        .tutor-message {
-            color: #333;
-        }
-        #input-container {
-            display: flex;
-        }
-        #chat-input {
-            flex-grow: 1;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        #send-button {
-            padding: 5px 10px;
-            margin-left: 5px;
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        #send-button:hover {
-            background-color: #005a9e;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoCode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Using a modern sans-serif font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Overall page style */
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #ece9e6, #ffffff);
+      color: #333;
+    }
+
+    /* Container for the entire chat UI */
+    #chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      overflow: hidden;
+    }
+
+    /* Output area styling */
+    #chat-output {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #ffffff;
+      border-bottom: 1px solid #ddd;
+    }
+
+    /* General message style */
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      max-width: 75%;
+      border-radius: 20px;
+      word-wrap: break-word;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    /* User messages appear on the right side */
+    .user-message {
+      background-color: #0078d4;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Tutor messages appear on the left side */
+    .tutor-message {
+      background-color: #e9ecef;
+      color: #333;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    /* Input container styling */
+    #input-container {
+      display: flex;
+      padding: 15px;
+      background-color: #fff;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+    }
+
+    /* Input field styling */
+    #chat-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 25px;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s ease-in-out;
+    }
+    #chat-input:focus {
+      border-color: #0078d4;
+    }
+
+    /* Send button styling */
+    #send-button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      background-color: #0078d4;
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    #send-button:hover {
+      background-color: #005a9e;
+    }
+
+    /* Fade in animation for messages */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-    <div id="chat-container">
-        <div id="chat-output"></div>
-        <div id="input-container">
-            <input type="text" id="chat-input" placeholder="Ask a question about your code or type /exercise">
-            <button id="send-button">Send</button>
-        </div>
+  <div id="chat-container">
+    <div id="chat-output"></div>
+    <div id="input-container">
+      <input type="text" id="chat-input" placeholder="Ask a question about your code or type /exercise">
+      <button id="send-button">Send</button>
     </div>
+  </div>
 
-    <script>
-        const vscode = acquireVsCodeApi();
-        const chatOutput = document.getElementById('chat-output');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
+  <script>
+    const vscode = acquireVsCodeApi();
+    const chatOutput = document.getElementById('chat-output');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
 
-        function addMessage(text, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ' + (isUser ? 'user-message' : 'tutor-message');
-            messageDiv.textContent = text;
-            chatOutput.appendChild(messageDiv);
-            chatOutput.scrollTop = chatOutput.scrollHeight;
-        }
+    function addMessage(text, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message ' + (isUser ? 'user-message' : 'tutor-message');
+      messageDiv.textContent = text;
+      chatOutput.appendChild(messageDiv);
+      chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
 
-        sendButton.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
 
-        function sendMessage() {
-            const text = chatInput.value.trim();
-            if (text) {
-                addMessage(text, true);
-                vscode.postMessage({ type: 'userInput', text });
-                chatInput.value = '';
-            }
-        }
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (text) {
+        addMessage(text, true);
+        vscode.postMessage({ type: 'userInput', text });
+        chatInput.value = '';
+      }
+    }
 
-        window.addEventListener('message', (event) => {
-            const message = event.data;
-            if (message.type === 'response') {
-                addMessage(message.text);
-            }
-        });
-    </script>
+    window.addEventListener('message', (event) => {
+      const message = event.data;
+      if (message.type === 'response') {
+        addMessage(message.text);
+      }
+    });
+  </script>
 </body>
 </html>
