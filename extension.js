@@ -143,6 +143,11 @@ async function activate(context) {
             type: 'response',
             text: responseText
           });
+          outputChannel.appendLine("Chat response: " + responseText);
+
+          // Integrate voice output for the chat response
+          await speakMessage(responseText);
+          outputChannel.appendLine("Spoken chat response.");
         }
       },
       undefined,
