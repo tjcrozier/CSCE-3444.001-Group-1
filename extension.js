@@ -17,9 +17,7 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 { "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }{ "line": 12, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
 `;
 
-const BASE_PROMPT = `You are a helpful assistant focused on the specific file the user is working on. I will provide the content of the active file below. Your job is to answer questions about that code, providing clear explanations and relevant examples specific to the file’s content. Do not give direct solutions unless explicitly asked, but guide the user to understand and solve their issue themselves. If the user asks a question unrelated to the provided file content or a non-programming question, politely decline to respond. Here is the file content:\n\n`;
-
-const EXERCISES_PROMPT = `You are a helpful assistant focused on the specific file the user is working on. I will provide the content of the active file below. Your job is to provide fun, simple exercises tailored to that code, helping the user practice and improve their understanding of the file’s concepts. Start with simple exercises and increase complexity as the user progresses. Do not move to a new concept until the user provides the correct answer. Offer hints to guide learning, and if the user is stuck, provide the answer with an explanation. If the user asks a question unrelated to the provided file content or a non-programming question, politely decline to respond. Here is the file content:\n\n`;
+const BASE_PROMPT = `You are a helpful assistant focused on the file the user is working on. Answer questions with brief, clear explanations and relevant suggestions specific to this file. Always avoid giving full code snippets even if explicitly requested. Instead, guide the user to understand and solve their issue themselves. Politely decline to respond to questions unrelated to the file, non-programming questions, or non-Python inquiries. Keep responses very concise and easy to follow for text-to-speech systems. Don't format the response in markdown because it will be read aloud. Don't use punctuation in the response because it will be read aloud. Don't format the response in code blocks because it will be read aloud. Make sure the response is clear and easy to understand. Below is the content of the active file. Here is the file content:\n\n`;
 
 function ensurePylintInstalled() {
   return new Promise((resolve, reject) => {
@@ -79,19 +77,35 @@ async function activate(context) {
       async (message) => {
         if (message.type === 'userInput') {
           const userInput = message.text;
-          const isExercise = userInput.startsWith('/exercise');
-          let prompt = isExercise ? EXERCISES_PROMPT : BASE_PROMPT;
+          let prompt = BASE_PROMPT;
 
-          const editor = vscode.window.activeTextEditor;
+          // Try to get an active Python editor
+          let editor = vscode.window.activeTextEditor;
+          if (!editor || !editor.document || editor.document.languageId !== "python") {
+            // If activeTextEditor isn't available or not Python, check among visible editors
+            const visibleEditors = vscode.window.visibleTextEditors;
+            editor = visibleEditors.find(ed => ed.document && ed.document.languageId === "python");
+            outputChannel.appendLine(editor
+              ? "Found a visible Python editor: " + editor.document.fileName
+              : "No active or visible Python editor found.");
+          } else {
+            outputChannel.appendLine("Active editor: " + editor.document.fileName);
+          }
+
           let fileContent = '';
           if (editor && editor.document) {
             fileContent = editor.document.getText();
             outputChannel.appendLine("Active file content retrieved for chat");
-            prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
           } else {
-            prompt = `You are a helpful coding assistant. The user has asked: "${userInput}". Since no active file is open, provide a general explanation or ask for more context (e.g., code) to give a specific answer. Do not give direct solutions unless explicitly asked, and guide the user to understand the concept.`;
-            outputChannel.appendLine("No active file; using general prompt");
+            chatPanel.webview.postMessage({
+              type: 'response',
+              text: "No active Python file is open. Please open a Python file to get help with its code."
+            });
+            outputChannel.appendLine("No active Python file found for chat");
+            return;
           }
+
+          prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
 
           const messages = [
             vscode.LanguageModelChatMessage.User(prompt),
@@ -149,24 +163,19 @@ async function activate(context) {
   });
 
   vscode.workspace.onDidChangeTextDocument((event) => {
-    console.log("onDidChangeTextDocument triggered");
+    outputChannel.appendLine("onDidChangeTextDocument triggered for: " + event.document.uri.fsPath);
     const document = event.document;
 
     if (document.languageId === "python" && event.contentChanges.length > 0) {
-      console.log(
-        "Python document detected with content changes:",
-        document.uri.fsPath
-      );
+      outputChannel.appendLine("Python document detected with content changes: " + document.uri.fsPath);
 
       if (debounceTimer) {
-        console.log("Clearing previous debounce timer");
+        outputChannel.appendLine("Clearing previous debounce timer");
         clearTimeout(debounceTimer);
       }
 
       debounceTimer = setTimeout(() => {
-        console.log(
-          "Debounce timer expired, calling handlePythonErrorsOnChange"
-        );
+        outputChannel.appendLine("Debounce timer expired, calling handlePythonErrorsOnChange for: " + document.uri.fsPath);
         handlePythonErrorsOnChange(document.uri.fsPath);
       }, 1000);
     }
@@ -180,9 +189,7 @@ async function activate(context) {
       if (editor && editor.document.languageId === "python") {
         handlePythonErrorsOnSave(editor.document.uri.fsPath);
       } else {
-        vscode.window.showWarningMessage(
-          "Please open a Python file to read errors."
-        );
+        vscode.window.showWarningMessage("Please open a Python file to read errors.");
       }
     }
   );
@@ -198,9 +205,7 @@ async function activate(context) {
           family: "gpt-4o",
         });
         if (!model) {
-          vscode.window.showErrorMessage(
-            "No language model available. Please ensure Copilot is enabled."
-          );
+          vscode.window.showErrorMessage("No language model available. Please ensure Copilot is enabled.");
           outputChannel.appendLine("No language model available");
           return;
         }
@@ -217,9 +222,7 @@ async function activate(context) {
         outputChannel.appendLine("Annotations applied successfully");
       } catch (error) {
         outputChannel.appendLine("Error in annotate command: " + error.message);
-        vscode.window.showErrorMessage(
-          "Failed to annotate code: " + error.message
-        );
+        vscode.window.showErrorMessage("Failed to annotate code: " + error.message);
       }
     }
   );
@@ -229,9 +232,7 @@ async function activate(context) {
     async () => {
       if (!annotationQueue.isEmpty()) {
         const nextAnnotation = annotationQueue.dequeue();
-        await speakMessage(
-          `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`
-        );
+        await speakMessage(`Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`);
       } else {
         vscode.window.showInformationMessage("No more annotations to read.");
       }
@@ -241,18 +242,14 @@ async function activate(context) {
   let readAllAnnotationsDisposable = vscode.commands.registerCommand(
     "echocode.readAllAnnotations",
     async () => {
-      console.log("Reading all annotations aloud...");
+      outputChannel.appendLine("Reading all annotations aloud...");
       const annotations = annotationQueue.items;
       if (annotations.length === 0) {
-        vscode.window.showInformationMessage(
-          "No annotations available to read."
-        );
+        vscode.window.showInformationMessage("No annotations available to read.");
         return;
       }
       for (const annotation of annotations) {
-        await speakMessage(
-          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
-        );
+        await speakMessage(`Annotation on line ${annotation.line}: ${annotation.suggestion}`);
       }
     }
   );
@@ -294,9 +291,7 @@ async function activate(context) {
     prevFunction,
     openChatDisposable
   );
-  outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat"
-  );
+  outputChannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat");
 }
 
 async function handlePythonErrorsOnSave(filePath) {
@@ -355,7 +350,7 @@ async function handlePythonErrors(filePath) {
 }
 
 function handlePythonErrorsOnChange(filePath) {
-  console.log("Handling Python errors on change for:", filePath);
+  outputChannel.appendLine("Handling Python errors on change for: " + filePath);
 }
 
 function getVisibleCodeWithLineNumbers(textEditor) {
@@ -363,9 +358,7 @@ function getVisibleCodeWithLineNumbers(textEditor) {
   const endLine = textEditor.visibleRanges[0].end.line;
   let code = "";
   while (currentLine < endLine) {
-    code += `${currentLine + 1}: ${
-      textEditor.document.lineAt(currentLine).text
-    } \n`;
+    code += `${currentLine + 1}: ${textEditor.document.lineAt(currentLine).text}\n`;
     currentLine++;
   }
   return code;
@@ -386,6 +379,7 @@ async function parseChatResponse(chatResponse, textEditor) {
         annotationQueue.enqueue(annotationData);
         accumulatedResponse = "";
       } catch {
+        // Wait for more fragments if JSON parsing fails
       }
     }
   }
