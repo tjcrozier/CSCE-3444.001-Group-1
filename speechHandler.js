@@ -11,4 +11,11 @@ function speakMessage(message) {
     });
 }
 
-module.exports = { speakMessage };
+function stopSpeaking() {
+    say.stop();
+}
+
+module.exports = {
+    speakMessage,
+    stopSpeaking
+};

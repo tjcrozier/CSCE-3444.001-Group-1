@@ -82,6 +82,12 @@ async function activate(context) {
       }, 1000); // Adjust the delay (in milliseconds) as needed
     }
   });
+  
+  // Command to stop speech
+  let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
+    const { stopSpeaking } = require('./speechHandler');
+    stopSpeaking();
+  });
 
   // Command to manually trigger error reading
   let disposable = vscode.commands.registerCommand(
