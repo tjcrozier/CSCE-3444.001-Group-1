@@ -51,6 +51,18 @@
       {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
+      },
+      {
+        "command": "echocode.loadAssignmentFile",
+        "title": "Load Assignment File"
+      },
+      {
+        "command": "echocode.readNextTask",
+        "title": "Read Next Assignment Task"
+      },
+      {
+        "command": "echocode.markTaskComplete",
+        "title": "Mark Assignment Task Complete"
       }
     ],
     "keybindings": [
@@ -93,6 +105,21 @@
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "key": "ctrl+alt+o",
+        "command": "echocode.loadAssignmentFile",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+n",
+        "command": "echocode.readNextTask",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+m",
+        "command": "echocode.markTaskComplete",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
