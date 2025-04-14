@@ -98,6 +98,16 @@
         "command": "echocode.stopSpeech",
         "key": "ctrl+alt+x",
         "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+u",
+        "command": "echocode.increaseSpeechSpeed",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+d",
+        "command": "echocode.decreaseSpeechSpeed",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
