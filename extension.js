@@ -633,6 +633,7 @@ async function activate(context) {
   context.subscriptions.push(
     classSummary,
     functionSummary,
+    programSummary,
     whereAmI,
     readAllAnnotationsDisposable,
     disposableReadErrors,
