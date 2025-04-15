@@ -16,7 +16,11 @@ async function describeCursorPosition(editor) {
     // Collect nested symbols from outermost to innermost
     function getSymbolAncestry(symbols, position, ancestry = []) {
         for (const symbol of symbols) {
-            if (symbol.range.contains(position)) {
+            const contains = symbol.range.contains(position);
+            const isOnHeaderLine =
+                position.line === symbol.range.start.line;
+    
+            if (contains || isOnHeaderLine) {
                 ancestry.push(symbol);
                 return getSymbolAncestry(symbol.children || [], position, ancestry);
             }
