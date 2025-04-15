@@ -5,8 +5,8 @@ const { analyzeAI } = require('./AIrequest');
 async function describeCursorPosition(editor) {
     const document = editor.document;
     const cursorPos = editor.selection.active;
-    const cursorLineNo = cursorPos.line + 1;
-    const cursorColNo = cursorPos.character + 1;
+    const cursorLineNo = cursorPos.line;
+    const cursorColNo = cursorPos.character;
 
     const symbols = await vscode.commands.executeCommand(
         'vscode.executeDocumentSymbolProvider',
@@ -45,7 +45,7 @@ async function describeCursorPosition(editor) {
     } else {
         // Fallback to AI if nothing found
         const fullText = document.getText();
-        const prompt = `My cursor is at line ${cursorLineNo}, column ${cursorColNo} in the following Python code. Give a brief description of the cursor's location in the code in a TTS-friendly format.`;
+        const prompt = `My cursor is at line ${cursorLineNo} in the following Python code. Give a brief description of the cursor's location in the code in a TTS-friendly format.`;
         const posDescription = await analyzeAI(fullText, prompt);
 
         console.log(posDescription);
