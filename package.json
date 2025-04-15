@@ -162,16 +162,15 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "echocode.whereAmI",
-        "key": "ctrl+alt+space W",
-        "when": "editorTextFocus && editorLangId == 'python'"
-      },
-      {
         "command": "code-tutor.analyzeBigO",
         "key": "ctrl+alt+n",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
-
+      {
+        "command": "echocode.whereAmI",
+        "key": "crtl+alt+space W",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
       {
         "command": "code-tutor.iterateBigOQueue",
         "key": "ctrl+alt+b",
