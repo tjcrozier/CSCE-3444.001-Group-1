@@ -22,6 +22,7 @@ const {
 
 let activeDecorations = [];
 let annotationsVisible = false;
+const { describeCursorPosition } = require("./whereAmI.js");
 
 let outputChannel;
 let debounceTimer = null;
