@@ -6,119 +6,184 @@
   <title>EchoCode</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Using a modern sans-serif font from Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* Overall page style */
-    body {
-      font-family: 'Nunito', sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #ece9e6, #ffffff);
-      color: #333;
+    /* Reset and base styles */
+    * {
+      box-sizing: border-box;
     }
 
-    /* Container for the entire chat UI */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #6b7280, #d1d5db);
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Chat container */
     #chat-container {
       display: flex;
       flex-direction: column;
       height: 90vh;
-      max-width: 800px;
+      max-width: 900px;
+      width: 100%;
       margin: 0 auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      background-color: #f9f9f9;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      border-radius: 16px;
+      background: #ffffff;
       overflow: hidden;
     }
 
-    /* Output area styling */
+    /* Chat output */
     #chat-output {
       flex: 1;
-      padding: 20px;
+      padding: 24px;
       overflow-y: auto;
-      background-color: #ffffff;
-      border-bottom: 1px solid #ddd;
+      background: #f8fafc;
+      position: relative;
     }
 
-    /* General message style */
+    /* Scrollbar styling */
+    #chat-output::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chat-output::-webkit-scrollbar-thumb {
+      background: #9ca3af;
+      border-radius: 4px;
+    }
+    #chat-output::-webkit-scrollbar-track {
+      background: #e5e7eb;
+    }
+
+    /* Message styles */
     .message {
-      margin: 10px 0;
-      padding: 10px 15px;
-      max-width: 75%;
-      border-radius: 20px;
+      margin: 12px 0;
+      padding: 12px 18px;
+      max-width: 80%;
+      border-radius: 12px;
       word-wrap: break-word;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      animation: fadeIn 0.3s ease-in-out;
+      position: relative;
+      animation: slideIn 0.3s ease-out;
     }
 
-    /* User messages appear on the right side */
     .user-message {
-      background-color: #0078d4;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
       color: #fff;
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
+      margin-left: auto;
+      border-bottom-right-radius: 2px;
     }
 
-    /* Tutor messages appear on the left side */
     .tutor-message {
-      background-color: #e9ecef;
-      color: #333;
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
+      background: #e5e7eb;
+      color: #1f2937;
+      margin-right: auto;
+      border-bottom-left-radius: 2px;
     }
 
-    /* Input container styling */
+    /* Loading animation */
+    .loading {
+      display: none;
+      font-size: 0.875rem;
+      color: #6b7280;
+      text-align: center;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Input container */
     #input-container {
       display: flex;
-      padding: 15px;
-      background-color: #fff;
-      box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+      padding: 16px;
+      background: #ffffff;
+      border-top: 1px solid #e5e7eb;
     }
 
-    /* Input field styling */
     #chat-input {
       flex: 1;
-      padding: 10px 15px;
-      border: 1px solid #ddd;
-      border-radius: 25px;
-      font-size: 1rem;
+      padding: 12px 20px;
+      border: 1px solid #d1d5db;
+      border-radius: 9999px;
+      font-size: 0.875rem;
       outline: none;
-      transition: border 0.2s ease-in-out;
-    }
-    #chat-input:focus {
-      border-color: #0078d4;
+      transition: all 0.2s ease;
     }
 
-    /* Buttons styling */
-    #send-button, #voice-button {
-      margin-left: 10px;
-      padding: 10px 20px;
-      background-color: #0078d4;
+    #chat-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Buttons */
+    #send-button,
+    #voice-button {
+      margin-left: 12px;
+      padding: 12px;
+      background: #3b82f6;
       border: none;
       color: #fff;
-      font-size: 1rem;
-      border-radius: 25px;
+      border-radius: 9999px;
       cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-    }
-    #send-button:hover, #voice-button:hover {
-      background-color: #005a9e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
     }
 
-    /* Fade in animation for messages */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
+    #send-button:hover,
+    #voice-button:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
     }
+
+    #voice-button.active {
+      animation: pulse 1s infinite;
+    }
+
+    /* Icons (using SVG for simplicity) */
+    #send-button::before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M1.5 8.5l9-5v10l-9-5zm10 0a.5.5 0 0 1-.5.5H2v-1h9a.5.5 0 0 1 .5.5z"/></svg>');
+      margin-right: 4px;
+    }
+
+    #voice-button::before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M8 11a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v3a3 3 0 0 0 3 3zm-2-6a2 2 0 1 1 4 0v3a2 2 0 1 1-4 0V5zM4 8a4 4 0 0 1 8 0v1h1v-1a5 5 0 0 0-10 0v1h1V8z"/></svg>');
+      margin-right: 4px;
+    }
+
+    /* Animations */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
   </style>
 </head>
 <body>
   <div id="chat-container">
-    <div id="chat-output"></div>
+    <div id="chat-output">
+      <div class="loading">Typing...</div>
+    </div>
     <div id="input-container">
-      <input type="text" id="chat-input" placeholder="Ask a question" />
-      <button id="voice-button" title="Speak your question">Voice</button>
-      <button id="send-button">Send</button>
+      <input
+        type="text"
+        id="chat-input"
+        placeholder="Ask a question..."
+        aria-label="Chat input"
+      />
+      <button id="voice-button" title="Speak your question" aria-label="Voice input">
+        Voice
+      </button>
+      <button id="send-button" aria-label="Send message">Send</button>
     </div>
   </div>
 
@@ -128,10 +193,11 @@
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
     const voiceButton = document.getElementById('voice-button');
+    const loadingIndicator = chatOutput.querySelector('.loading');
 
     function addMessage(text, isUser = false) {
       const messageDiv = document.createElement('div');
-      messageDiv.className = 'message ' + (isUser ? 'user-message' : 'tutor-message');
+      messageDiv.className = `message ${isUser ? 'user-message' : 'tutor-message'}`;
       messageDiv.textContent = text;
       chatOutput.appendChild(messageDiv);
       chatOutput.scrollTop = chatOutput.scrollHeight;
@@ -141,6 +207,7 @@
       const text = chatInput.value.trim();
       if (text) {
         addMessage(text, true);
+        loadingIndicator.style.display = 'block';
         vscode.postMessage({ type: 'userInput', text });
         chatInput.value = '';
       }
@@ -151,7 +218,7 @@
       if (e.key === 'Enter') sendMessage();
     });
 
-    // Voice recognition integration using Web Speech API
+    // Voice recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
     if (SpeechRecognition) {
@@ -160,41 +227,50 @@
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
+      recognition.onstart = () => {
+        voiceButton.classList.add('active');
+      };
+
+      recognition.onend = () => {
+        voiceButton.classList.remove('active');
+      };
+
       recognition.onresult = (event) => {
         let transcript = '';
         for (let i = 0; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
         }
         chatInput.value = transcript;
-        addMessage("Voice input: " + transcript, true);
+        addMessage(transcript, true);
         vscode.postMessage({ type: 'userInput', text: transcript });
       };
 
       recognition.onerror = (event) => {
         console.error('Speech recognition error', event.error);
+        voiceButton.classList.remove('active');
       };
     } else {
-      console.warn("Speech Recognition API is not supported in this browser.");
+      console.warn('Speech Recognition API not supported.');
+      voiceButton.disabled = true;
     }
 
     function startVoiceInput() {
       if (recognition) {
         recognition.start();
       } else {
-        alert("Voice recognition is not supported in your browser.");
+        alert('Voice recognition not supported.');
       }
     }
 
-    // Event listener for the "Voice" button click
     voiceButton.addEventListener('click', startVoiceInput);
 
-    // Listen for messages from the extension
+    // Handle extension messages
     window.addEventListener('message', (event) => {
       const message = event.data;
       if (message.type === 'response') {
+        loadingIndicator.style.display = 'none';
         addMessage(message.text);
       }
-      // Listen for the startVoiceInput command from the extension
       if (message.type === 'startVoiceInput') {
         startVoiceInput();
       }
