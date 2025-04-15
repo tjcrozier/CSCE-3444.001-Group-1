@@ -17,8 +17,7 @@ async function describeCursorPosition(editor) {
     function getSymbolAncestry(symbols, position, ancestry = []) {
         for (const symbol of symbols) {
             const contains = symbol.range.contains(position);
-            const isOnHeaderLine =
-                position.line === symbol.range.start.line;
+            const isOnHeaderLine = position.line === symbol.range.start.line;
     
             if (contains || isOnHeaderLine) {
                 ancestry.push(symbol);
