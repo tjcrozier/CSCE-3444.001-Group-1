@@ -622,6 +622,9 @@ async function activate(context) {
   );
 
   context.subscriptions.push(
+    classSummary, 
+    functionSummary, 
+    whereAmI,
     classSummary,
     functionSummary,
     whereAmI,
