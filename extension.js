@@ -239,7 +239,7 @@ async function activate(context) {
     }
   );
 
-  context.subscriptions.push(disposable, classSummary, functionSummary);
+  context.subscriptions.push(disposable, classSummary, functionSummary, whereAmI);
 }
 
 /**
