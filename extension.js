@@ -630,6 +630,9 @@ async function activate(context) {
   );
 
   context.subscriptions.push(
+    classSummary,
+    functionSummary,
+    whereAmI,
     readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
