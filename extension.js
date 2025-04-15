@@ -5,6 +5,7 @@ const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 const Queue = require("./queue_system"); 
+const { describeCursorPosition } = require("./whereAmI.js");
 
 let outputChannel;
 let debounceTimer = null; 
@@ -210,6 +211,15 @@ async function activate(context) {
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document.languageId === "python") {
         summarizeFunction(editor);
+      }
+    }
+  );
+
+  let whereAmI = vscode.commands.registerCommand(
+    "echocode.whereAmI", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        describeCursorPosition(editor);
       }
     }
   );

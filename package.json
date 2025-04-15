@@ -51,6 +51,10 @@
       {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
+      },
+      {
+        "command": "echocode.whereAmI",
+        "title": "Where Am I?"
       }
     ],
     "keybindings": [
@@ -90,8 +94,8 @@
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
-        "command": "echocode.summarizeProgram",
-        "key": "ctrl+alt+space P",
+        "command": "echocode.whereAmI",
+        "key": "ctrl+alt+space W",
         "when": "editorTextFocus && editorLangId == 'python'"
       }
     ],
