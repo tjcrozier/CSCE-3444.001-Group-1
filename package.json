@@ -157,6 +157,11 @@
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
+        "command": "echocode.whereAmI",
+        "key": "ctrl+alt+space W",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
         "command": "echocode.startVoiceInput",
         "key": "ctrl+alt+v"
       },
