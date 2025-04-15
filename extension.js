@@ -605,6 +605,14 @@ async function activate(context) {
       }
     }
   );
+  let whereAmI = vscode.commands.registerCommand(
+    "echocode.whereAmI", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        describeCursorPosition(editor);
+      }
+    }
+  );
 
   // Add navigation commands
   let nextFunction = vscode.commands.registerCommand(
