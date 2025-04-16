@@ -1,12 +1,21 @@
 const say = require('say');
+const vscode = require('vscode');
 
 let currentSpeed = 1.0;
 let announceTimeout = null;
 
 function speakMessage(message) {
     return new Promise((resolve) => {
-        say.stop();
-        say.speak(message, undefined, currentSpeed, (err) => {
+        const config = vscode.workspace.getConfiguration('echocode');
+        let voice = config.get('voice');
+        const rate = config.get('rate') || 1.0;
+
+        // Fallback to Zira if not set and on Windows
+        if (!voice && process.platform === 'win32') {
+            voice = 'Microsoft Zira Desktop';
+        }
+
+        say.speak(message, voice, rate, (err) => {
             if (err) {
                 console.error('Speech Error:', err);
             }

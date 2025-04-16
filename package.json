@@ -51,8 +51,31 @@
       {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
+      },
+      {
+        "command": "echocode.increaseSpeechSpeed",
+        "title": "Increase Speech Speed"
+      },
+      {
+        "command": "echocode.decreaseSpeechSpeed",
+        "title": "Decrease Speech Speed"
       }
     ],
+    "configuration": {
+      "title": "EchoCode",
+      "properties": {
+        "echocode.voice": {
+          "type": "string",
+          "default": "Microsoft Zira Desktop",
+          "description": "Voice name for text-to-speech (e.g., 'Microsoft Zira Desktop', 'Alex', etc.). Leave blank for system default."
+        },
+        "echocode.rate": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Speech rate for text-to-speech (0.5 = slow, 1.0 = normal, 1.5 = fast)."
+        }
+      }
+    },
     "keybindings": [
       {
         "command": "code-tutor.speakNextAnnotation",
