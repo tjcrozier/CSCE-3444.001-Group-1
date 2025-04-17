@@ -27,6 +27,9 @@
 - **Interactive Chat Tutor**  
   An AI-powered tutor that reads your active file and answers questions or provides exercises specific to its content. Open it with `Ctrl+Alt+C` and ask about your code directly.
 
+- **Voice Input for Tutor Chat**  
+  Use your microphone to ask questions instead of typing them. Trigger voice input with a shortcut or mic button in the chat panel.
+
 - **Auto-Detection of Missing Tools**  
   Automatically prompts users to install **Pylint** if it’s not found.
 
@@ -42,14 +45,15 @@
 
 | Shortcut              | Command                        | Description                                      |
 |-----------------------|--------------------------------|--------------------------------------------------|
-| `Ctrl+Alt+A`          | `echocode.annotate`           | Generates inline code annotations.              |
-| `Ctrl+Alt+S`          | `echocode.speakNextAnnotation`| Reads the next annotation aloud.                |
-| `Ctrl+Alt+Q`          | `echocode.readAllAnnotations` | Reads all annotations in the queue aloud.       |
+| `Ctrl+Alt+A`          | `echocode.annotate`            | Generates inline code annotations.              |
+| `Ctrl+Alt+S`          | `echocode.speakNextAnnotation` | Reads the next annotation aloud.                |
+| `Ctrl+Alt+Q`          | `echocode.readAllAnnotations`  | Reads all annotations in the queue aloud.       |
 | `Ctrl+Alt+Up`         | `echocode.jumpToPreviousFunction` | Navigate to the previous function.          |
-| `Ctrl+Alt+Down`       | `echocode.jumpToNextFunction` | Navigate to the next function.              |
-| `Ctrl+Alt+Space C`    | `echocode.summarizeClass`     | Summarizes the current class aloud.            |
-| `Ctrl+Alt+Space F`    | `echocode.summarizeFunction`  | Summarizes the current function aloud.         |
-| `Ctrl+Alt+C`          | `echocode.openChat`           | Opens the EchoCode Tutor chat interface.       |
+| `Ctrl+Alt+Down`       | `echocode.jumpToNextFunction`  | Navigate to the next function.                  |
+| `Ctrl+Alt+Space C`    | `echocode.summarizeClass`      | Summarizes the current class aloud.             |
+| `Ctrl+Alt+Space F`    | `echocode.summarizeFunction`   | Summarizes the current function aloud.          |
+| `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface.        |
+| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  |
 
 ---
 
@@ -86,6 +90,7 @@ Before using Echo Code, ensure the following are installed:
   - “Why is there a loop in my code?”
   - “Give me an exercise for my file.” (or use `/exercise`)
 - The tutor reads your active file automatically and responds based on its content.
+- Press **Ctrl+Alt+V** or click the mic icon in the chat panel to ask your question using voice input.
 
 ### **Annotating Code**
 - Press **Ctrl+Alt+A** to generate annotations for your code.
@@ -105,6 +110,7 @@ Before using Echo Code, ensure the following are installed:
 | `echocode.jumpToNextFunction` | Jumps to the next function definition.               |
 | `echocode.jumpToPreviousFunction` | Jumps to the previous function definition.       |
 | `echocode.openChat`           | Opens the EchoCode Tutor chat interface.             |
+| `echocode.voiceInput`         | Activates microphone input for asking questions.     |
 
 ---
 
@@ -118,6 +124,10 @@ Before using Echo Code, ensure the following are installed:
 ---
 
 ## **Release Notes**
+
+### **1.3.0**
+- Added **voice input** for Tutor Chat with `Ctrl+Alt+V` and a mic button in the chat panel.
+- Updated documentation and shortcuts to reflect the new feature.
 
 ### **1.2.1**
 - Added **EchoCode Tutor Chat**: An AI tutor that reads the active file and answers questions or provides exercises specific to its content. Open with `Ctrl+Alt+C`.
