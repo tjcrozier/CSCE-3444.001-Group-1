@@ -43,13 +43,16 @@ async function describeCursorPosition(editor) {
         console.log(message);
         await speakMessage(message);
     } else {
-        // Fallback to AI if nothing found
-        const fullText = document.getText();
-        const prompt = `My cursor is at line ${cursorLineNo} in the following Python code. Give a brief description of the cursor's location in the code in a TTS-friendly format.`;
-        const posDescription = await analyzeAI(fullText, prompt);
+        // Assume the user is in global scope
+            const message =`You are inside global scope, at line ${cursorLineNo}`;
+            console.log(message);
+            await speakMessage(message);
+        // const fullText = document.getText();
+        // const prompt = `My cursor is at line ${cursorLineNo} in the following Python code. Give a brief description of the cursor's location in the code in a TTS-friendly format.`;
+        // const posDescription = await analyzeAI(fullText, prompt);
 
-        console.log(posDescription);
-        await speakMessage(posDescription);
+        // console.log(posDescription);
+        // await speakMessage(posDescription);
     }
 }
 
