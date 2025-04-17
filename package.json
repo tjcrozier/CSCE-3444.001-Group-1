@@ -15,6 +15,7 @@
   "activationEvents": [
     "onLanguage:python",
     "onSave",
+    "onView:echocode.chatView",
     "onCommand:echocode.openChat"
   ],
   "main": "./extension.js",
@@ -109,10 +110,35 @@
         "when": "editorTextFocus"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "echocode",
+          "title": "EchoCode",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "echocode": [
+        {
+          "id": "echocode.chatView",
+          "name": "EchoCode Tutor",
+          "type": "webview"
+        }
+      ]
+    },
     "menus": {
       "editor/title": [
         {
           "command": "echocode.annotate",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "echocode.startVoiceInput",
+          "when": "view == echocode.chatView",
           "group": "navigation"
         }
       ]
@@ -148,6 +174,7 @@
     "play-sound": "^1.1.6",
     "axios": "^1.8.3",
     "dotenv": "^16.4.7",
-    "say": "^0.16.0"
+    "say": "^0.16.0",
+    "@vscode/codicons": "^0.0.33"
   }
 }

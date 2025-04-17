@@ -9,7 +9,7 @@ const Queue = require("./queue_system");
 let outputChannel;
 let debounceTimer = null;
 let isRunning = false;
-let chatPanel = null;
+let chatViewProvider = null;
 
 const annotationQueue = new Queue();
 
@@ -19,6 +19,177 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 `;
 
 const BASE_PROMPT = `You are a helpful assistant focused on the file the user is working on. Answer questions with brief, clear explanations and relevant suggestions specific to this file. Always avoid giving full code snippets even if explicitly requested. Instead, guide the user to understand and solve their issue themselves. Politely decline to respond to questions unrelated to the file, non-programming questions, or non-Python inquiries. Keep responses very concise and easy to follow for text-to-speech systems. Don't format the response in markdown because it will be read aloud. Don't format the response in code blocks because it will be read aloud. Make sure the response is clear and easy to understand. Below is the content of the active file. Here is the file content:\n\n`;
+
+// Custom WebViewProvider for the chat view
+class EchoCodeChatViewProvider {
+  constructor(context) {
+    this.context = context;
+    this._view = null;
+    this.conversationHistory = [];
+  }
+
+  resolveWebviewView(webviewView, context, token) {
+    this._view = webviewView;
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this.context.extensionUri]
+    };
+
+    // Set the initial HTML content
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+    // Handle messages from the webview
+    webviewView.webview.onDidReceiveMessage(
+      async (message) => {
+        outputChannel.appendLine(`Received message from webview: ${message.type}`);
+        if (message.type === 'userInput') {
+          await this.handleUserMessage(message.text);
+        } else if (message.type === 'startVoiceRecognition') {
+          outputChannel.appendLine("Voice recognition triggered from webview");
+          // Voice recognition would need to be handled via system APIs or services
+        }
+      },
+      undefined,
+      this.context.subscriptions
+    );
+  }
+
+  async handleUserMessage(userInput) {
+    let prompt = BASE_PROMPT;
+
+    // Try to get an active Python editor
+    let editor = vscode.window.activeTextEditor;
+    if (!editor || !editor.document || editor.document.languageId !== "python") {
+      const visibleEditors = vscode.window.visibleTextEditors;
+      editor = visibleEditors.find(ed => ed.document && ed.document.languageId === "python");
+      outputChannel.appendLine(editor
+        ? "Found a visible Python editor: " + editor.document.fileName
+        : "No active or visible Python editor found.");
+    } else {
+      outputChannel.appendLine("Active editor: " + editor.document.fileName);
+    }
+
+    let fileContent = '';
+    if (editor && editor.document) {
+      fileContent = editor.document.getText();
+      outputChannel.appendLine("Active file content retrieved for chat");
+    } else {
+      this._view.webview.postMessage({
+        type: 'response',
+        text: "No active Python file is open. Please open a Python file to get help with its code."
+      });
+      outputChannel.appendLine("No active Python file found for chat");
+      return;
+    }
+
+    prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
+
+    const messages = [
+      vscode.LanguageModelChatMessage.User(prompt),
+    ];
+
+    this.conversationHistory.forEach((entry) => {
+      messages.push(vscode.LanguageModelChatMessage.User(entry.user));
+      messages.push(vscode.LanguageModelChatMessage.Assistant(entry.response));
+    });
+
+    messages.push(vscode.LanguageModelChatMessage.User(userInput));
+
+    const [model] = await vscode.lm.selectChatModels({
+      vendor: "copilot",
+      family: "gpt-4o",
+    });
+
+    if (!model) {
+      this._view.webview.postMessage({
+        type: 'response',
+        text: "No language model available. Please ensure GitHub Copilot is enabled."
+      });
+      outputChannel.appendLine("No language model available for chat");
+      return;
+    }
+
+    const chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
+    let responseText = '';
+    for await (const fragment of chatResponse.text) {
+      responseText += fragment;
+      // Send incremental updates to the webview
+      this._view.webview.postMessage({
+        type: 'responseFragment',
+        text: fragment
+      });
+    }
+
+    this.conversationHistory.push({ user: userInput, response: responseText });
+    this._view.webview.postMessage({
+      type: 'responseComplete',
+      text: responseText
+    });
+    outputChannel.appendLine("Chat response: " + responseText);
+
+    // Speak the chat response aloud
+    await speakMessage(responseText);
+    outputChannel.appendLine("Spoken chat response.");
+  }
+
+  startVoiceInput() {
+    if (this._view) {
+      this._view.webview.postMessage({ type: 'startVoiceInput' });
+      outputChannel.appendLine("Voice input triggered via command.");
+    } else {
+      vscode.window.showInformationMessage("Please open the EchoCode Tutor view to use voice input.");
+      outputChannel.appendLine("Voice input command invoked with no active chat panel.");
+    }
+  }
+
+  _getHtmlForWebview(webview) {
+    // Create CSS and JS URIs
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.js'));
+    const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.css'));
+    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
+
+    // Nonce for script security
+    const nonce = getNonce();
+
+    return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+        <link href="${styleUri}" rel="stylesheet">
+        <link href="${codiconsUri}" rel="stylesheet">
+        <title>EchoCode Tutor</title>
+    </head>
+    <body>
+        <div id="chat-container">
+            <div id="messages-container"></div>
+            <div id="input-container">
+                <textarea id="user-input" placeholder="Ask a question about your code..."></textarea>
+                <div id="button-container">
+                    <button id="send-button" title="Send message">
+                        <i class="codicon codicon-send"></i>
+                    </button>
+                    <button id="voice-button" title="Start voice input">
+                        <i class="codicon codicon-mic"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <script nonce="${nonce}" src="${scriptUri}"></script>
+    </body>
+    </html>`;
+  }
+}
+
+function getNonce() {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+}
 
 function ensurePylintInstalled() {
   return new Promise((resolve, reject) => {
@@ -50,126 +221,26 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
-  // Register the command to open the chat panel
+  // Register chat view provider
+  chatViewProvider = new EchoCodeChatViewProvider(context);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider('echocode.chatView', chatViewProvider)
+  );
+
+  // Register the command to open the chat panel (will now focus the sidebar view)
   const openChatDisposable = vscode.commands.registerCommand('echocode.openChat', async () => {
     outputChannel.appendLine("echocode.openChat command triggered");
-
-    if (chatPanel) {
-      chatPanel.reveal();
-      return;
-    }
-
-    chatPanel = vscode.window.createWebviewPanel(
-      'echoCodeChat', // Identifier
-      'EchoCode Tutor', // Title
-      vscode.ViewColumn.Beside, // Show next to the editor
-      {
-        enableScripts: true, // Allow JavaScript in the Webview
-      }
-    );
-
-    const htmlPath = vscode.Uri.joinPath(context.extensionUri, 'chatView.html');
-    chatPanel.webview.html = require('fs').readFileSync(htmlPath.fsPath, 'utf8');
-
-    let conversationHistory = [];
-
-    chatPanel.webview.onDidReceiveMessage(
-      async (message) => {
-        // New message type for starting voice input is handled in chatView.html
-        if (message.type === 'userInput') {
-          const userInput = message.text;
-          let prompt = BASE_PROMPT;
-
-          // Try to get an active Python editor
-          let editor = vscode.window.activeTextEditor;
-          if (!editor || !editor.document || editor.document.languageId !== "python") {
-            const visibleEditors = vscode.window.visibleTextEditors;
-            editor = visibleEditors.find(ed => ed.document && ed.document.languageId === "python");
-            outputChannel.appendLine(editor
-              ? "Found a visible Python editor: " + editor.document.fileName
-              : "No active or visible Python editor found.");
-          } else {
-            outputChannel.appendLine("Active editor: " + editor.document.fileName);
-          }
-
-          let fileContent = '';
-          if (editor && editor.document) {
-            fileContent = editor.document.getText();
-            outputChannel.appendLine("Active file content retrieved for chat");
-          } else {
-            chatPanel.webview.postMessage({
-              type: 'response',
-              text: "No active Python file is open. Please open a Python file to get help with its code."
-            });
-            outputChannel.appendLine("No active Python file found for chat");
-            return;
-          }
-
-          prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
-
-          const messages = [
-            vscode.LanguageModelChatMessage.User(prompt),
-          ];
-
-          conversationHistory.forEach((entry) => {
-            messages.push(vscode.LanguageModelChatMessage.User(entry.user));
-            messages.push(vscode.LanguageModelChatMessage.Assistant(entry.response));
-          });
-
-          messages.push(vscode.LanguageModelChatMessage.User(userInput));
-
-          const [model] = await vscode.lm.selectChatModels({
-            vendor: "copilot",
-            family: "gpt-4o",
-          });
-
-          if (!model) {
-            chatPanel.webview.postMessage({
-              type: 'response',
-              text: "No language model available. Please ensure GitHub Copilot is enabled."
-            });
-            outputChannel.appendLine("No language model available for chat");
-            return;
-          }
-
-          const chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
-          let responseText = '';
-          for await (const fragment of chatResponse.text) {
-            responseText += fragment;
-          }
-
-          conversationHistory.push({ user: userInput, response: responseText });
-          chatPanel.webview.postMessage({
-            type: 'response',
-            text: responseText
-          });
-          outputChannel.appendLine("Chat response: " + responseText);
-
-          // Speak the chat response aloud
-          await speakMessage(responseText);
-          outputChannel.appendLine("Spoken chat response.");
-        }
-      },
-      undefined,
-      context.subscriptions
-    );
-
-    chatPanel.onDidDispose(() => {
-      chatPanel = null;
-      conversationHistory = [];
-      outputChannel.appendLine("Chat panel disposed");
-    }, null, context.subscriptions);
+    // Focus on the webview if it exists
+    await vscode.commands.executeCommand('echocode.chatView.focus');
   });
 
-  // Register a new command to start voice input (triggered via keyboard shortcut or button)
+  // Register a new command to start voice input
   const startVoiceInputDisposable = vscode.commands.registerCommand('echocode.startVoiceInput', () => {
-    if (chatPanel) {
-      // Send a message to the webview to start voice input
-      chatPanel.webview.postMessage({ type: 'startVoiceInput' });
-      outputChannel.appendLine("Voice input triggered via command.");
+    if (chatViewProvider) {
+      chatViewProvider.startVoiceInput();
     } else {
-      vscode.window.showInformationMessage("Please open the chat panel to use voice input.");
-      outputChannel.appendLine("Voice input command invoked with no active chat panel.");
+      vscode.window.showInformationMessage("Please open the EchoCode Tutor view to use voice input.");
+      outputChannel.appendLine("Voice input command invoked with no active chat view.");
     }
   });
 
