@@ -38,13 +38,13 @@ async function describeCursorPosition(editor) {
         }).reverse();
 
         const context = levels.join(", inside ");
-        const message = `You are inside ${context}, at line ${cursorLineNo}, column ${cursorColNo}.`;
+        const message = `You are inside ${context}, at line ${cursorLineNo + 1}, column ${cursorColNo + 1}.`;
 
         console.log(message);
         await speakMessage(message);
     } else {
         // Assume the user is in global scope
-        const message =`You are inside global scope, at line ${cursorLineNo}`;
+        const message =`You are inside global scope, at line ${cursorLineNo + 1}`;
         console.log(message);
         await speakMessage(message);
 
