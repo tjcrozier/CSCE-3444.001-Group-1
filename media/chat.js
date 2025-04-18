@@ -8,6 +8,8 @@
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
     const voiceButton = document.getElementById('voice-button');
+    const listeningIndicator = document.getElementById('listening-indicator');
+    const loadingIndicator = document.getElementById('loading-indicator');
     
     let currentAssistantMessage = null;
     
@@ -50,6 +52,13 @@
         return contentElement;
     }
     
+    // Start voice recognition
+    function startVoiceRecognition() {
+        vscode.postMessage({
+            type: 'startVoiceRecognition'
+        });
+    }
+    
     // Event listeners
     sendButton.addEventListener('click', sendMessage);
     
@@ -60,11 +69,7 @@
         }
     });
     
-    voiceButton.addEventListener('click', () => {
-        vscode.postMessage({
-            type: 'startVoiceRecognition'
-        });
-    });
+    voiceButton.addEventListener('click', startVoiceRecognition);
     
     // Handle messages from the extension
     window.addEventListener('message', (event) => {
@@ -94,17 +99,55 @@
                 currentAssistantMessage = null;
                 break;
                 
-            case 'startVoiceInput':
+            case 'responseLoading':
+                // Show/hide loading indicator
+                if (message.started) {
+                    loadingIndicator.classList.remove('hidden');
+                } else {
+                    loadingIndicator.classList.add('hidden');
+                }
+                break;
+                
+            case 'responseError':
+                // Handle errors in response
+                if (currentAssistantMessage) {
+                    currentAssistantMessage.textContent = message.error || 'Error getting response';
+                    currentAssistantMessage.parentElement.classList.add('error');
+                    currentAssistantMessage = null;
+                }
+                break;
+                
+            case 'voiceListeningStarted':
                 // Visual indicator that voice input is active
                 voiceButton.classList.add('active');
+                listeningIndicator.classList.remove('hidden');
                 userInput.placeholder = 'Listening...';
+                break;
                 
-                // In a real implementation, this would connect to speech recognition
-                // For now, we'll simulate it after a delay
-                setTimeout(() => {
-                    voiceButton.classList.remove('active');
-                    userInput.placeholder = 'Ask a question about your code...';
-                }, 2000);
+            case 'voiceListeningStopped':
+                // Visual indicator that voice input has stopped
+                voiceButton.classList.remove('active');
+                listeningIndicator.classList.add('hidden');
+                userInput.placeholder = 'Ask a question about your code...';
+                break;
+                
+            case 'voiceRecognitionResult':
+                // Add recognized text to input field
+                userInput.value = message.text;
+                userInput.focus();
+                break;
+                
+            case 'voiceRecognitionError':
+                // Handle voice recognition errors
+                voiceButton.classList.remove('active');
+                listeningIndicator.classList.add('hidden');
+                userInput.placeholder = 'Ask a question about your code...';
+                addMessageToUI('system', `Voice recognition error: ${message.error || 'Unknown error'}`);
+                break;
+                
+            case 'startVoiceInput':
+                // Trigger voice input from command
+                startVoiceRecognition();
                 break;
         }
         
