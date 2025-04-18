@@ -48,6 +48,20 @@ async function loadAssignmentFile() {
             text = fs.readFileSync(filePath, 'utf8');
         }
         await parseTasksWithAI(text);
+
+        const outputPath = path.join(vscode.workspace.rootPath || __dirname, 'generated_tasks.txt');
+        fs.writeFileSync(outputPath, taskList.map((t, i) => `Task ${i + 1}: ${t}`).join('\n'));
+        vscode.window.showInformationMessage(`Task list saved to ${outputPath}`);
+
+        const outputChannel = vscode.window.createOutputChannel("EchoCode Task List");
+        outputChannel.clear();
+        outputChannel.appendLine("Generated Assignment Task List:");
+        taskList.forEach((task, i) => {
+            outputChannel.appendLine(`Task ${i + 1}: ${task}`);
+        });
+        outputChannel.show(true);
+
+
     } catch (err) {
         vscode.window.showErrorMessage('Failed to read file: ' + err.message);
         speakMessage('Failed to read the selected file.');
@@ -65,7 +79,8 @@ async function parseTasksWithAI(text) {
         }
 
         const messages = [
-            new vscode.LanguageModelChatMessage(0, "You are helping a blind beginner Python student. Convert the following assignment into clear step-by-step tasks. Use simple language and format each task as a bullet point."),
+            new vscode.LanguageModelChatMessage(0, "You are helping a blind beginner Python student. Extract only the concrete steps required to complete the coding assignment below. Each step should be short and clear — under 15 words. Focus on actions the student must take. Format each step as a bullet point like '- [ ] Use fork() to create new process'."
+),
             new vscode.LanguageModelChatMessage(0, text)
         ];
 
@@ -89,11 +104,10 @@ function parseTasksFromText(text) {
 
     const lines = text
         .split(/\r?\n/)
-        .flatMap(line => line.split(/[\-\*\d+\.]/))
         .map(line => line.trim())
-        .filter(line => line.length > 3);
+        .filter(line => line.startsWith('- [ ]'));
 
-    taskList = lines;
+    taskList = lines.map(line => line.replace('- [ ]', '').trim());
 
     speakMessage(`Loaded ${taskList.length} tasks from the assignment.`);
     vscode.window.showInformationMessage(`Assignment loaded with ${taskList.length} tasks.`);
