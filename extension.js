@@ -5,6 +5,8 @@ const { exec } = require('child_process');
 const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
 const { moveCursorToFunction } = require('./navigationHandler');
 const Queue = require("./queue_system");
+let activeDecorations = [];
+let annotationsVisible = false;
 
 let outputChannel;
 let debounceTimer = null;
@@ -20,12 +22,25 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 
 const BASE_PROMPT = `You are a helpful assistant focused on the file the user is working on. Answer questions with brief, clear explanations and relevant suggestions specific to this file. Always avoid giving full code snippets even if explicitly requested. Instead, guide the user to understand and solve their issue themselves. Politely decline to respond to questions unrelated to the file, non-programming questions, or non-Python inquiries. Keep responses very concise and easy to follow for text-to-speech systems. Don't format the response in markdown because it will be read aloud. Don't format the response in code blocks because it will be read aloud. Make sure the response is clear and easy to understand. Below is the content of the active file. Here is the file content:\n\n`;
 
+// Mock voice recognition for demo/development purposes
+// function performVoiceRecognition() {
+//     return new Promise((resolve) => {
+//         // In a real implementation, this would connect to the system's speech recognition
+//         // For now, I'll simulate after a short delay
+//         setTimeout(() => {
+//             // This is just a placeholder - real implementation would use an actual speech recognition API
+//             resolve("Can you explain this Python code?");
+//         }, 2000);
+//     });
+// }
+
 // Custom WebViewProvider for the chat view
 class EchoCodeChatViewProvider {
   constructor(context) {
     this.context = context;
     this._view = null;
     this.conversationHistory = [];
+    this._isListening = false;
   }
 
   resolveWebviewView(webviewView, context, token) {
@@ -45,8 +60,7 @@ class EchoCodeChatViewProvider {
         if (message.type === 'userInput') {
           await this.handleUserMessage(message.text);
         } else if (message.type === 'startVoiceRecognition') {
-          outputChannel.appendLine("Voice recognition triggered from webview");
-          // Voice recognition would need to be handled via system APIs or services
+          await this.startVoiceRecognition();
         }
       },
       undefined,
@@ -54,7 +68,48 @@ class EchoCodeChatViewProvider {
     );
   }
 
+  // async startVoiceRecognition() {
+  //   if (this._isListening || !this._view) return;
+    
+  //   this._isListening = true;
+  //   outputChannel.appendLine("Starting voice recognition");
+    
+  //   // Signal the webview that we're listening
+  //   this._view.webview.postMessage({ type: 'voiceListeningStarted' });
+    
+  //   try {
+  //     // In a real implementation, we would use a proper voice recognition API
+  //     // For now, I'll simulate with a mock function
+  //     const recognizedText = await performVoiceRecognition();
+      
+  //     if (recognizedText && this._view) {
+  //       // Send the recognized text to the webview to display in the input field
+  //       this._view.webview.postMessage({ 
+  //         type: 'voiceRecognitionResult', 
+  //         text: recognizedText 
+  //       });
+        
+  //       // Automatically process the recognized text as a user message
+  //       await this.handleUserMessage(recognizedText);
+  //     }
+  //   } catch (error) {
+  //     outputChannel.appendLine(`Voice recognition error: ${error.message}`);
+  //     if (this._view) {
+  //       this._view.webview.postMessage({ 
+  //         type: 'voiceRecognitionError', 
+  //         error: error.message 
+  //       });
+  //     }
+  //   } finally {
+  //     this._isListening = false;
+  //     if (this._view) {
+  //       this._view.webview.postMessage({ type: 'voiceListeningStopped' });
+  //     }
+  //   }
+  // }
+
   async handleUserMessage(userInput) {
+    if (!this._view) return;
     let prompt = BASE_PROMPT;
 
     // Try to get an active Python editor
@@ -109,46 +164,57 @@ class EchoCodeChatViewProvider {
       return;
     }
 
-    const chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
-    let responseText = '';
-    for await (const fragment of chatResponse.text) {
-      responseText += fragment;
-      // Send incremental updates to the webview
+    // Show loading indicator
+    this._view.webview.postMessage({ type: 'responseLoading', started: true });
+
+    try {
+      const chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
+      let responseText = '';
+      for await (const fragment of chatResponse.text) {
+        responseText += fragment;
+        // Send incremental updates to the webview
+        this._view.webview.postMessage({
+          type: 'responseFragment',
+          text: fragment
+        });
+      }
+
+      this.conversationHistory.push({ user: userInput, response: responseText });
       this._view.webview.postMessage({
-        type: 'responseFragment',
-        text: fragment
+        type: 'responseComplete',
+        text: responseText
       });
+      outputChannel.appendLine("Chat response: " + responseText);
+
+      // Speak the chat response aloud
+      await speakMessage(responseText);
+      outputChannel.appendLine("Spoken chat response.");
+    } catch (error) {
+      outputChannel.appendLine(`Error getting response: ${error.message}`);
+      this._view.webview.postMessage({
+        type: 'responseError',
+        error: `Error: ${error.message}`
+      });
+    } finally {
+      this._view.webview.postMessage({ type: 'responseLoading', started: false });
     }
-
-    this.conversationHistory.push({ user: userInput, response: responseText });
-    this._view.webview.postMessage({
-      type: 'responseComplete',
-      text: responseText
-    });
-    outputChannel.appendLine("Chat response: " + responseText);
-
-    // Speak the chat response aloud
-    await speakMessage(responseText);
-    outputChannel.appendLine("Spoken chat response.");
   }
 
   startVoiceInput() {
     if (this._view) {
-      this._view.webview.postMessage({ type: 'startVoiceInput' });
-      outputChannel.appendLine("Voice input triggered via command.");
+      this.startVoiceRecognition();
     } else {
       vscode.window.showInformationMessage("Please open the EchoCode Tutor view to use voice input.");
-      outputChannel.appendLine("Voice input command invoked with no active chat panel.");
+      outputChannel.appendLine("Voice input command invoked with no active chat view.");
     }
   }
 
   _getHtmlForWebview(webview) {
-    // Create CSS and JS URIs
+    // Create URI for styles and scripts
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.css'));
     const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.js'));
-    const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.css'));
-    const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
-
-    // Nonce for script security
+    
+    // Generate a nonce to use for inline script
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
@@ -156,9 +222,8 @@ class EchoCodeChatViewProvider {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
-        <link href="${styleUri}" rel="stylesheet">
-        <link href="${codiconsUri}" rel="stylesheet">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; img-src ${webview.cspSource} https:;">
+        <link href="${styleMainUri}" rel="stylesheet">
         <title>EchoCode Tutor</title>
     </head>
     <body>
@@ -167,12 +232,24 @@ class EchoCodeChatViewProvider {
             <div id="input-container">
                 <textarea id="user-input" placeholder="Ask a question about your code..."></textarea>
                 <div id="button-container">
-                    <button id="send-button" title="Send message">
-                        <i class="codicon codicon-send"></i>
+                    <button id="send-button" title="Send message" class="icon-button">
+                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                            <path d="M8.08073 5.36896L11.8807 4.06896L10.5807 7.86896L8.08073 5.36896ZM13.1399 2.81L3.1399 7.81C2.9899 7.88 2.9099 8.05 2.9399 8.21C2.9699 8.38 3.0999 8.5 3.2699 8.5H7.9999V13.24C7.9999 13.4 8.1299 13.54 8.2999 13.56C8.3099 13.56 8.3199 13.56 8.3299 13.56C8.4799 13.56 8.6199 13.48 8.6899 13.35L13.6899 3.35C13.7599 3.19 13.7399 3 13.6399 2.87C13.5399 2.74 13.3499 2.69 13.1799 2.76L13.1399 2.81Z"/>
+                        </svg>
                     </button>
-                    <button id="voice-button" title="Start voice input">
-                        <i class="codicon codicon-mic"></i>
+                    <button id="voice-button" title="Start voice input" class="icon-button">
+                        <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                            <path d="M8 10.9844C9.46875 10.9844 10.4844 9.95312 10.4844 8V3C10.4844 1.04688 9.45312 0 8 0C6.53125 0 5.51562 1.04688 5.51562 3V8C5.51562 9.95312 6.53125 10.9844 8 10.9844ZM4 5.51562V8C4 10.7344 5.71875 12.4844 8.25 12.4844C10.7812 12.4844 12.5 10.7344 12.5 8V5.51562H14V8C14 11.4062 11.7812 13.5156 9 13.9375V16H7V13.9375C4.21875 13.5156 2 11.4062 2 8V5.51562H4Z"/>
+                        </svg>
                     </button>
+                </div>
+            </div>
+            <div id="status-container">
+                <div id="listening-indicator" class="status-indicator hidden">
+                    Listening...
+                </div>
+                <div id="loading-indicator" class="status-indicator hidden">
+                    Thinking...
                 </div>
             </div>
         </div>
@@ -286,6 +363,16 @@ async function activate(context) {
     "echocode.annotate",
     async (textEditor) => {
       outputChannel.appendLine("echocode.annotate command triggered");
+      
+      // If annotations are visible, clear them
+      if (annotationsVisible) {
+        clearDecorations();
+        annotationQueue.clear(); // Assuming your Queue class has a clear method
+        annotationsVisible = false;
+        vscode.window.showInformationMessage("Annotations cleared");
+        return;
+      }
+      
       try {
         const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
         const [model] = await vscode.lm.selectChatModels({
@@ -307,10 +394,23 @@ async function activate(context) {
           new vscode.CancellationTokenSource().token
         );
         await parseChatResponse(chatResponse, textEditor);
+        annotationsVisible = true;
         outputChannel.appendLine("Annotations applied successfully");
       } catch (error) {
         outputChannel.appendLine("Error in annotate command: " + error.message);
         vscode.window.showErrorMessage("Failed to annotate code: " + error.message);
+      }
+    }
+  );
+
+  let stopSpeechDisposable = vscode.commands.registerCommand(
+    "echocode.stopSpeech",
+    async () => {
+      const { stopSpeech } = require('./speechHandler');
+      const wasSpeaking = stopSpeech();
+      if (wasSpeaking) {
+        vscode.window.showInformationMessage("Speech stopped");
+        outputChannel.appendLine("Speech stopped by user");
       }
     }
   );
@@ -378,7 +478,8 @@ async function activate(context) {
     nextFunction,
     prevFunction,
     openChatDisposable,
-    startVoiceInputDisposable
+    startVoiceInputDisposable,
+    stopSpeechDisposable
   );
   outputChannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput");
 }
@@ -480,6 +581,19 @@ function applyDecoration(editor, line, suggestion) {
   editor.setDecorations(decorationType, [
     { range: range, hoverMessage: suggestion },
   ]);
+  
+  // Store the decoration for later removal
+  activeDecorations.push({
+    decorationType,
+    editor
+  });
+}
+
+function clearDecorations() {
+  for (const decoration of activeDecorations) {
+    decoration.editor.setDecorations(decoration.decorationType, []);
+  }
+  activeDecorations = [];
 }
 
 function deactivate() {
