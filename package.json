@@ -6,7 +6,7 @@
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
-    "vscode": "^1.97.0"
+    "vscode": "^1.99.1"
   },
   "categories": [
     "Other"
