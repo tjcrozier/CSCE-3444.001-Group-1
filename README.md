@@ -68,6 +68,13 @@ To hear a brief summary of the current Python class:
 
 To hear a brief summary of the current Python function:
 - Press "Ctrl + Alt + Space" followed by "F"
+
+To change the speed of Speech:
+- Press **Ctrl+ Alt + u** to turn speech speed up.
+- Press **Ctrl+ Alt + d** to turn speech speed down.
+
+To fully stop speech:
+- Press **Ctrl+ Alt + x** to fully stop speech.
 ---
 ## **Extension Commands**
 
@@ -99,7 +106,12 @@ To hear a brief summary of the current Python function:
 - Added hotkey functionality for annotations, navigating annotations, and iterating the navigation queue
 ---
 
-
+### **1.2.1**
+- Changed voice from default to Microsoft's Zira voice.
+- Added ability to end speech
+- Added hotkey functionality for ending speech.
+- Added ability to increase and decrease speech speed. 
+- Added hotkey functionality for changing speech speed.
 ---
 ## **Author & License**
 
