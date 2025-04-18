@@ -98,6 +98,11 @@
         "command": "code-tutor.analyzeBigO",
         "key": "ctrl+alt+n",
         "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.iterateBigOQueue",
+        "key": "ctrl+alt+b",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
