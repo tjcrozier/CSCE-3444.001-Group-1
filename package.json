@@ -100,7 +100,7 @@
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
-        "command": "echocode.iterateBigOQueue",
+        "command": "code-tutor.iterateBigOQueue",
         "key": "ctrl+alt+b",
         "when": "editorTextFocus"
       }

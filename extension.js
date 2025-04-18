@@ -51,6 +51,7 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
+  // Register Big O commands
   registerBigOCommand(context);
 
   // Trigger on file save
