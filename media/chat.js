@@ -103,8 +103,10 @@
                 // Show/hide loading indicator
                 if (message.started) {
                     loadingIndicator.classList.remove('hidden');
+                    loadingIndicator.classList.add('visible');
                 } else {
                     loadingIndicator.classList.add('hidden');
+                    loadingIndicator.classList.remove('visible');
                 }
                 break;
                 
@@ -121,6 +123,7 @@
                 // Visual indicator that voice input is active
                 voiceButton.classList.add('active');
                 listeningIndicator.classList.remove('hidden');
+                listeningIndicator.classList.add('visible');
                 userInput.placeholder = 'Listening...';
                 break;
                 
@@ -128,6 +131,7 @@
                 // Visual indicator that voice input has stopped
                 voiceButton.classList.remove('active');
                 listeningIndicator.classList.add('hidden');
+                listeningIndicator.classList.remove('visible');
                 userInput.placeholder = 'Ask a question about your code...';
                 break;
                 
@@ -141,6 +145,7 @@
                 // Handle voice recognition errors
                 voiceButton.classList.remove('active');
                 listeningIndicator.classList.add('hidden');
+                listeningIndicator.classList.remove('visible');
                 userInput.placeholder = 'Ask a question about your code...';
                 addMessageToUI('system', `Voice recognition error: ${message.error || 'Unknown error'}`);
                 break;

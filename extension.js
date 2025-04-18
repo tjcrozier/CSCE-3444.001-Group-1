@@ -23,16 +23,16 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 const BASE_PROMPT = `You are a helpful assistant focused on the file the user is working on. Answer questions with brief, clear explanations and relevant suggestions specific to this file. Always avoid giving full code snippets even if explicitly requested. Instead, guide the user to understand and solve their issue themselves. Politely decline to respond to questions unrelated to the file, non-programming questions, or non-Python inquiries. Keep responses very concise and easy to follow for text-to-speech systems. Don't format the response in markdown because it will be read aloud. Don't format the response in code blocks because it will be read aloud. Make sure the response is clear and easy to understand. Below is the content of the active file. Here is the file content:\n\n`;
 
 // Mock voice recognition for demo/development purposes
-// function performVoiceRecognition() {
-//     return new Promise((resolve) => {
-//         // In a real implementation, this would connect to the system's speech recognition
-//         // For now, I'll simulate after a short delay
-//         setTimeout(() => {
-//             // This is just a placeholder - real implementation would use an actual speech recognition API
-//             resolve("Can you explain this Python code?");
-//         }, 2000);
-//     });
-// }
+function performVoiceRecognition() {
+    return new Promise((resolve) => {
+        // In a real implementation, this would connect to the system's speech recognition
+        // For now, I'll simulate after a short delay
+        setTimeout(() => {
+            // This is just a placeholder - real implementation would use an actual speech recognition API
+            resolve("Can you explain this Python code?");
+        }, 2000);
+    });
+}
 
 // Custom WebViewProvider for the chat view
 class EchoCodeChatViewProvider {
@@ -68,45 +68,45 @@ class EchoCodeChatViewProvider {
     );
   }
 
-  // async startVoiceRecognition() {
-  //   if (this._isListening || !this._view) return;
+  async startVoiceRecognition() {
+    if (this._isListening || !this._view) return;
     
-  //   this._isListening = true;
-  //   outputChannel.appendLine("Starting voice recognition");
+    this._isListening = true;
+    outputChannel.appendLine("Starting voice recognition");
     
-  //   // Signal the webview that we're listening
-  //   this._view.webview.postMessage({ type: 'voiceListeningStarted' });
+    // Signal the webview that we're listening
+    this._view.webview.postMessage({ type: 'voiceListeningStarted' });
     
-  //   try {
-  //     // In a real implementation, we would use a proper voice recognition API
-  //     // For now, I'll simulate with a mock function
-  //     const recognizedText = await performVoiceRecognition();
+    try {
+      // In a real implementation, we would use a proper voice recognition API
+      // For now, I'll simulate with a mock function
+      const recognizedText = await performVoiceRecognition();
       
-  //     if (recognizedText && this._view) {
-  //       // Send the recognized text to the webview to display in the input field
-  //       this._view.webview.postMessage({ 
-  //         type: 'voiceRecognitionResult', 
-  //         text: recognizedText 
-  //       });
+      if (recognizedText && this._view) {
+        // Send the recognized text to the webview to display in the input field
+        this._view.webview.postMessage({ 
+          type: 'voiceRecognitionResult', 
+          text: recognizedText 
+        });
         
-  //       // Automatically process the recognized text as a user message
-  //       await this.handleUserMessage(recognizedText);
-  //     }
-  //   } catch (error) {
-  //     outputChannel.appendLine(`Voice recognition error: ${error.message}`);
-  //     if (this._view) {
-  //       this._view.webview.postMessage({ 
-  //         type: 'voiceRecognitionError', 
-  //         error: error.message 
-  //       });
-  //     }
-  //   } finally {
-  //     this._isListening = false;
-  //     if (this._view) {
-  //       this._view.webview.postMessage({ type: 'voiceListeningStopped' });
-  //     }
-  //   }
-  // }
+        // Automatically process the recognized text as a user message
+        await this.handleUserMessage(recognizedText);
+      }
+    } catch (error) {
+      outputChannel.appendLine(`Voice recognition error: ${error.message}`);
+      if (this._view) {
+        this._view.webview.postMessage({ 
+          type: 'voiceRecognitionError', 
+          error: error.message 
+        });
+      }
+    } finally {
+      this._isListening = false;
+      if (this._view) {
+        this._view.webview.postMessage({ type: 'voiceListeningStopped' });
+      }
+    }
+  }
 
   async handleUserMessage(userInput) {
     if (!this._view) return;
@@ -216,7 +216,7 @@ class EchoCodeChatViewProvider {
     
     // Generate a nonce to use for inline script
     const nonce = getNonce();
-
+  
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
