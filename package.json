@@ -2,7 +2,7 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
@@ -51,8 +51,31 @@
       {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
+      },
+      {
+        "command": "echocode.increaseSpeechSpeed",
+        "title": "Increase Speech Speed"
+      },
+      {
+        "command": "echocode.decreaseSpeechSpeed",
+        "title": "Decrease Speech Speed"
       }
     ],
+    "configuration": {
+      "title": "EchoCode",
+      "properties": {
+        "echocode.voice": {
+          "type": "string",
+          "default": "Microsoft Zira Desktop",
+          "description": "Voice name for text-to-speech (e.g., 'Microsoft Zira Desktop', 'Alex', etc.). Leave blank for system default."
+        },
+        "echocode.rate": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Speech rate for text-to-speech (0.5 = slow, 1.0 = normal, 1.5 = fast)."
+        }
+      }
+    },
     "keybindings": [
       {
         "command": "code-tutor.speakNextAnnotation",
@@ -93,6 +116,21 @@
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.stopSpeech",
+        "key": "ctrl+alt+x",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+u",
+        "command": "echocode.increaseSpeechSpeed",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+d",
+        "command": "echocode.decreaseSpeechSpeed",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
@@ -114,20 +152,20 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@eslint/js": "^9.13.0",
-    "@stylistic/eslint-plugin": "^2.9.0",
-    "@types/mocha": "^10.0.7",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.97.0",
+    "@eslint/js": "^9.24.0",
+    "@stylistic/eslint-plugin": "^2.13.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.30",
+    "@types/vscode": "^1.99.1",
     "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.4.0",
-    "eslint": "^9.13.0",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.0"
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.24.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   },
   "dependencies": {
-    "axios": "^1.8.3",
-    "dotenv": "^16.4.7",
+    "axios": "^1.8.4",
+    "dotenv": "^16.5.0",
     "say": "^0.16.0",
     "sound-play": "^1.1.0"
   }

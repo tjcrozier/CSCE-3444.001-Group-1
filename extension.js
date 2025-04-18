@@ -5,6 +5,7 @@ const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 const Queue = require("./queue_system"); 
+const {increaseSpeechSpeed, decreaseSpeechSpeed, getSpeechSpeed} = require('./speechHandler');
 
 let outputChannel;
 let debounceTimer = null; 
@@ -82,6 +83,27 @@ async function activate(context) {
       }, 1000); // Adjust the delay (in milliseconds) as needed
     }
   });
+  
+  // Command to stop speech
+  let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
+    const { stopSpeaking } = require('./speechHandler');
+    stopSpeaking();
+  });
+
+  //Speech speed control  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.increaseSpeechSpeed', () => {
+      increaseSpeechSpeed();
+      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+    })
+  );
+  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.decreaseSpeechSpeed', () => {
+      decreaseSpeechSpeed();
+      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+    })
+  );
 
   // Command to manually trigger error reading
   let disposable = vscode.commands.registerCommand(
