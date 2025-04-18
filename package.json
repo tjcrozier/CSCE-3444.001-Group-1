@@ -93,6 +93,11 @@
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "code-tutor.analyzeBigO",
+        "key": "ctrl+alt+n",
+        "when": "editorTextFocus && editorLangId == 'python'"
       }
     ],
     "menus": {
