@@ -30,6 +30,10 @@
         "title": "Read Python Errors Aloud"
       },
       {
+        "command": "echocode.stopSpeech",
+        "title": "Stop Reading Aloud"
+      },
+      {
         "command": "echocode.annotate",
         "title": "Toggle EchoCode Annotations",
         "icon": "$(comment)"
@@ -77,6 +81,11 @@
       {
         "command": "echocode.readAllAnnotations",
         "key": "ctrl+alt+q",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.stopSpeech",
+        "key": "ctrl+alt+x",
         "when": "editorTextFocus"
       },
       {
@@ -139,7 +148,8 @@
         {
           "command": "echocode.startVoiceInput",
           "when": "view == echocode.chatView",
-          "group": "navigation"
+          "group": "navigation",
+          "icon": "$(comment)"
         }
       ]
     }
