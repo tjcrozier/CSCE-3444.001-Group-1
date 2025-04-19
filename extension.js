@@ -182,9 +182,8 @@ class EchoCodeChatViewProvider {
       });
       outputChannel.appendLine("Chat response: " + responseText);
 
-      // Speak the chat response aloud
+      // Speak the chat response aloud using speechHandler
       await speakMessage(responseText);
-      outputChannel.appendLine("Spoken chat response.");
     } catch (error) {
       outputChannel.appendLine(`Error getting response: ${error.message}`);
       this._view.webview.postMessage({
