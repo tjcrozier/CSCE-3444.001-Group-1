@@ -85,8 +85,8 @@ class EchoCodeChatViewProvider {
           text: recognizedText 
         });
         
-        // Automatically process the recognized text as a user message
-        await this.handleUserMessage(recognizedText);
+        // Don't automatically process the recognized text
+        // Let the user press enter to send it
       }
     } catch (error) {
       outputChannel.appendLine(`Voice recognition error: ${error.message}`);
