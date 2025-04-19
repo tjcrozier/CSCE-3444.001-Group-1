@@ -103,6 +103,11 @@
         "command": "code-tutor.iterateBigOQueue",
         "key": "ctrl+alt+b",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "code-tutor.readEntireBigOQueue",
+        "key": "ctrl+alt+h",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {

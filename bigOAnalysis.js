@@ -1,7 +1,9 @@
 const vscode = require("vscode");
 const Queue = require("./queue_system"); // Import the Queue system
+const { speakMessage } = require("./speechHandler"); // Import the speakMessage function
 
 const bigOQueue = new Queue(); // Queue for Big O notation problems
+const annotationQueue = new Queue(); // Queue for annotations
 
 const ANNOTATION_PROMPT = `
 You are a code tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object without any additional formatting or code blocks. Here is an example of what your response should look like:
@@ -89,15 +91,37 @@ async function parseChatResponse(chatResponse, textEditor) {
         // Parse the JSON
         const annotations = JSON.parse(cleanedResponse);
 
-        // Apply each annotation
+        // Validate and apply each annotation
         annotations.forEach((annotation) => {
-          applyDecoration(textEditor, annotation.line, annotation.suggestion);
+          const lineCount = textEditor.document.lineCount;
 
-          // Enqueue the annotation for later playback
-          bigOQueue.enqueue({
-            line: annotation.line,
-            suggestion: annotation.suggestion,
-          });
+          // Ensure the line number is within bounds
+          if (annotation.line > 0 && annotation.line <= lineCount) {
+            applyDecoration(textEditor, annotation.line, annotation.suggestion);
+
+            // Log annotation details
+            console.log(
+              `Annotation: Line ${annotation.line}, Suggestion: ${annotation.suggestion}`
+            );
+            console.log(
+              `Document line count: ${textEditor.document.lineCount}`
+            );
+
+            // Enqueue the annotation for later playback
+            bigOQueue.enqueue({
+              line: annotation.line,
+              suggestion: annotation.suggestion,
+            });
+
+            annotationQueue.enqueue({
+              line: annotation.line,
+              suggestion: annotation.suggestion,
+            });
+          } else {
+            console.warn(
+              `Annotation line ${annotation.line} is out of bounds (1-${lineCount}). Skipping.`
+            );
+          }
         });
 
         // Reset the accumulated response
@@ -126,8 +150,9 @@ function cleanResponse(rawResponse) {
  * Applies decorations to the editor.
  */
 function applyDecoration(editor, line, suggestion) {
-  const position = new vscode.Position(line - 1, 0);
-  const range = new vscode.Range(position, position);
+  const lineText = editor.document.lineAt(line - 1).text; // Get the text of the line
+  const position = new vscode.Position(line - 1, lineText.length); // Position at the end of the line
+  const range = new vscode.Range(position, position); // Range at the end of the line
 
   const decorationType = vscode.window.createTextEditorDecorationType({
     after: {
@@ -141,7 +166,7 @@ function applyDecoration(editor, line, suggestion) {
     hoverMessage: suggestion,
     renderOptions: {
       after: {
-        contentText: ` ${suggestion.substring(0, 50)}...`,
+        contentText: ` ${suggestion.substring(0, 50)}...`, // Append the annotation
       },
     },
   };
@@ -150,21 +175,56 @@ function applyDecoration(editor, line, suggestion) {
 }
 
 /**
- * Command to iterate over the Big O queue.
+ * Command to iterate over the Big O queue and speak the problems.
  */
 function iterateBigOQueue() {
   if (!bigOQueue.isEmpty()) {
     const nextProblem = bigOQueue.dequeue();
-    vscode.window.showInformationMessage(
-      `Big O problem on line ${nextProblem.line}: ${nextProblem.suggestion}`
-    );
+    const message = `Big O problem on line ${nextProblem.line}: ${nextProblem.suggestion}`;
+
+    // Display the message in an information popup
+    vscode.window.showInformationMessage(message);
+
+    // Speak the message
+    speakMessage(message);
   } else {
-    vscode.window.showInformationMessage("No more Big O problems to read.");
+    const noMoreProblemsMessage = "No more Big O problems to read.";
+
+    // Display the message in an information popup
+    vscode.window.showInformationMessage(noMoreProblemsMessage);
+
+    // Speak the message
+    speakMessage(noMoreProblemsMessage);
   }
 }
 
 /**
- * Registers the Big O analysis command.
+ * Command to read over the entire Big O queue and speak the problems.
+ */
+async function readEntireBigOQueue() {
+  if (!bigOQueue.isEmpty()) {
+    const queueCopy = [...bigOQueue.items]; // Copy the queue to avoid modifying it
+    for (const problem of queueCopy) {
+      const message = `Big O problem on line ${problem.line}: ${problem.suggestion}`;
+
+      // Display the message in an information popup
+      vscode.window.showInformationMessage(message);
+
+      // Speak the message
+      await speakMessage(message);
+
+      // Add a small delay between messages for better readability
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  } else {
+    const noProblemsMessage = "The Big O queue is empty.";
+    vscode.window.showInformationMessage(noProblemsMessage);
+    await speakMessage(noProblemsMessage);
+  }
+}
+
+/**
+ * Registers the Big O analysis commands.
  */
 function registerBigOCommand(context) {
   const analyzeBigOCommand = vscode.commands.registerCommand(
@@ -188,7 +248,38 @@ function registerBigOCommand(context) {
     }
   );
 
-  context.subscriptions.push(analyzeBigOCommand, iterateBigOCommand);
+  const readNextAnnotationCommand = vscode.commands.registerCommand(
+    "echocode.readNextAnnotation",
+    async () => {
+      if (!annotationQueue.isEmpty()) {
+        const nextAnnotation = annotationQueue.dequeue();
+        const message = `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`;
+
+        // Display the message in an information popup
+        vscode.window.showInformationMessage(message);
+
+        // Speak the message
+        await speakMessage(message);
+      } else {
+        vscode.window.showInformationMessage("No more annotations to read.");
+        await speakMessage("No more annotations to read.");
+      }
+    }
+  );
+
+  const readEntireBigOQueueCommand = vscode.commands.registerCommand(
+    "code-tutor.readEntireBigOQueue",
+    async () => {
+      await readEntireBigOQueue();
+    }
+  );
+
+  context.subscriptions.push(
+    analyzeBigOCommand,
+    iterateBigOCommand,
+    readNextAnnotationCommand,
+    readEntireBigOQueueCommand // Register the new command
+  );
 }
 
 module.exports = {
