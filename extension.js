@@ -25,10 +25,8 @@ const BASE_PROMPT = `You are a helpful assistant focused on the file the user is
 // Mock voice recognition for demo/development purposes
 function performVoiceRecognition() {
     return new Promise((resolve) => {
-        // In a real implementation, this would connect to the system's speech recognition
-        // For now, I'll simulate after a short delay
+        // Simulate voice recognition with a short delay
         setTimeout(() => {
-            // This is just a placeholder - real implementation would use an actual speech recognition API
             resolve("Can you explain this Python code?");
         }, 2000);
     });
@@ -78,8 +76,6 @@ class EchoCodeChatViewProvider {
     this._view.webview.postMessage({ type: 'voiceListeningStarted' });
     
     try {
-      // In a real implementation, we would use a proper voice recognition API
-      // For now, I'll simulate with a mock function
       const recognizedText = await performVoiceRecognition();
       
       if (recognizedText && this._view) {
