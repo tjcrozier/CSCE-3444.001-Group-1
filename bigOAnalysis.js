@@ -16,61 +16,21 @@ You are a code tutor who helps students learn how to write better code. Your job
  */
 async function analyzeBigO(editor) {
   const document = editor.document;
-  const text = document.getText();
-  const suggestions = [];
 
-  // Prompt to send to the language model
-  const BIG_O_PROMPT = `
-  You are a code analysis assistant. Analyze the following Python code and identify any potential Big O notation inefficiencies. Provide suggestions for improvement in JSON format, with each suggestion containing the line number and a brief explanation of the issue. Do not include any additional formatting like \`\`\`json or \`\`\`. Use the following format:
-  [
-    { "line": <line_number>, "suggestion": "<description of the inefficiency>" },
-    ...
-  ]
-  Here is the code:
-  ${text}
-  `;
+  // Detect loops in the Python file
+  const loops = detectLoops(document);
 
-  try {
-    // Select the Copilot model
-    const [model] = await vscode.lm.selectChatModels({
-      vendor: "copilot",
-      family: "gpt-4o",
-    });
-
-    if (!model) {
-      vscode.window.showErrorMessage(
-        "No language model available. Please ensure Copilot is enabled."
-      );
-      return;
-    }
-
-    // Send the prompt to the language model
-    const messages = [
-      new vscode.LanguageModelChatMessage(0, BIG_O_PROMPT), // 0 = User role
-    ];
-    const chatResponse = await model.sendRequest(
-      messages,
-      {},
-      new vscode.CancellationTokenSource().token
-    );
-
-    // Parse the response from the language model
-    await parseChatResponse(chatResponse, editor);
-
-    // Notify the user if no issues were found
-    if (bigOQueue.isEmpty()) {
-      vscode.window.showInformationMessage("No Big O issues detected!");
-    } else {
-      vscode.window.showInformationMessage(
-        `${bigOQueue.size()} Big O issues detected and added to the queue.`
-      );
-    }
-  } catch (error) {
-    vscode.window.showErrorMessage(
-      "Failed to analyze Big O problems: " + error.message
-    );
-    console.error("Error in analyzeBigO:", error);
+  if (loops.length === 0) {
+    vscode.window.showInformationMessage("No loops detected in the file.");
+    return;
   }
+
+  vscode.window.showInformationMessage(
+    `Detected ${loops.length} loop(s). Analyzing for potential O(N) issues...`
+  );
+
+  // Analyze the detected loops
+  await analyzeLoops(editor, loops);
 }
 
 /**
@@ -84,53 +44,39 @@ async function parseChatResponse(chatResponse, textEditor) {
     // Check if the accumulated response contains a complete JSON array
     if (accumulatedResponse.trim().endsWith("]")) {
       try {
-        // Clean the response
-        const cleanedResponse = cleanResponse(accumulatedResponse);
-        console.log("Cleaned chat response:", cleanedResponse);
+        const annotations = JSON.parse(cleanResponse(accumulatedResponse));
 
-        // Parse the JSON
-        const annotations = JSON.parse(cleanedResponse);
-
-        // Validate and apply each annotation
         annotations.forEach((annotation) => {
-          const lineCount = textEditor.document.lineCount;
+          const line = annotation.line; // Use the line number provided by the AI
 
-          // Ensure the line number is within bounds
-          if (annotation.line > 0 && annotation.line <= lineCount) {
-            applyDecoration(textEditor, annotation.line, annotation.suggestion);
+          // Debugging log to verify the line number
+          console.log(
+            `Annotation line: ${line}, Suggestion: ${annotation.suggestion}`
+          );
 
-            // Log annotation details
-            console.log(
-              `Annotation: Line ${annotation.line}, Suggestion: ${annotation.suggestion}`
-            );
-            console.log(
-              `Document line count: ${textEditor.document.lineCount}`
-            );
+          // Apply decoration at the correct line
+          applyDecoration(textEditor, line, annotation.suggestion);
 
-            // Enqueue the annotation for later playback
-            bigOQueue.enqueue({
-              line: annotation.line,
-              suggestion: annotation.suggestion,
-            });
+          // Enqueue the annotation for playback
+          annotationQueue.enqueue({
+            line: line,
+            suggestion: annotation.suggestion,
+          });
 
-            annotationQueue.enqueue({
-              line: annotation.line,
-              suggestion: annotation.suggestion,
-            });
-          } else {
-            console.warn(
-              `Annotation line ${annotation.line} is out of bounds (1-${lineCount}). Skipping.`
-            );
-          }
+          // Enqueue the Big O problem into the bigOQueue
+          bigOQueue.enqueue({
+            line: line,
+            suggestion: annotation.suggestion,
+          });
+
+          console.log(
+            `Annotation added to bigOQueue: Line ${line}, Suggestion: ${annotation.suggestion}`
+          );
         });
 
-        // Reset the accumulated response
         accumulatedResponse = "";
       } catch (error) {
         console.error("Failed to parse annotation:", error.message);
-        vscode.window.showErrorMessage(
-          "Failed to parse annotations: " + error.message
-        );
       }
     }
   }
@@ -150,9 +96,22 @@ function cleanResponse(rawResponse) {
  * Applies decorations to the editor.
  */
 function applyDecoration(editor, line, suggestion) {
-  const lineText = editor.document.lineAt(line - 1).text; // Get the text of the line
-  const position = new vscode.Position(line - 1, lineText.length); // Position at the end of the line
-  const range = new vscode.Range(position, position); // Range at the end of the line
+  const document = editor.document;
+
+  // Get the text of the target line
+  const lineText = document.lineAt(line - 1).text.trim();
+
+  // Skip lines that are comments or empty
+  if (lineText.startsWith("#") || lineText === "") {
+    console.warn(
+      `Skipping annotation on line ${line}: Line is a comment or empty.`
+    );
+    return;
+  }
+
+  // Position at the end of the line
+  const position = new vscode.Position(line - 1, lineText.length);
+  const range = new vscode.Range(position, position);
 
   const decorationType = vscode.window.createTextEditorDecorationType({
     after: {
@@ -172,6 +131,78 @@ function applyDecoration(editor, line, suggestion) {
   };
 
   editor.setDecorations(decorationType, [decoration]);
+}
+
+/**
+ * Detects loops in the Python file and identifies potential inefficiencies.
+ */
+function detectLoops(document) {
+  const loops = [];
+  const lines = document.getText().split("\n");
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Detect `for` and `while` loops
+    if (line.startsWith("for ") || line.startsWith("while ")) {
+      loops.push({ startLine: i + 1, code: line }); // Use 1-based line numbers
+    }
+  }
+
+  console.log("Detected loops:", loops); // Debugging log
+  return loops;
+}
+
+/**
+ * Analyzes loops for potential O(N) inefficiencies using Copilot.
+ */
+async function analyzeLoops(editor, loops) {
+  const document = editor.document;
+
+  for (const loop of loops) {
+    const { startLine, code } = loop;
+
+    // Prepare the prompt for Copilot
+    const prompt = `
+      You are a code analysis assistant. Analyze the following Python loop and identify any potential O(N) inefficiencies. The code includes line numbers. Use these line numbers when identifying inefficiencies. Provide suggestions in JSON format, with each suggestion containing the line number and a brief explanation of the issue. Do not include any additional formatting like \`\`\`json or \`\`\`. Use the following format:
+      [
+        { "line": <line_number>, "suggestion": "<description of the inefficiency>" }
+      ]
+      Here is the code:
+      Line ${startLine}: ${code}
+    `;
+
+    try {
+      // Select the Copilot model
+      const [model] = await vscode.lm.selectChatModels({
+        vendor: "copilot",
+        family: "gpt-4o",
+      });
+
+      if (!model) {
+        vscode.window.showErrorMessage(
+          "No language model available. Please ensure Copilot is enabled."
+        );
+        return;
+      }
+
+      // Send the prompt to Copilot
+      const messages = [new vscode.LanguageModelChatMessage(0, prompt)];
+      const chatResponse = await model.sendRequest(
+        messages,
+        {},
+        new vscode.CancellationTokenSource().token
+      );
+
+      // Parse and handle the Copilot response
+      await parseChatResponse(chatResponse, editor);
+    } catch (error) {
+      vscode.window.showErrorMessage(
+        `Failed to analyze loop starting at line ${startLine}: ${error.message}`
+      );
+      console.error("Error analyzing loop:", error);
+    }
+  }
 }
 
 /**
