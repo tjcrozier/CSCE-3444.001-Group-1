@@ -5,7 +5,14 @@ const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 const Queue = require("./queue_system"); 
-const {increaseSpeechSpeed, decreaseSpeechSpeed, getSpeechSpeed} = require('./speechHandler');
+const {
+  loadAssignmentFile,
+  readNextTask,
+  markTaskComplete
+} = require('./assignmentTracker');
+const {increaseSpeechSpeed, 
+  decreaseSpeechSpeed, 
+  getSpeechSpeed} = require('./speechHandler');
 
 let outputChannel;
 let debounceTimer = null; 
@@ -208,7 +215,10 @@ async function activate(context) {
     readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
-    speakNextAnnotationDisposable
+    speakNextAnnotationDisposable,
+    vscode.commands.registerCommand('echocode.loadAssignmentFile', loadAssignmentFile),
+    vscode.commands.registerCommand('echocode.readNextTask', readNextTask),
+    vscode.commands.registerCommand('echocode.markTaskComplete', markTaskComplete)
   );
   outputChannel.appendLine(
     "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
