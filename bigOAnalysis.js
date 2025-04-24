@@ -6,9 +6,9 @@ const bigOQueue = new Queue(); // Queue for Big O notation problems
 const annotationQueue = new Queue(); // Queue for annotations
 
 const ANNOTATION_PROMPT = `
-You are a code tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object without any additional formatting or code blocks. Here is an example of what your response should look like:
+You are a Big O complexity analyzer. For each code pattern that causes performance issues, provide a single concise sentence. Just one sentence. that explains the issue and suggests an improvement. Format each suggestion as a single JSON object without any formatting:
 
-{ "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
+{ "line": <line_number>, "suggestion": "<brief, one-sentence explanation of the issue and how to fix it>" }
 `;
 
 /**
@@ -98,10 +98,17 @@ function cleanResponse(rawResponse) {
 function applyDecoration(editor, line, suggestion) {
   const document = editor.document;
 
-  // Get the text of the target line
-  const lineText = document.lineAt(line - 1).text.trim();
+  // Make sure the line number is valid
+  if (line - 1 < 0 || line - 1 >= document.lineCount) {
+    console.warn(`Line ${line} is outside of document range`);
+    return;
+  }
+
+  // Get the line object
+  const lineObj = document.lineAt(line - 1);
 
   // Skip lines that are comments or empty
+  const lineText = lineObj.text.trim();
   if (lineText.startsWith("#") || lineText === "") {
     console.warn(
       `Skipping annotation on line ${line}: Line is a comment or empty.`
@@ -109,28 +116,27 @@ function applyDecoration(editor, line, suggestion) {
     return;
   }
 
-  // Position at the end of the line
-  const position = new vscode.Position(line - 1, lineText.length);
-  const range = new vscode.Range(position, position);
-
+  // Create decoration type with styling that matches the annotation style
   const decorationType = vscode.window.createTextEditorDecorationType({
     after: {
+      contentText: ` ${suggestion.substring(0, 25) + "..."}`,
       color: "grey",
-      fontStyle: "italic",
     },
   });
 
-  const decoration = {
-    range,
-    hoverMessage: suggestion,
-    renderOptions: {
-      after: {
-        contentText: ` ${suggestion.substring(0, 50)}...`, // Append the annotation
-      },
-    },
-  };
+  // Get the length of the line to position the decoration at the end
+  const lineLength = lineObj.text.length;
 
-  editor.setDecorations(decorationType, [decoration]);
+  // Create a range at the end of the line
+  const range = new vscode.Range(
+    new vscode.Position(line - 1, lineLength),
+    new vscode.Position(line - 1, lineLength)
+  );
+
+  // Apply the decoration with hover message for the full suggestion
+  editor.setDecorations(decorationType, [
+    { range: range, hoverMessage: suggestion },
+  ]);
 }
 
 /**
