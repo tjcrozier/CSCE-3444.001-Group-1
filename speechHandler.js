@@ -35,8 +35,11 @@ function queueSpeedAnnouncement() {
 
     announceTimeout = setTimeout(() => {
         say.stop();
-        say.speak(`Speed ${currentSpeed.toFixed(1)}x`);
-    }, 900); // Waits 600ms after last change before speaking
+        const announcement = `Speed ${currentSpeed.toFixed(1)}x`;
+
+        // 🔁 Reuse the same voice-setting logic from speakMessage()
+        speakMessage(announcement);
+    }, 900);
 }
 
 function increaseSpeechSpeed() {

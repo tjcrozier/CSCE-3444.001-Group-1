@@ -83,7 +83,7 @@
         },
         "echocode.rate": {
           "type": "number",
-          "default": 1.0,
+          "default": 1,
           "description": "Speech rate for text-to-speech (0.5 = slow, 1.0 = normal, 1.5 = fast)."
         }
       }
