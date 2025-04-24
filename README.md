@@ -23,6 +23,7 @@
   
 - **AI Code Tutoring Annotations**  
   Provides inline annotations explaining **common coding mistakes** and suggesting improvements.
+  🆕 New functions for generating big O(n) annotations
 
 - **Auto-Detection of Missing Tools**  
   Automatically prompts users to install **Pylint** if it’s not found.
@@ -30,7 +31,7 @@
 - **Function Navigation via Hotkeys**  
   Use **Ctrl+Alt+Up/Down Arrow** to navigate between function definitions, with automatic speech announcing the current function.
 
-- **Assignment Tracker System** 🆕  
+- **Assignment Tracker System**   
   Allows blind users to upload `.txt`, `.pdf`, or `.docx` assignment files and uses AI to extract clear task lists:
   - Tasks are read aloud one-by-one.
   - Tasks can be marked complete with a hotkey.
@@ -91,7 +92,7 @@ Before using Echo Code, ensure the following are installed:
 
 
 ### **1.4.0**
--  Added **Big O Annotator** feature to help blind students handle big O^n tasks.
+-  Added **Big O Annotator** feature to help blind students handle big O(n) tasks.
 -  Users can now generate annotations specifically for "for loops" that check for inefficiencies.
 -  Uses **GitHub Copilot** to extract generate recommendations .
 -  **Text-to-speech** reads each annotaion outloud.
