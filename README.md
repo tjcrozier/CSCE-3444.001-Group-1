@@ -23,7 +23,7 @@
   
 - **AI Code Tutoring Annotations**  
   Provides inline annotations explaining **common coding mistakes** and suggesting improvements.
-  🆕 New functions for generating big O(n) annotations
+  -🆕 New functions for generating big O(n) annotations
 
 - **Auto-Detection of Missing Tools**  
   Automatically prompts users to install **Pylint** if it’s not found.
