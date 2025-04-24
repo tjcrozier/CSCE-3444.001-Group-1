@@ -4,8 +4,19 @@ const { speakMessage } = require("./speechHandler");
 const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
+
 const Queue = require("./queue_system");
 const { registerBigOCommand } = require("./bigOAnalysis");
+
+const {
+  loadAssignmentFile,
+  readNextTask,
+  markTaskComplete
+} = require('./assignmentTracker');
+const {increaseSpeechSpeed, 
+  decreaseSpeechSpeed, 
+  getSpeechSpeed} = require('./speechHandler');
+
 
 let outputChannel;
 let debounceTimer = null;
@@ -86,6 +97,27 @@ async function activate(context) {
       }, 1000); // Adjust the delay (in milliseconds) as needed
     }
   });
+  
+  // Command to stop speech
+  let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
+    const { stopSpeaking } = require('./speechHandler');
+    stopSpeaking();
+  });
+
+  //Speech speed control  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.increaseSpeechSpeed', () => {
+      increaseSpeechSpeed();
+      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+    })
+  );
+  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.decreaseSpeechSpeed', () => {
+      decreaseSpeechSpeed();
+      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+    })
+  );
 
   // Command to manually trigger error reading
   let disposable = vscode.commands.registerCommand(
@@ -190,7 +222,10 @@ async function activate(context) {
     readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
-    speakNextAnnotationDisposable
+    speakNextAnnotationDisposable,
+    vscode.commands.registerCommand('echocode.loadAssignmentFile', loadAssignmentFile),
+    vscode.commands.registerCommand('echocode.readNextTask', readNextTask),
+    vscode.commands.registerCommand('echocode.markTaskComplete', markTaskComplete)
   );
   outputChannel.appendLine(
     "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
