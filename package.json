@@ -141,7 +141,7 @@
       },
       {
         "command": "code-tutor.readEntireBigOQueue",
-        "key": "ctrl+alt+h",
+        "key": "ctrl+alt+h"
       },
         "key": "ctrl+alt+o",
         "command": "echocode.loadAssignmentFile",
