@@ -56,9 +56,12 @@
 | `Ctrl+Alt+U` | `echocode.increaseSpeechSpeed` | Increases speech rate. |
 | `Ctrl+Alt+D` | `echocode.decreaseSpeechSpeed` | Decreases speech rate. |
 | `Ctrl+Alt+X` | `echocode.stopSpeech` | Stops current speech playback. |
-| `Ctrl+Alt+O` | `echocode.loadAssignmentFile` | Uploads an assignment file for task tracking. 🆕 |
-| `Ctrl+Alt+T` | `echocode.readNextTask` | Reads the next task aloud. 🆕 |
-| `Ctrl+Alt+M` | `echocode.markTaskComplete` | Marks the current task as complete. 🆕 |
+| `Ctrl+Alt+O` | `echocode.loadAssignmentFile` | Uploads an assignment file for task tracking.  |
+| `Ctrl+Alt+T` | `echocode.readNextTask` | Reads the next task aloud. |
+| `Ctrl+Alt+M` | `echocode.markTaskComplete` | Marks the current task as complete.  |
+| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               |
+| `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud      🆕 |
+| `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time 🆕|
 
 
 ---
@@ -87,21 +90,20 @@ Before using Echo Code, ensure the following are installed:
 ## **Release Notes**
 
 
-### **1.3.0**
--  Added **Assignment Tracker** feature to help blind students break down and track assignment tasks.
--  Users can now **upload `.txt`, `.pdf`, or `.docx` files** containing assignment details.
--  Uses **GitHub Copilot** to extract clear, short checklist-style tasks from the assignment.
--  **Text-to-speech** reads each task aloud with controls for navigation and marking tasks complete.
--  Automatically **saves a generated task list** to `generated_tasks.txt`.
--  Displays all tasks in a dedicated **EchoCode Task List output panel** for visual users.
+### **1.4.0**
+-  Added **Big O Annotator** feature to help blind students handle big O^n tasks.
+-  Users can now generate annotations specifically for "for loops" that check for inefficiencies.
+-  Uses **GitHub Copilot** to extract generate recommendations .
+-  **Text-to-speech** reads each annotaion outloud.
+-  Queues up all big O annotaitons in its own queue that can be read aloud all at once or one per button press .
 
 **New Hotkeys:**
 
 | Shortcut        | Description                            |
 |----------------|----------------------------------------|
-| Ctrl + Alt + O | Load assignment file                   |
-| Ctrl + Alt + T | Read next task aloud                   |
-| Ctrl + Alt + M | Mark current task as complete          |
+| Ctrl + Alt + N | Queue up the big O annotations               |
+| Ctrl + Alt + B | Read next big O recommendation outloud       |
+| Ctrl + Alt + H | Read all big O recommendations one at a time |
 ---
 ## **Author & License**
 
