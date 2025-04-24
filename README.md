@@ -59,7 +59,7 @@
 | `Ctrl+Alt+O` | `echocode.loadAssignmentFile` | Uploads an assignment file for task tracking.  |
 | `Ctrl+Alt+T` | `echocode.readNextTask` | Reads the next task aloud. |
 | `Ctrl+Alt+M` | `echocode.markTaskComplete` | Marks the current task as complete.  |
-| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               |
+| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               🆕|
 | `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud      🆕 |
 | `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time 🆕|
 
