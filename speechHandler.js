@@ -6,13 +6,7 @@ let announceTimeout = null;
 let isSpeaking = false;
 let currentSpeechPromise = null;
 
-
-function speakMessage(message) {
-    return new Promise((resolve) => {
-        const config = vscode.workspace.getConfiguration('echocode');
-        let voice = config.get('voice');
-
-
+async function speakMessage(message) {
   isSpeaking = true;
 
   try {
@@ -26,7 +20,6 @@ function speakMessage(message) {
       if (!voice && process.platform === "win32") {
         voice = "Microsoft Zira Desktop";
       }
-
 
       say.speak(message, voice, rate, (err) => {
         if (err) {

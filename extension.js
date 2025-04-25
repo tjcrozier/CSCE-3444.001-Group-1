@@ -5,13 +5,9 @@ const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
-const { showHotkeyGuide } = require('./hotkeyGuide');
-const Queue = require("./queue_system"); 
-
-
+const { showHotkeyGuide } = require("./hotkeyGuide");
 const Queue = require("./queue_system");
 const { registerBigOCommand } = require("./bigOAnalysis");
-
 
 const {
   loadAssignmentFile,
@@ -92,6 +88,7 @@ class EchoCodeChatViewProvider {
     // Handle messages from the webview
     webviewView.webview.onDidReceiveMessage(
       async (message) => {
+        // Make sure this is async
         outputChannel.appendLine(
           `Received message from webview: ${message.type}`
         );
@@ -367,8 +364,10 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
-
-  let hotkeyMenuCommand = vscode.commands.registerCommand('echocode.readHotkeyGuide', showHotkeyGuide);
+  let hotkeyMenuCommand = vscode.commands.registerCommand(
+    "echocode.readHotkeyGuide",
+    showHotkeyGuide
+  );
   context.subscriptions.push(hotkeyMenuCommand);
 
   // Register chat view provider
@@ -410,7 +409,6 @@ async function activate(context) {
   // Register Big O commands
   registerBigOCommand(context);
 
-
   // Trigger on file save
 
   vscode.workspace.onDidSaveTextDocument((document) => {
@@ -445,13 +443,7 @@ async function activate(context) {
     }
   });
 
-
   // Command to stop speech
-  let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
-    const { stopSpeaking } = require('./speechHandler');
-    stopSpeaking();
-  });
-
 
   //Speech speed control
   context.subscriptions.push(
@@ -624,8 +616,6 @@ async function activate(context) {
     disposableReadErrors,
     disposableAnnotate,
     speakNextAnnotationDisposable,
-    classSummary,
-    functionSummary,
     nextFunction,
     prevFunction,
     openChatDisposable,
@@ -641,8 +631,6 @@ async function activate(context) {
       markTaskComplete
     )
   );
-
-  context.subscriptions.push(classSummary, functionSummary);
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput"
