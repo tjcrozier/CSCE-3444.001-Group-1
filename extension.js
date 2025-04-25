@@ -1,12 +1,27 @@
-const vscode = require('vscode');
-const { runPylint } = require('./pylintHandler');
-const { speakMessage } = require('./speechHandler');
-const { exec } = require('child_process');
-const { summarizeFunction, summarizeClass } = require('./summaryGenerator.js');
-const { moveCursorToFunction } = require('./navigationHandler');
+
+const vscode = require("vscode");
+const { runPylint } = require("./pylintHandler");
+const { speakMessage } = require("./speechHandler");
+const { exec } = require("child_process");
+const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
+const { moveCursorToFunction } = require("./navigationHandler");
+
 const Queue = require("./queue_system");
+const { registerBigOCommand } = require("./bigOAnalysis");
+
+const {
+  loadAssignmentFile,
+  readNextTask,
+  markTaskComplete
+} = require('./assignmentTracker');
+const {increaseSpeechSpeed, 
+  decreaseSpeechSpeed, 
+  getSpeechSpeed} = require('./speechHandler');
+
 let activeDecorations = [];
 let annotationsVisible = false;
+
+
 
 let outputChannel;
 let debounceTimer = null;
@@ -312,6 +327,7 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
+
   // Register chat view provider
   chatViewProvider = new EchoCodeChatViewProvider(context);
   context.subscriptions.push(
@@ -334,6 +350,12 @@ async function activate(context) {
       outputChannel.appendLine("Voice input command invoked with no active chat view.");
     }
   });
+
+
+  // Register Big O commands
+  registerBigOCommand(context);
+
+  // Trigger on file save
 
   vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "python") {
@@ -359,6 +381,27 @@ async function activate(context) {
       }, 1000);
     }
   });
+  
+  // Command to stop speech
+  let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
+    const { stopSpeaking } = require('./speechHandler');
+    stopSpeaking();
+  });
+
+  //Speech speed control  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.increaseSpeechSpeed', () => {
+      increaseSpeechSpeed();
+      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+    })
+  );
+  
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.decreaseSpeechSpeed', () => {
+      decreaseSpeechSpeed();
+      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+    })
+  );
 
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
@@ -417,6 +460,7 @@ async function activate(context) {
     }
   );
 
+
   let stopSpeechDisposable = vscode.commands.registerCommand(
     "echocode.stopSpeech",
     async () => {
@@ -428,6 +472,7 @@ async function activate(context) {
       }
     }
   );
+
 
   let speakNextAnnotationDisposable = vscode.commands.registerCommand(
     "echocode.speakNextAnnotation",
@@ -443,6 +488,7 @@ async function activate(context) {
 
   let readAllAnnotationsDisposable = vscode.commands.registerCommand(
     "echocode.readAllAnnotations",
+
     async () => {
       outputChannel.appendLine("Reading all annotations aloud...");
       const annotations = annotationQueue.items;
@@ -456,33 +502,15 @@ async function activate(context) {
     }
   );
 
-  let classSummary = vscode.commands.registerCommand(
-    'echocode.summarizeClass',  () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === 'python') {
-        summarizeClass(editor);
-      }
-    }
-  );
-
-  let functionSummary = vscode.commands.registerCommand(
-    'echocode.summarizeFunction',  () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === 'python') {
-        summarizeFunction(editor);
-      }
-    }
-  );
-
-  let nextFunction = vscode.commands.registerCommand('echocode.jumpToNextFunction', () => {
-    moveCursorToFunction("next");
-  });
-
-  let prevFunction = vscode.commands.registerCommand('echocode.jumpToPreviousFunction', () => {
-    moveCursorToFunction("previous");
-  });
-
+hannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput");
+=======
   context.subscriptions.push(
+    readAllAnnotationsDisposable,
+    disposableReadErrors,
+    disposableAnnotate,
+    speakNextAnnotationDisposable,
+  
+    context.subscriptions.push(
     disposableReadErrors,
     disposableAnnotate,
     speakNextAnnotationDisposable,
@@ -495,7 +523,54 @@ async function activate(context) {
     startVoiceInputDisposable,
     stopSpeechDisposable
   );
-  outputChannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput");
+  outputCh
+  
+    vscode.commands.registerCommand('echocode.loadAssignmentFile', loadAssignmentFile),
+    vscode.commands.registerCommand('echocode.readNextTask', readNextTask),
+    vscode.commands.registerCommand('echocode.markTaskComplete', markTaskComplete)
+  );
+  outputChannel.appendLine(
+    "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
+  );
+
+  // Summarize the current class
+  let classSummary = vscode.commands.registerCommand(
+    "echocode.summarizeClass",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeClass(editor);
+      }
+    }
+  );
+
+  // Summarize the current function
+  let functionSummary = vscode.commands.registerCommand(
+    "echocode.summarizeFunction",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeFunction(editor);
+      }
+    }
+  );
+
+  // Add navigation commands
+  let nextFunction = vscode.commands.registerCommand(
+    "echocode.jumpToNextFunction",
+    () => {
+      moveCursorToFunction("next");
+    }
+  );
+
+  let prevFunction = vscode.commands.registerCommand(
+    "echocode.jumpToPreviousFunction",
+    () => {
+      moveCursorToFunction("previous");
+    }
+  );
+
+  context.subscriptions.push(disposable, classSummary, functionSummary);
 }
 
 async function handlePythonErrorsOnSave(filePath) {

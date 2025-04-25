@@ -23,6 +23,7 @@
 
 - **AI Code Tutoring Annotations**  
   Provides inline annotations explaining **common coding mistakes** and suggesting improvements.
+  - 🆕 New functions for generating big O(n) annotations
 
 - **Interactive Chat Tutor**  
   An AI-powered tutor that reads your active file and answers questions or provides exercises specific to its content. Open it with `Ctrl+Alt+C` and ask about your code directly.
@@ -35,6 +36,15 @@
 
 - **Function Navigation via Hotkeys**  
   Use **Ctrl+Alt+Up/Down Arrow** to navigate between function definitions, with automatic speech announcing the current function.
+  
+- **Assignment Tracker System**   
+  Allows blind users to upload `.txt`, `.pdf`, or `.docx` assignment files and uses AI to extract clear task lists:
+  - Tasks are read aloud one-by-one.
+  - Tasks can be marked complete with a hotkey.
+  - Tasks are saved to a file and displayed in the output panel.
+
+ - **Integration with GitHub Copilot**  
+ Leverages GitHub Copilot for additional AI-powered coding assistance.
 
 - **Integration with GitHub Copilot**  
   Leverages GitHub Copilot and Copilot Chat for enhanced AI-powered coding assistance.
@@ -43,17 +53,29 @@
 
 ## **Keyboard Shortcuts**
 
-| Shortcut              | Command                        | Description                                      |
-|-----------------------|--------------------------------|--------------------------------------------------|
-| `Ctrl+Alt+A`          | `echocode.annotate`            | Generates inline code annotations.              |
-| `Ctrl+Alt+S`          | `echocode.speakNextAnnotation` | Reads the next annotation aloud.                |
-| `Ctrl+Alt+Q`          | `echocode.readAllAnnotations`  | Reads all annotations in the queue aloud.       |
-| `Ctrl+Alt+Up`         | `echocode.jumpToPreviousFunction` | Navigate to the previous function.          |
-| `Ctrl+Alt+Down`       | `echocode.jumpToNextFunction`  | Navigate to the next function.                  |
-| `Ctrl+Alt+Space C`    | `echocode.summarizeClass`      | Summarizes the current class aloud.             |
-| `Ctrl+Alt+Space F`    | `echocode.summarizeFunction`   | Summarizes the current function aloud.          |
+
+| Shortcut | Command | Description |
+|----------|---------|-------------|
+| `Ctrl+Alt+A` | `code-tutor.Annotate` | Generates the annotations. |
+| `Ctrl+Alt+S` | `code-tutor.speakNextAnnotation` | Reads the next annotation, including line number and suggestion. |
+| `Ctrl+Alt+Q` | `code-tutor.readAllAnnotation` | Reads all the annotations in the queue. |
+| `Ctrl+Alt+Down` | `echocode.jumpToNextFunction` | Jumps to the next function in the file. |
+| `Ctrl+Alt+Up` | `echocode.jumpToPreviousFunction` | Jumps to the previous function. |
+| `Ctrl+Alt+Space C` | `echocode.summarizeClass` | Summarizes the current class. |
+| `Ctrl+Alt+Space F` | `echocode.summarizeFunction` | Summarizes the current function. |
+| `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | *(Future)* Summarize full program. |
+| `Ctrl+Alt+U` | `echocode.increaseSpeechSpeed` | Increases speech rate. |
+| `Ctrl+Alt+D` | `echocode.decreaseSpeechSpeed` | Decreases speech rate. |
+| `Ctrl+Alt+X` | `echocode.stopSpeech` | Stops current speech playback. |
+| `Ctrl+Alt+O` | `echocode.loadAssignmentFile` | Uploads an assignment file for task tracking.  |
+| `Ctrl+Alt+T` | `echocode.readNextTask` | Reads the next task aloud. |
+| `Ctrl+Alt+M` | `echocode.markTaskComplete` | Marks the current task as complete.  |
+| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               🆕|
+| `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud      🆕 |
+| `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time 🆕|
 | `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface.        |
-| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  |
+| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  Future feature  |
+
 
 ---
 
@@ -121,13 +143,11 @@ Before using Echo Code, ensure the following are installed:
 - When generating code summaries, multiple TTS triggers may overlap.
 - Large files might exceed the language model’s token limit in the chat tutor; responses may truncate.
 
+
+
 ---
 
 ## **Release Notes**
-
-### **1.3.0**
-- Added **voice input** for Tutor Chat with `Ctrl+Alt+V` and a mic button in the chat panel.
-- Updated documentation and shortcuts to reflect the new feature.
 
 ### **1.2.1**
 - Added **EchoCode Tutor Chat**: An AI tutor that reads the active file and answers questions or provides exercises specific to its content. Open with `Ctrl+Alt+C`.
@@ -140,6 +160,26 @@ Before using Echo Code, ensure the following are installed:
 - Added dependency for GitHub Copilot.
 - Added audible alerts when annotations are created.
 - Added hotkey functionality for summarization, annotations, navigating annotations, and iterating the navigation queue.
+
+### **1.3.0**
+- Added **voice input** for Tutor Chat with `Ctrl+Alt+V` and a mic button in the chat panel.
+- Updated documentation and shortcuts to reflect the new feature.
+
+
+### **1.4.0**
+-  Added **Big O Annotator** feature to help blind students handle big O(n) tasks.
+-  Users can now generate annotations specifically for "for loops" that check for inefficiencies.
+-  Uses **GitHub Copilot** to extract generate recommendations .
+-  **Text-to-speech** reads each annotaion outloud.
+-  Queues up all big O annotaitons in its own queue that can be read aloud all at once or one per button press .
+
+**New Hotkeys:**
+
+
+| Shortcut        | Description                            |
+|----------------|----------------------------------------|
+| `Ctrl+Alt+C`          | Opens the EchoCode Tutor chat interface.        |
+| `Ctrl+Alt+V`          | Starts voice input to ask the chat a question.  Future feature  |
 
 ---
 
