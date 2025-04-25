@@ -1,7 +1,6 @@
 {
   "name": "echo-code",
   "displayName": "Echo Code",
-
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
   "version": "1.5.0",
   "icon": "images/icon.png",
@@ -94,7 +93,7 @@
         },
         "echocode.rate": {
           "type": "number",
-          "default": 1.0,
+          "default": 1,
           "description": "Speech rate for text-to-speech (0.5 = slow, 1.0 = normal, 1.5 = fast)."
         }
       }
@@ -249,7 +248,7 @@
     "eslint": "^9.24.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1",
-       "glob": "^10.3.10",
+    "glob": "^10.3.10",
     "mocha": "^10.2.0"
   },
   "dependencies": {

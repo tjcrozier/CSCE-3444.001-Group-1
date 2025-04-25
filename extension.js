@@ -1,4 +1,3 @@
-
 const vscode = require("vscode");
 const { runPylint } = require("./pylintHandler");
 const { speakMessage } = require("./speechHandler");
@@ -12,16 +11,16 @@ const { registerBigOCommand } = require("./bigOAnalysis");
 const {
   loadAssignmentFile,
   readNextTask,
-  markTaskComplete
-} = require('./assignmentTracker');
-const {increaseSpeechSpeed, 
-  decreaseSpeechSpeed, 
-  getSpeechSpeed} = require('./speechHandler');
+  markTaskComplete,
+} = require("./assignmentTracker");
+const {
+  increaseSpeechSpeed,
+  decreaseSpeechSpeed,
+  getSpeechSpeed,
+} = require("./speechHandler");
 
 let activeDecorations = [];
 let annotationsVisible = false;
-
-
 
 let outputChannel;
 let debounceTimer = null;
@@ -58,12 +57,12 @@ Below is the content of the active file. Here is the file content:\n\n`;
 
 // Mock voice recognition for demo/development purposes
 function performVoiceRecognition() {
-    return new Promise((resolve) => {
-        // Simulate voice recognition with a short delay
-        setTimeout(() => {
-            resolve("Can you explain this Python code?");
-        }, 2000);
-    });
+  return new Promise((resolve) => {
+    // Simulate voice recognition with a short delay
+    setTimeout(() => {
+      resolve("Can you explain this Python code?");
+    }, 2000);
+  });
 }
 
 // Custom WebViewProvider for the chat view
@@ -79,7 +78,7 @@ class EchoCodeChatViewProvider {
     this._view = webviewView;
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this.context.extensionUri]
+      localResourceRoots: [this.context.extensionUri],
     };
 
     // Set the initial HTML content
@@ -88,10 +87,12 @@ class EchoCodeChatViewProvider {
     // Handle messages from the webview
     webviewView.webview.onDidReceiveMessage(
       async (message) => {
-        outputChannel.appendLine(`Received message from webview: ${message.type}`);
-        if (message.type === 'userInput') {
+        outputChannel.appendLine(
+          `Received message from webview: ${message.type}`
+        );
+        if (message.type === "userInput") {
           await this.handleUserMessage(message.text);
-        } else if (message.type === 'startVoiceRecognition') {
+        } else if (message.type === "startVoiceRecognition") {
           await this.startVoiceRecognition();
         }
       },
@@ -102,38 +103,38 @@ class EchoCodeChatViewProvider {
 
   async startVoiceRecognition() {
     if (this._isListening || !this._view) return;
-    
+
     this._isListening = true;
     outputChannel.appendLine("Starting voice recognition");
-    
+
     // Signal the webview that we're listening
-    this._view.webview.postMessage({ type: 'voiceListeningStarted' });
-    
+    this._view.webview.postMessage({ type: "voiceListeningStarted" });
+
     try {
       const recognizedText = await performVoiceRecognition();
-      
+
       if (recognizedText && this._view) {
         // Send the recognized text to the webview to display in the input field
-        this._view.webview.postMessage({ 
-          type: 'voiceRecognitionResult', 
-          text: recognizedText 
+        this._view.webview.postMessage({
+          type: "voiceRecognitionResult",
+          text: recognizedText,
         });
-        
+
         // Don't automatically process the recognized text
         // Let the user press enter to send it
       }
     } catch (error) {
       outputChannel.appendLine(`Voice recognition error: ${error.message}`);
       if (this._view) {
-        this._view.webview.postMessage({ 
-          type: 'voiceRecognitionError', 
-          error: error.message 
+        this._view.webview.postMessage({
+          type: "voiceRecognitionError",
+          error: error.message,
         });
       }
     } finally {
       this._isListening = false;
       if (this._view) {
-        this._view.webview.postMessage({ type: 'voiceListeningStopped' });
+        this._view.webview.postMessage({ type: "voiceListeningStopped" });
       }
     }
   }
@@ -144,34 +145,42 @@ class EchoCodeChatViewProvider {
 
     // Try to get an active Python editor
     let editor = vscode.window.activeTextEditor;
-    if (!editor || !editor.document || editor.document.languageId !== "python") {
+    if (
+      !editor ||
+      !editor.document ||
+      editor.document.languageId !== "python"
+    ) {
       const visibleEditors = vscode.window.visibleTextEditors;
-      editor = visibleEditors.find(ed => ed.document && ed.document.languageId === "python");
-      outputChannel.appendLine(editor
-        ? "Found a visible Python editor: " + editor.document.fileName
-        : "No active or visible Python editor found.");
+      editor = visibleEditors.find(
+        (ed) => ed.document && ed.document.languageId === "python"
+      );
+      outputChannel.appendLine(
+        editor
+          ? "Found a visible Python editor: " + editor.document.fileName
+          : "No active or visible Python editor found."
+      );
     } else {
       outputChannel.appendLine("Active editor: " + editor.document.fileName);
     }
 
-    let fileContent = '';
+    let fileContent = "";
     if (editor && editor.document) {
       fileContent = editor.document.getText();
       outputChannel.appendLine("Active file content retrieved for chat");
     } else {
       this._view.webview.postMessage({
-        type: 'response',
-        text: "No active Python file is open. Please open a Python file to get help with its code."
+        type: "response",
+        text: "No active Python file is open. Please open a Python file to get help with its code.",
       });
       outputChannel.appendLine("No active Python file found for chat");
       return;
     }
 
-    prompt += fileContent + "\n\nNow, please answer the user's question or provide an exercise based on this code.";
+    prompt +=
+      fileContent +
+      "\n\nNow, please answer the user's question or provide an exercise based on this code.";
 
-    const messages = [
-      vscode.LanguageModelChatMessage.User(prompt),
-    ];
+    const messages = [vscode.LanguageModelChatMessage.User(prompt)];
 
     this.conversationHistory.forEach((entry) => {
       messages.push(vscode.LanguageModelChatMessage.User(entry.user));
@@ -187,32 +196,39 @@ class EchoCodeChatViewProvider {
 
     if (!model) {
       this._view.webview.postMessage({
-        type: 'response',
-        text: "No language model available. Please ensure GitHub Copilot is enabled."
+        type: "response",
+        text: "No language model available. Please ensure GitHub Copilot is enabled.",
       });
       outputChannel.appendLine("No language model available for chat");
       return;
     }
 
     // Show loading indicator
-    this._view.webview.postMessage({ type: 'responseLoading', started: true });
+    this._view.webview.postMessage({ type: "responseLoading", started: true });
 
     try {
-      const chatResponse = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
-      let responseText = '';
+      const chatResponse = await model.sendRequest(
+        messages,
+        {},
+        new vscode.CancellationTokenSource().token
+      );
+      let responseText = "";
       for await (const fragment of chatResponse.text) {
         responseText += fragment;
         // Send incremental updates to the webview
         this._view.webview.postMessage({
-          type: 'responseFragment',
-          text: fragment
+          type: "responseFragment",
+          text: fragment,
         });
       }
 
-      this.conversationHistory.push({ user: userInput, response: responseText });
+      this.conversationHistory.push({
+        user: userInput,
+        response: responseText,
+      });
       this._view.webview.postMessage({
-        type: 'responseComplete',
-        text: responseText
+        type: "responseComplete",
+        text: responseText,
       });
       outputChannel.appendLine("Chat response: " + responseText);
 
@@ -221,11 +237,14 @@ class EchoCodeChatViewProvider {
     } catch (error) {
       outputChannel.appendLine(`Error getting response: ${error.message}`);
       this._view.webview.postMessage({
-        type: 'responseError',
-        error: `Error: ${error.message}`
+        type: "responseError",
+        error: `Error: ${error.message}`,
       });
     } finally {
-      this._view.webview.postMessage({ type: 'responseLoading', started: false });
+      this._view.webview.postMessage({
+        type: "responseLoading",
+        started: false,
+      });
     }
   }
 
@@ -233,19 +252,27 @@ class EchoCodeChatViewProvider {
     if (this._view) {
       this.startVoiceRecognition();
     } else {
-      vscode.window.showInformationMessage("Please open the EchoCode Tutor view to use voice input.");
-      outputChannel.appendLine("Voice input command invoked with no active chat view.");
+      vscode.window.showInformationMessage(
+        "Please open the EchoCode Tutor view to use voice input."
+      );
+      outputChannel.appendLine(
+        "Voice input command invoked with no active chat view."
+      );
     }
   }
 
   _getHtmlForWebview(webview) {
     // Create URI for styles and scripts
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.css'));
-    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'chat.js'));
-    
+    const styleMainUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "chat.css")
+    );
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "chat.js")
+    );
+
     // Generate a nonce to use for inline script
     const nonce = getNonce();
-  
+
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -289,8 +316,9 @@ class EchoCodeChatViewProvider {
 }
 
 function getNonce() {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let text = "";
+  const possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -327,30 +355,41 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
-
   // Register chat view provider
   chatViewProvider = new EchoCodeChatViewProvider(context);
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('echocode.chatView', chatViewProvider)
+    vscode.window.registerWebviewViewProvider(
+      "echocode.chatView",
+      chatViewProvider
+    )
   );
 
   // Register the command to open the chat panel (will now focus the sidebar view)
-  const openChatDisposable = vscode.commands.registerCommand('echocode.openChat', async () => {
-    outputChannel.appendLine("echocode.openChat command triggered");
-    // Focus on the webview if it exists
-    await vscode.commands.executeCommand('echocode.chatView.focus');
-  });
+  const openChatDisposable = vscode.commands.registerCommand(
+    "echocode.openChat",
+    async () => {
+      outputChannel.appendLine("echocode.openChat command triggered");
+      // Focus on the webview if it exists
+      await vscode.commands.executeCommand("echocode.chatView.focus");
+    }
+  );
 
   // Register a new command to start voice input
-  const startVoiceInputDisposable = vscode.commands.registerCommand('echocode.startVoiceInput', () => {
-    if (chatViewProvider) {
-      chatViewProvider.startVoiceInput();
-    } else {
-      vscode.window.showInformationMessage("Please open the EchoCode Tutor view to use voice input.");
-      outputChannel.appendLine("Voice input command invoked with no active chat view.");
+  const startVoiceInputDisposable = vscode.commands.registerCommand(
+    "echocode.startVoiceInput",
+    () => {
+      if (chatViewProvider) {
+        chatViewProvider.startVoiceInput();
+      } else {
+        vscode.window.showInformationMessage(
+          "Please open the EchoCode Tutor view to use voice input."
+        );
+        outputChannel.appendLine(
+          "Voice input command invoked with no active chat view."
+        );
+      }
     }
-  });
-
+  );
 
   // Register Big O commands
   registerBigOCommand(context);
@@ -364,11 +403,15 @@ async function activate(context) {
   });
 
   vscode.workspace.onDidChangeTextDocument((event) => {
-    outputChannel.appendLine("onDidChangeTextDocument triggered for: " + event.document.uri.fsPath);
+    outputChannel.appendLine(
+      "onDidChangeTextDocument triggered for: " + event.document.uri.fsPath
+    );
     const document = event.document;
 
     if (document.languageId === "python" && event.contentChanges.length > 0) {
-      outputChannel.appendLine("Python document detected with content changes: " + document.uri.fsPath);
+      outputChannel.appendLine(
+        "Python document detected with content changes: " + document.uri.fsPath
+      );
 
       if (debounceTimer) {
         outputChannel.appendLine("Clearing previous debounce timer");
@@ -376,30 +419,31 @@ async function activate(context) {
       }
 
       debounceTimer = setTimeout(() => {
-        outputChannel.appendLine("Debounce timer expired, calling handlePythonErrorsOnChange for: " + document.uri.fsPath);
+        outputChannel.appendLine(
+          "Debounce timer expired, calling handlePythonErrorsOnChange for: " +
+            document.uri.fsPath
+        );
         handlePythonErrorsOnChange(document.uri.fsPath);
       }, 1000);
     }
   });
-  
-  // Command to stop speech
-  let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
-    const { stopSpeaking } = require('./speechHandler');
-    stopSpeaking();
-  });
 
-  //Speech speed control  
+  //Speech speed control
   context.subscriptions.push(
-    vscode.commands.registerCommand('echocode.increaseSpeechSpeed', () => {
+    vscode.commands.registerCommand("echocode.increaseSpeechSpeed", () => {
       increaseSpeechSpeed();
-      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+      vscode.window.showInformationMessage(
+        `Speech speed: ${getSpeechSpeed().toFixed(1)}x`
+      );
     })
   );
-  
+
   context.subscriptions.push(
-    vscode.commands.registerCommand('echocode.decreaseSpeechSpeed', () => {
+    vscode.commands.registerCommand("echocode.decreaseSpeechSpeed", () => {
       decreaseSpeechSpeed();
-      vscode.window.showInformationMessage(`Speech speed: ${getSpeechSpeed().toFixed(1)}x`);
+      vscode.window.showInformationMessage(
+        `Speech speed: ${getSpeechSpeed().toFixed(1)}x`
+      );
     })
   );
 
@@ -411,7 +455,9 @@ async function activate(context) {
       if (editor && editor.document.languageId === "python") {
         handlePythonErrorsOnSave(editor.document.uri.fsPath);
       } else {
-        vscode.window.showWarningMessage("Please open a Python file to read errors.");
+        vscode.window.showWarningMessage(
+          "Please open a Python file to read errors."
+        );
       }
     }
   );
@@ -420,7 +466,7 @@ async function activate(context) {
     "echocode.annotate",
     async (textEditor) => {
       outputChannel.appendLine("echocode.annotate command triggered");
-      
+
       // If annotations are visible, clear them
       if (annotationsVisible) {
         clearDecorations();
@@ -429,7 +475,7 @@ async function activate(context) {
         vscode.window.showInformationMessage("Annotations cleared");
         return;
       }
-      
+
       try {
         const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
         const [model] = await vscode.lm.selectChatModels({
@@ -437,7 +483,9 @@ async function activate(context) {
           family: "gpt-4o",
         });
         if (!model) {
-          vscode.window.showErrorMessage("No language model available. Please ensure Copilot is enabled.");
+          vscode.window.showErrorMessage(
+            "No language model available. Please ensure Copilot is enabled."
+          );
           outputChannel.appendLine("No language model available");
           return;
         }
@@ -455,31 +503,31 @@ async function activate(context) {
         outputChannel.appendLine("Annotations applied successfully");
       } catch (error) {
         outputChannel.appendLine("Error in annotate command: " + error.message);
-        vscode.window.showErrorMessage("Failed to annotate code: " + error.message);
+        vscode.window.showErrorMessage(
+          "Failed to annotate code: " + error.message
+        );
       }
     }
   );
-
 
   let stopSpeechDisposable = vscode.commands.registerCommand(
     "echocode.stopSpeech",
     async () => {
-      const { stopSpeech } = require('./speechHandler');
-      const wasSpeaking = stopSpeech();
-      if (wasSpeaking) {
-        vscode.window.showInformationMessage("Speech stopped");
-        outputChannel.appendLine("Speech stopped by user");
-      }
+      const { stopSpeaking } = require("./speechHandler");
+      stopSpeaking();
+      vscode.window.showInformationMessage("Speech stopped");
+      outputChannel.appendLine("Speech stopped by user");
     }
   );
-
 
   let speakNextAnnotationDisposable = vscode.commands.registerCommand(
     "echocode.speakNextAnnotation",
     async () => {
       if (!annotationQueue.isEmpty()) {
         const nextAnnotation = annotationQueue.dequeue();
-        await speakMessage(`Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`);
+        await speakMessage(
+          `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`
+        );
       } else {
         vscode.window.showInformationMessage("No more annotations to read.");
       }
@@ -493,44 +541,17 @@ async function activate(context) {
       outputChannel.appendLine("Reading all annotations aloud...");
       const annotations = annotationQueue.items;
       if (annotations.length === 0) {
-        vscode.window.showInformationMessage("No annotations available to read.");
+        vscode.window.showInformationMessage(
+          "No annotations available to read."
+        );
         return;
       }
       for (const annotation of annotations) {
-        await speakMessage(`Annotation on line ${annotation.line}: ${annotation.suggestion}`);
+        await speakMessage(
+          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+        );
       }
     }
-  );
-
-hannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput");
-=======
-  context.subscriptions.push(
-    readAllAnnotationsDisposable,
-    disposableReadErrors,
-    disposableAnnotate,
-    speakNextAnnotationDisposable,
-  
-    context.subscriptions.push(
-    disposableReadErrors,
-    disposableAnnotate,
-    speakNextAnnotationDisposable,
-    readAllAnnotationsDisposable,
-    classSummary,
-    functionSummary,
-    nextFunction,
-    prevFunction,
-    openChatDisposable,
-    startVoiceInputDisposable,
-    stopSpeechDisposable
-  );
-  outputCh
-  
-    vscode.commands.registerCommand('echocode.loadAssignmentFile', loadAssignmentFile),
-    vscode.commands.registerCommand('echocode.readNextTask', readNextTask),
-    vscode.commands.registerCommand('echocode.markTaskComplete', markTaskComplete)
-  );
-  outputChannel.appendLine(
-    "Commands registered: code-tutor.readErrors, code-tutor.annotate, code-tutor.speakNextAnnotation"
   );
 
   // Summarize the current class
@@ -570,7 +591,34 @@ hannel.appendLine("Commands registered: echocode.readErrors, echocode.annotate, 
     }
   );
 
-  context.subscriptions.push(disposable, classSummary, functionSummary);
+  context.subscriptions.push(
+    readAllAnnotationsDisposable,
+    disposableReadErrors,
+    disposableAnnotate,
+    speakNextAnnotationDisposable,
+    classSummary,
+    functionSummary,
+    nextFunction,
+    prevFunction,
+    openChatDisposable,
+    startVoiceInputDisposable,
+    stopSpeechDisposable,
+    vscode.commands.registerCommand(
+      "echocode.loadAssignmentFile",
+      loadAssignmentFile
+    ),
+    vscode.commands.registerCommand("echocode.readNextTask", readNextTask),
+    vscode.commands.registerCommand(
+      "echocode.markTaskComplete",
+      markTaskComplete
+    )
+  );
+
+  context.subscriptions.push(classSummary, functionSummary);
+
+  outputChannel.appendLine(
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput"
+  );
 }
 
 async function handlePythonErrorsOnSave(filePath) {
@@ -628,7 +676,9 @@ function getVisibleCodeWithLineNumbers(textEditor) {
   const endLine = textEditor.visibleRanges[0].end.line;
   let code = "";
   while (currentLine < endLine) {
-    code += `${currentLine + 1}: ${textEditor.document.lineAt(currentLine).text}\n`;
+    code += `${currentLine + 1}: ${
+      textEditor.document.lineAt(currentLine).text
+    }\n`;
     currentLine++;
   }
   return code;
@@ -670,11 +720,11 @@ function applyDecoration(editor, line, suggestion) {
   editor.setDecorations(decorationType, [
     { range: range, hoverMessage: suggestion },
   ]);
-  
+
   // Store the decoration for later removal
   activeDecorations.push({
     decorationType,
-    editor
+    editor,
   });
 }
 
