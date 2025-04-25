@@ -2,24 +2,26 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.3.0",
+  "version": "1.5.0",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
     "vscode": "^1.99.1"
   },
   "categories": [
-    "Other"
+    "Other",
+    "AI"
   ],
   "activationEvents": [
     "onLanguage:python",
     "onSave",
-    "onLanguageModel"
+    "onView:echocode.chatView",
+    "onCommand:echocode.openChat"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
     "ms-python.python",
-    "GitHub.copilot"
+    "github.copilot"
   ],
   "contributes": {
     "commands": [
@@ -32,13 +34,13 @@
         "title": "Read Python Errors Aloud"
       },
       {
-        "command": "code-tutor.annotate",
-        "title": "Toggle Tutor Annotations",
+        "command": "echocode.annotate",
+        "title": "Toggle EchoCode Annotations",
         "icon": "$(comment)"
       },
       {
-        "command": "echocode.readAllErrors",
-        "title": "Read All Python Errors Aloud"
+        "command": "echocode.readAllAnnotations",
+        "title": "Read All Annotations Aloud"
       },
       {
         "command": "echocode.jumpToNextFunction",
@@ -55,6 +57,14 @@
       {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
+      },
+      {
+        "command": "echocode.openChat",
+        "title": "Open EchoCode Tutor Chat"
+      },
+      {
+        "command": "echocode.startVoiceInput",
+        "title": "Start Voice Input"
       },
       {
         "command": "echocode.loadAssignmentFile",
@@ -104,7 +114,7 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "code-tutor.annotate",
+        "command": "echocode.annotate",
         "key": "ctrl+alt+a",
         "when": "editorTextFocus"
       },
@@ -134,9 +144,32 @@
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
+        "command": "echocode.openChat",
+        "key": "ctrl+alt+c",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.startVoiceInput",
+        "key": "ctrl+alt+v"
+      },
+      {
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "code-tutor.analyzeBigO",
+        "key": "ctrl+alt+n",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "code-tutor.iterateBigOQueue",
+        "key": "ctrl+alt+b",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "code-tutor.readEntireBigOQueue",
+        "key": "ctrl+alt+h"
       },
       {
         "key": "ctrl+alt+o",
@@ -169,11 +202,37 @@
         "when": "editorTextFocus"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "echocode",
+          "title": "EchoCode",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "echocode": [
+        {
+          "id": "echocode.chatView",
+          "name": "EchoCode Tutor",
+          "type": "webview"
+        }
+      ]
+    },
     "menus": {
       "editor/title": [
         {
-          "command": "code-tutor.annotate",
+          "command": "echocode.annotate",
           "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "echocode.startVoiceInput",
+          "when": "view == echocode.chatView",
+          "group": "navigation",
+          "icon": "$(comment)"
         }
       ]
     }
@@ -197,9 +256,12 @@
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.24.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.29.1"
+    "typescript-eslint": "^8.29.1",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.33",
     "axios": "^1.8.3",
     "dotenv": "^16.4.7",
     "mammoth": "^1.9.0",
