@@ -2,7 +2,7 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
@@ -128,6 +128,20 @@
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "code-tutor.analyzeBigO",
+        "key": "ctrl+alt+n",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "code-tutor.iterateBigOQueue",
+        "key": "ctrl+alt+b",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "code-tutor.readEntireBigOQueue",
+        "key": "ctrl+alt+h"
       },
       {
         "key": "ctrl+alt+o",

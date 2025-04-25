@@ -4,7 +4,10 @@ const { speakMessage } = require("./speechHandler");
 const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
-const Queue = require("./queue_system"); 
+
+const Queue = require("./queue_system");
+const { registerBigOCommand } = require("./bigOAnalysis");
+
 const {
   loadAssignmentFile,
   readNextTask,
@@ -14,8 +17,9 @@ const {increaseSpeechSpeed,
   decreaseSpeechSpeed, 
   getSpeechSpeed} = require('./speechHandler');
 
+
 let outputChannel;
-let debounceTimer = null; 
+let debounceTimer = null;
 let isRunning = false;
 
 const annotationQueue = new Queue(); // Queue for annotations
@@ -57,6 +61,9 @@ async function activate(context) {
   outputChannel = vscode.window.createOutputChannel("EchoCode");
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
+
+  // Register Big O commands
+  registerBigOCommand(context);
 
   // Trigger on file save
   vscode.workspace.onDidSaveTextDocument((document) => {
