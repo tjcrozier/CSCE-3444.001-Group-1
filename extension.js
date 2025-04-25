@@ -1,6 +1,6 @@
 const vscode = require("vscode");
 const { runPylint } = require("./pylintHandler");
-const { speakMessage } = require("./speechHandler");
+const { speakMessage, stopSpeaking } = require("./speechHandler");
 const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
@@ -213,6 +213,10 @@ class EchoCodeChatViewProvider {
         new vscode.CancellationTokenSource().token
       );
       let responseText = "";
+
+      // Create a cancellation token source for speech
+      const speechCancellationToken = new vscode.CancellationTokenSource();
+
       for await (const fragment of chatResponse.text) {
         responseText += fragment;
         // Send incremental updates to the webview
@@ -233,7 +237,10 @@ class EchoCodeChatViewProvider {
       outputChannel.appendLine("Chat response: " + responseText);
 
       // Speak the chat response aloud using speechHandler
-      await speakMessage(responseText);
+      // Check if speech hasn't been cancelled
+      if (!speechCancellationToken.token.isCancellationRequested) {
+        await speakMessage(responseText);
+      }
     } catch (error) {
       outputChannel.appendLine(`Error getting response: ${error.message}`);
       this._view.webview.postMessage({
@@ -513,10 +520,13 @@ async function activate(context) {
   let stopSpeechDisposable = vscode.commands.registerCommand(
     "echocode.stopSpeech",
     async () => {
-      const { stopSpeaking } = require("./speechHandler");
-      stopSpeaking();
-      vscode.window.showInformationMessage("Speech stopped");
-      outputChannel.appendLine("Speech stopped by user");
+      // Call the stopSpeaking function from your speechHandler
+      const wasSpeaking = stopSpeaking();
+
+      if (wasSpeaking) {
+        vscode.window.showInformationMessage("Speech stopped");
+        outputChannel.appendLine("Speech stopped by user");
+      }
     }
   );
 
