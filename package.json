@@ -142,7 +142,7 @@
       },
       {
         "command": "echocode.startVoiceInput",
-        "key": "ctrl+alt+v",
+        "key": "ctrl+alt+v"
       },
       {
         "command": "echocode.summarizeProgram",
@@ -250,7 +250,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1"
        "glob": "^10.3.10",
-    "mocha": "^10.2.0",
+    "mocha": "^10.2.0"
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.33",
