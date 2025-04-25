@@ -62,7 +62,8 @@
       {
         "command": "echocode.startVoiceInput",
         "title": "Start Voice Input"
-
+      },
+      {
         "command": "echocode.loadAssignmentFile",
         "title": "Load Assignment File"
       },
