@@ -24,6 +24,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "echocode.readHotkeyGuide",
+        "title": "EchoCode: Read Hotkey Guide"
+      },
+      {
         "command": "echocode.readErrors",
         "title": "Read Python Errors Aloud"
       },
@@ -89,6 +93,11 @@
       }
     },
     "keybindings": [
+      {
+        "key": "f1",
+        "command": "echocode.readHotkeyGuide",
+        "when": "editorTextFocus"
+      },
       {
         "command": "code-tutor.speakNextAnnotation",
         "key": "ctrl+alt+s",

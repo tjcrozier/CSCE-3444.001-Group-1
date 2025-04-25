@@ -84,8 +84,6 @@ Before using Echo Code, ensure the following are installed:
 
 
 ---
-## **Release Notes**
-
 
 ### **1.3.0**
 -  Added **Assignment Tracker** feature to help blind students break down and track assignment tasks.

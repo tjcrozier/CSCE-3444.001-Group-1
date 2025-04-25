@@ -4,6 +4,7 @@ const { speakMessage } = require("./speechHandler");
 const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
+const { showHotkeyGuide } = require('./hotkeyGuide');
 const Queue = require("./queue_system"); 
 const {
   loadAssignmentFile,
@@ -58,6 +59,9 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
+  let hotkeyMenuCommand = vscode.commands.registerCommand('echocode.readHotkeyGuide', showHotkeyGuide);
+  context.subscriptions.push(hotkeyMenuCommand);
+
   // Trigger on file save
   vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "python") {
@@ -90,7 +94,7 @@ async function activate(context) {
       }, 1000); // Adjust the delay (in milliseconds) as needed
     }
   });
-  
+
   // Command to stop speech
   let stopSpeech = vscode.commands.registerCommand('echocode.stopSpeech', () => {
     const { stopSpeaking } = require('./speechHandler');
