@@ -188,8 +188,7 @@
       },
       {
         "key": "ctrl+alt+x",
-        "command": "echocode.stopSpeech",
-        "when": "editorTextFocus"
+        "command": "echocode.stopSpeech"
       },
       {
         "key": "ctrl+alt+u",

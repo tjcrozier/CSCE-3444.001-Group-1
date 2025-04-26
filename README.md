@@ -128,7 +128,6 @@ Before using Echo Code, ensure the following are installed:
 - Currently only works on Windows machines.
 - When generating code summaries, multiple TTS triggers may overlap.
 - Large files might exceed the language model’s token limit in the chat tutor; responses may truncate.
-- The stop talking function does not work with Chat Tutor
 - Speech to text is not functional right now
 
 
@@ -141,7 +140,8 @@ Before using Echo Code, ensure the following are installed:
 - Added hotkey read out by pressing f1 and then entering a number 1-7
 - Frame work for speech to text added
 - Annotations now go away when pressing the generate annotations hotkey
-- Big fix: speed control error not  registering correctly should be fixed
+- Big fix: speed control error not registering correctly should be fixed
+- Chat Tutor's TTS playback works without having to focus on a python document
 **New Hotkeys:**
 
 
