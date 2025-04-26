@@ -168,7 +168,7 @@
       },
       {
         "command": "echocode.whereAmI",
-        "key": "crtl+alt+space W",
+        "key": "ctrl+alt+space W",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {

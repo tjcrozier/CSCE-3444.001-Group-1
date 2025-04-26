@@ -18,8 +18,8 @@
 - **Simplified Error Messages**  
   Provides clear, concise explanations without overwhelming beginners.
 
-- **Summarize Functions and Classes**  
-  Automatically generates brief summaries for functions and classes using AI, delivered via text-to-speech (TTS).
+- **Summarize Functions, Programs, and Classes**  
+  Automatically generates brief summaries for programs along with individual functions and classes using AI, delivered via text-to-speech (TTS).
 
 - **AI Code Tutoring Annotations**  
   Provides inline annotations explaining **common coding mistakes** and suggesting improvements.
@@ -63,7 +63,8 @@
 | `Ctrl+Alt+Up` | `echocode.jumpToPreviousFunction` | Jumps to the previous function. |
 | `Ctrl+Alt+Space C` | `echocode.summarizeClass` | Summarizes the current class. |
 | `Ctrl+Alt+Space F` | `echocode.summarizeFunction` | Summarizes the current function. |
-| `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | *(Future)* Summarize full program. |
+| `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | Summarize full program. |
+| `Ctrl+Alt+Space W` | `echocode.whereAmI` | Describes the scope the user is in.               🆕|
 | `Ctrl+Alt+U` | `echocode.increaseSpeechSpeed` | Increases speech rate. |
 | `Ctrl+Alt+D` | `echocode.decreaseSpeechSpeed` | Decreases speech rate. |
 | `Ctrl+Alt+X` | `echocode.stopSpeech` | Stops current speech playback. |
@@ -142,6 +143,7 @@ Before using Echo Code, ensure the following are installed:
 - Annotations now go away when pressing the generate annotations hotkey
 - Big fix: speed control error not registering correctly should be fixed
 - Chat Tutor's TTS playback works without having to focus on a python document
+- Added feature to read out the scope the cursor is in
 **New Hotkeys:**
 
 
@@ -150,6 +152,7 @@ Before using Echo Code, ensure the following are installed:
 | `Ctrl+Alt+C`          | Opens the EchoCode Tutor chat interface.        |
 | `Ctrl+Alt+V`          | Starts voice input to ask the chat a question.  Future feature  |
 | `f1`  | Reads out the hotkey options by letting you choose 1-7 depending on the option |
+| `Ctrl+Alt+Space W`  | Describes the scope the user is in |
 
 ---
 
