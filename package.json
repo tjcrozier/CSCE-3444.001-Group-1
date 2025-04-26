@@ -157,7 +157,7 @@
       },
       {
         "command": "echocode.summarizeProgram",
-        "key": "crtl+alt+space P",
+        "key": "ctrl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
