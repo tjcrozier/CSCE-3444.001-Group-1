@@ -43,9 +43,6 @@
   - Tasks can be marked complete with a hotkey.
   - Tasks are saved to a file and displayed in the output panel.
 
- - **Integration with GitHub Copilot**  
- Leverages GitHub Copilot for additional AI-powered coding assistance.
-
 - **Integration with GitHub Copilot**  
   Leverages GitHub Copilot and Copilot Chat for enhanced AI-powered coding assistance.
 
@@ -63,7 +60,7 @@
 | `Ctrl+Alt+Up` | `echocode.jumpToPreviousFunction` | Jumps to the previous function. |
 | `Ctrl+Alt+Space C` | `echocode.summarizeClass` | Summarizes the current class. |
 | `Ctrl+Alt+Space F` | `echocode.summarizeFunction` | Summarizes the current function. |
-| `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | *(Future)* Summarize full program. |
+| `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | Summarize full program. |
 | `Ctrl+Alt+U` | `echocode.increaseSpeechSpeed` | Increases speech rate. |
 | `Ctrl+Alt+D` | `echocode.decreaseSpeechSpeed` | Decreases speech rate. |
 | `Ctrl+Alt+X` | `echocode.stopSpeech` | Stops current speech playback. |
@@ -106,6 +103,7 @@ Before using Echo Code, ensure the following are installed:
 ### **Summarizing Code**
 - To hear a brief summary of the current Python class: Press **Ctrl+Alt+Space C**.
 - To hear a brief summary of the current Python function: Press **Ctrl+Alt+Space F**.
+- To hear a brief summary of the current Python program: Press **Ctrl+Alt+Space P**.
 
 ### **Using the Chat Tutor**
 - Open the chat: Press **Ctrl+Alt+C** to launch the EchoCode Tutor in the Chat view.
@@ -142,6 +140,7 @@ Before using Echo Code, ensure the following are installed:
 - Annotations now go away when pressing the generate annotations hotkey
 - Big fix: speed control error not registering correctly should be fixed
 - Chat Tutor's TTS playback works without having to focus on a python document
+- Program Summarization is now functional
 **New Hotkeys:**
 
 

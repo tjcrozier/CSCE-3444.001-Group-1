@@ -55,5 +55,22 @@ function summarizeFunction(editor) {
     });
 }
 
+function summarizeProgram(editor) {    
+    const programText = editor.document.getText();
 
-module.exports = { summarizeFunction, summarizeClass };
+    // replace with different prompts
+    const instructionPrompt = 'Give a brief summary of the following python program. Do not include function and class definitions in the summary, just say that there is a definition. Do not use any markup language or emojis in your generated summary.';
+    
+    console.error("Program Summary:");
+
+    // Calls the function 
+    analyzeAI(programText, instructionPrompt).then(summary =>{
+        console.error(summary),
+        speakMessage(summary)
+    });
+}
+
+
+
+
+module.exports = { summarizeFunction, summarizeClass, summarizeProgram };
