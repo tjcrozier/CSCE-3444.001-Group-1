@@ -59,6 +59,10 @@
         "title": "Summarize Current Function"
       },
       {
+        "command": "echocode.summarizeProgram",
+        "title": "Summarize Current Program"
+      },
+      {
         "command": "echocode.openChat",
         "title": "Open EchoCode Tutor Chat"
       },
