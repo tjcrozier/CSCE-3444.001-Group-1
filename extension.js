@@ -5,6 +5,7 @@ const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
+const { showHotkeyGuide } = require("./hotkeyGuide");
 const Queue = require("./queue_system");
 const { registerBigOCommand } = require("./bigOAnalysis");
 
@@ -87,6 +88,7 @@ class EchoCodeChatViewProvider {
     // Handle messages from the webview
     webviewView.webview.onDidReceiveMessage(
       async (message) => {
+        // Make sure this is async
         outputChannel.appendLine(
           `Received message from webview: ${message.type}`
         );
@@ -362,6 +364,12 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   await ensurePylintInstalled();
 
+  let hotkeyMenuCommand = vscode.commands.registerCommand(
+    "echocode.readHotkeyGuide",
+    showHotkeyGuide
+  );
+  context.subscriptions.push(hotkeyMenuCommand);
+
   // Register chat view provider
   chatViewProvider = new EchoCodeChatViewProvider(context);
   context.subscriptions.push(
@@ -434,6 +442,8 @@ async function activate(context) {
       }, 1000);
     }
   });
+
+  // Command to stop speech
 
   //Speech speed control
   context.subscriptions.push(
@@ -606,8 +616,6 @@ async function activate(context) {
     disposableReadErrors,
     disposableAnnotate,
     speakNextAnnotationDisposable,
-    classSummary,
-    functionSummary,
     nextFunction,
     prevFunction,
     openChatDisposable,
@@ -623,8 +631,6 @@ async function activate(context) {
       markTaskComplete
     )
   );
-
-  context.subscriptions.push(classSummary, functionSummary);
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput"

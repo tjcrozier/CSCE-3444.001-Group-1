@@ -26,6 +26,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "echocode.readHotkeyGuide",
+        "title": "EchoCode: Read Hotkey Guide"
+      },
+      {
         "command": "echocode.readErrors",
         "title": "Read Python Errors Aloud"
       },
@@ -100,7 +104,12 @@
     },
     "keybindings": [
       {
-        "command": "echocode.speakNextAnnotation",
+        "key": "f1",
+        "command": "echocode.readHotkeyGuide",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "code-tutor.speakNextAnnotation",
         "key": "ctrl+alt+s",
         "when": "editorTextFocus"
       },
@@ -179,8 +188,7 @@
       },
       {
         "key": "ctrl+alt+x",
-        "command": "echocode.stopSpeech",
-        "when": "editorTextFocus"
+        "command": "echocode.stopSpeech"
       },
       {
         "key": "ctrl+alt+u",

@@ -6,10 +6,7 @@ let announceTimeout = null;
 let isSpeaking = false;
 let currentSpeechPromise = null;
 
-async function speakMessage(message, options = {}) {
-  // Stop any ongoing speech first
-  stopSpeaking();
-
+async function speakMessage(message) {
   isSpeaking = true;
 
   try {
@@ -67,7 +64,6 @@ function queueSpeedAnnouncement() {
   if (announceTimeout) {
     clearTimeout(announceTimeout);
   }
-
   announceTimeout = setTimeout(() => {
     stopSpeaking();
     speakMessage(`Speed ${currentSpeed.toFixed(1)}x`);
