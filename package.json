@@ -63,6 +63,10 @@
         "title": "Summarize Current Function"
       },
       {
+        "command": "echocode.summarizeProgram",
+        "title": "Summarize Current Program"
+      },
+      {
         "command": "echocode.openChat",
         "title": "Open EchoCode Tutor Chat"
       },
@@ -152,13 +156,8 @@
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
-        "command": "echocode.whereAmI",
-        "key": "ctrl+alt+space W",
-        "when": "editorTextFocus && editorLangId == 'python'"
-      },
-      {
-        "command": "echocode.whereAmI",
-        "key": "ctrl+alt+space W",
+        "command": "echocode.summarizeProgram",
+        "key": "crtl+alt+space P",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
