@@ -2,7 +2,7 @@ const vscode = require("vscode");
 const { runPylint } = require("./pylintHandler");
 const { speakMessage, stopSpeaking } = require("./speechHandler");
 const { exec } = require("child_process");
-const { summarizeFunction, summarizeClass } = require("./summaryGenerator.js");
+const { summarizeFunction, summarizeClass, summarizeProgram } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
 const { showHotkeyGuide } = require("./hotkeyGuide");
@@ -592,6 +592,16 @@ async function activate(context) {
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document.languageId === "python") {
         summarizeFunction(editor);
+      }
+    }
+  );
+
+  let programSummary = vscode.commands.registerCommand(
+    "echocode.summarizeProgram",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeProgram(editor);
       }
     }
   );

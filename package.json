@@ -55,6 +55,10 @@
         "title": "Summarize Current Class"
       },
       {
+        "command": "echocode.summarizeProgram",
+        "title": "Summarize Current Program"
+      },
+      {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
       },
