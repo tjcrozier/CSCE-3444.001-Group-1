@@ -22,6 +22,7 @@ const {
 
 let activeDecorations = [];
 let annotationsVisible = false;
+const { describeCursorPosition } = require("./whereAmI.js");
 
 let outputChannel;
 let debounceTimer = null;
@@ -605,6 +606,14 @@ async function activate(context) {
       }
     }
   );
+  let whereAmI = vscode.commands.registerCommand(
+    "echocode.whereAmI", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        describeCursorPosition(editor);
+      }
+    }
+  );
 
   // Add navigation commands
   let nextFunction = vscode.commands.registerCommand(
@@ -622,6 +631,10 @@ async function activate(context) {
   );
 
   context.subscriptions.push(
+    classSummary,
+    functionSummary,
+    programSummary,
+    whereAmI,
     readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
