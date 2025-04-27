@@ -1,6 +1,6 @@
 const vscode = require("vscode");
 const { runPylint } = require("./pylintHandler");
-const { speakMessage, stopSpeaking } = require("./speechHandler");
+const { speakMessage, stopSpeaking, loadSavedSpeechSpeed } = require("./speechHandler");
 const { exec } = require("child_process");
 const { summarizeFunction, summarizeClass, summarizeProgram } = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
@@ -9,11 +9,7 @@ const { showHotkeyGuide } = require("./hotkeyGuide");
 const Queue = require("./queue_system");
 const { registerBigOCommand } = require("./bigOAnalysis");
 
-const {
-  loadAssignmentFile,
-  readNextTask,
-  markTaskComplete,
-} = require("./assignmentTracker");
+const { loadAssignmentFile, readNextTask, rescanUserCode, readNextSequentialTask } = require('./assignmentTracker');
 const {
   increaseSpeechSpeed,
   decreaseSpeechSpeed,
@@ -362,6 +358,7 @@ function ensurePylintInstalled() {
 async function activate(context) {
   outputChannel = vscode.window.createOutputChannel("EchoCode");
   outputChannel.appendLine("EchoCode activated.");
+  loadSavedSpeechSpeed();
   await ensurePylintInstalled();
 
   let hotkeyMenuCommand = vscode.commands.registerCommand(
@@ -384,7 +381,6 @@ async function activate(context) {
     "echocode.openChat",
     async () => {
       outputChannel.appendLine("echocode.openChat command triggered");
-      // Focus on the webview if it exists
       await vscode.commands.executeCommand("echocode.chatView.focus");
     }
   );
@@ -410,7 +406,6 @@ async function activate(context) {
   registerBigOCommand(context);
 
   // Trigger on file save
-
   vscode.workspace.onDidSaveTextDocument((document) => {
     if (document.languageId === "python") {
       handlePythonErrorsOnSave(document.uri.fsPath);
@@ -418,44 +413,36 @@ async function activate(context) {
   });
 
   vscode.workspace.onDidChangeTextDocument((event) => {
-    outputChannel.appendLine(
-      "onDidChangeTextDocument triggered for: " + event.document.uri.fsPath
-    );
     const document = event.document;
-
-    if (document.languageId === "python" && event.contentChanges.length > 0) {
-      outputChannel.appendLine(
-        "Python document detected with content changes: " + document.uri.fsPath
-      );
-
+  
+    if (document.languageId !== "python") {
+      // Not a Python file, ignore it
+      return;
+    }
+  
+    outputChannel.appendLine(
+      "Python file changed: " + document.uri.fsPath
+    );
+  
+    if (event.contentChanges.length > 0) {
       if (debounceTimer) {
-        outputChannel.appendLine("Clearing previous debounce timer");
         clearTimeout(debounceTimer);
       }
-
+  
       debounceTimer = setTimeout(() => {
-        outputChannel.appendLine(
-          "Debounce timer expired, calling handlePythonErrorsOnChange for: " +
-            document.uri.fsPath
-        );
         handlePythonErrorsOnChange(document.uri.fsPath);
       }, 1000);
     }
   });
 
-  // Command to stop speech
-
-  //Speech speed control
+  // Speech speed control
   context.subscriptions.push(
     vscode.commands.registerCommand("echocode.increaseSpeechSpeed", () => {
       increaseSpeechSpeed();
       vscode.window.showInformationMessage(
         `Speech speed: ${getSpeechSpeed().toFixed(1)}x`
       );
-    })
-  );
-
-  context.subscriptions.push(
+    }),
     vscode.commands.registerCommand("echocode.decreaseSpeechSpeed", () => {
       decreaseSpeechSpeed();
       vscode.window.showInformationMessage(
@@ -484,10 +471,9 @@ async function activate(context) {
     async (textEditor) => {
       outputChannel.appendLine("echocode.annotate command triggered");
 
-      // If annotations are visible, clear them
       if (annotationsVisible) {
         clearDecorations();
-        annotationQueue.clear(); // Assuming your Queue class has a clear method
+        annotationQueue.clear();
         annotationsVisible = false;
         vscode.window.showInformationMessage("Annotations cleared");
         return;
@@ -530,9 +516,7 @@ async function activate(context) {
   let stopSpeechDisposable = vscode.commands.registerCommand(
     "echocode.stopSpeech",
     async () => {
-      // Call the stopSpeaking function from your speechHandler
       const wasSpeaking = stopSpeaking();
-
       if (wasSpeaking) {
         vscode.window.showInformationMessage("Speech stopped");
         outputChannel.appendLine("Speech stopped by user");
@@ -556,7 +540,6 @@ async function activate(context) {
 
   let readAllAnnotationsDisposable = vscode.commands.registerCommand(
     "echocode.readAllAnnotations",
-
     async () => {
       outputChannel.appendLine("Reading all annotations aloud...");
       const annotations = annotationQueue.items;
@@ -574,7 +557,6 @@ async function activate(context) {
     }
   );
 
-  // Summarize the current class
   let classSummary = vscode.commands.registerCommand(
     "echocode.summarizeClass",
     () => {
@@ -585,7 +567,6 @@ async function activate(context) {
     }
   );
 
-  // Summarize the current function
   let functionSummary = vscode.commands.registerCommand(
     "echocode.summarizeFunction",
     () => {
@@ -606,7 +587,6 @@ async function activate(context) {
     }
   );
 
-  // Add navigation commands
   let nextFunction = vscode.commands.registerCommand(
     "echocode.jumpToNextFunction",
     () => {
@@ -621,32 +601,45 @@ async function activate(context) {
     }
   );
 
+  // ✅ Assignment tracker commands (ONLY these)
+  const loadAssignmentFileDisposable = vscode.commands.registerCommand(
+    "echocode.loadAssignmentFile",
+    loadAssignmentFile
+  );
+
+  const rescanUserCodeDisposable = vscode.commands.registerCommand(
+    "echocode.rescanUserCode",
+    rescanUserCode
+  );
+
+  const readNextSequentialTaskDisposable = vscode.commands.registerCommand(
+    "echocode.readNextSequentialTask",
+    readNextSequentialTask
+  );
+
   context.subscriptions.push(
-    readAllAnnotationsDisposable,
-    disposableReadErrors,
-    disposableAnnotate,
-    speakNextAnnotationDisposable,
-    nextFunction,
-    prevFunction,
+    hotkeyMenuCommand,
     openChatDisposable,
     startVoiceInputDisposable,
+    disposableReadErrors,
+    disposableAnnotate,
     stopSpeechDisposable,
-    vscode.commands.registerCommand(
-      "echocode.loadAssignmentFile",
-      loadAssignmentFile
-    ),
-    vscode.commands.registerCommand("echocode.readNextTask", readNextTask),
-    vscode.commands.registerCommand(
-      "echocode.markTaskComplete",
-      markTaskComplete
-    )
+    speakNextAnnotationDisposable,
+    readAllAnnotationsDisposable,
+    classSummary,
+    functionSummary,
+    programSummary,
+    nextFunction,
+    prevFunction,
+    loadAssignmentFileDisposable,
+    rescanUserCodeDisposable,
+    readNextSequentialTaskDisposable
   );
 
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput"
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask"
   );
 }
-
 async function handlePythonErrorsOnSave(filePath) {
   if (isRunning) {
     return;

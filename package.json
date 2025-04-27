@@ -55,10 +55,6 @@
         "title": "Summarize Current Class"
       },
       {
-        "command": "echocode.summarizeProgram",
-        "title": "Summarize Current Program"
-      },
-      {
         "command": "echocode.summarizeFunction",
         "title": "Summarize Current Function"
       },
@@ -75,20 +71,20 @@
         "title": "Load Assignment File"
       },
       {
-        "command": "echocode.readNextTask",
-        "title": "Read Next Assignment Task"
-      },
-      {
-        "command": "echocode.markTaskComplete",
-        "title": "Mark Assignment Task Complete"
-      },
-      {
         "command": "echocode.increaseSpeechSpeed",
         "title": "Increase Speech Speed"
       },
       {
         "command": "echocode.decreaseSpeechSpeed",
         "title": "Decrease Speech Speed"
+      },
+      {
+        "command": "echocode.rescanUserCode",
+        "title": "Rescan Code for Completed Tasks"
+      },
+      {
+        "command": "echocode.readNextSequentialTask",
+        "title": "Read Next Sequential Task"
       }
     ],
     "configuration": {
@@ -181,16 +177,6 @@
         "when": "editorTextFocus"
       },
       {
-        "key": "ctrl+alt+t",
-        "command": "echocode.readNextTask",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "ctrl+alt+m",
-        "command": "echocode.markTaskComplete",
-        "when": "editorTextFocus"
-      },
-      {
         "key": "ctrl+alt+x",
         "command": "echocode.stopSpeech"
       },
@@ -202,6 +188,16 @@
       {
         "key": "ctrl+alt+d",
         "command": "echocode.decreaseSpeechSpeed",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.rescanUserCode",
+        "key": "ctrl+alt+y",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.readNextSequentialTask",
+        "key": "ctrl+alt+/",
         "when": "editorTextFocus"
       }
     ],
@@ -258,10 +254,10 @@
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.24.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.29.1",
     "glob": "^10.3.10",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.33",

@@ -1,0 +1,5 @@
+Task 1: Define a function named `add()` that takes two parameters and returns their sum.
+Task 2: Define a function named `subtract()` that takes two parameters and returns their difference.
+Task 3: Create a list variable with three numbers.
+Task 4: Use the `sum()` function to calculate and print the sum of the list.
+Task 5: Use a `for` loop to iterate through the list and print each number.
