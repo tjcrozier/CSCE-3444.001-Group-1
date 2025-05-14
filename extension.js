@@ -18,6 +18,7 @@ const {
 
 let activeDecorations = [];
 let annotationsVisible = false;
+const { describeCursorPosition } = require("./whereAmI.js");
 
 let outputChannel;
 let debounceTimer = null;
@@ -586,6 +587,14 @@ async function activate(context) {
       }
     }
   );
+  let whereAmI = vscode.commands.registerCommand(
+    "echocode.whereAmI", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        describeCursorPosition(editor);
+      }
+    }
+  );
 
   let nextFunction = vscode.commands.registerCommand(
     "echocode.jumpToNextFunction",
@@ -621,20 +630,21 @@ async function activate(context) {
     hotkeyMenuCommand,
     openChatDisposable,
     startVoiceInputDisposable,
+    classSummary,
+    functionSummary,
+    programSummary,
+    whereAmI,
+    readAllAnnotationsDisposable,
     disposableReadErrors,
     disposableAnnotate,
     stopSpeechDisposable,
     speakNextAnnotationDisposable,
-    readAllAnnotationsDisposable,
-    classSummary,
-    functionSummary,
-    programSummary,
     nextFunction,
     prevFunction,
     loadAssignmentFileDisposable,
     rescanUserCodeDisposable,
     readNextSequentialTaskDisposable
-  );
+);
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask"

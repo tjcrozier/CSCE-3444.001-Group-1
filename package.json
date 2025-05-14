@@ -59,6 +59,10 @@
         "title": "Summarize Current Function"
       },
       {
+        "command": "echocode.summarizeProgram",
+        "title": "Summarize Current Program"
+      },
+      {
         "command": "echocode.openChat",
         "title": "Open EchoCode Tutor Chat"
       },
@@ -85,6 +89,10 @@
       {
         "command": "echocode.readNextSequentialTask",
         "title": "Read Next Sequential Task"
+      },
+      {
+        "command": "echocode.whereAmI",
+        "title": "Where Am I?"
       }
     ],
     "configuration": {
@@ -144,22 +152,27 @@
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
-        "command": "echocode.openChat",
-        "key": "ctrl+alt+c",
-        "when": "editorTextFocus"
+        "command": "echocode.summarizeProgram",
+        "key": "ctrl+alt+space P",
+        "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
         "command": "echocode.startVoiceInput",
         "key": "ctrl+alt+v"
       },
       {
-        "command": "echocode.summarizeProgram",
-        "key": "ctrl+alt+space P",
-        "when": "editorTextFocus && editorLangId == 'python'"
+        "command": "echocode.openChat",
+        "key": "ctrl+alt+c",
+        "when": "editorTextFocus"
       },
       {
         "command": "code-tutor.analyzeBigO",
         "key": "ctrl+alt+n",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      },
+      {
+        "command": "echocode.whereAmI",
+        "key": "ctrl+alt+space W",
         "when": "editorTextFocus && editorLangId == 'python'"
       },
       {
