@@ -109,9 +109,9 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "code-tutor.speakNextAnnotation",
-        "key": "ctrl+alt+s",
-        "when": "editorTextFocus"
+        "command": "echocode.speakNextAnnotation",
+  "key": "ctrl+alt+s",
+  "when": "editorTextFocus"
       },
       {
         "command": "echocode.annotate",
