@@ -5,7 +5,6 @@ const { speakMessage } = require('./speechHandler');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 
-
 let taskList = [];
 let currentTaskIndex = 0;
 let completedTasks = new Set();
@@ -61,13 +60,10 @@ async function loadAssignmentFile() {
         });
         outputChannel.show(true);
 
-
     } catch (err) {
         vscode.window.showErrorMessage('Failed to read file: ' + err.message);
         speakMessage('Failed to read the selected file.');
     }
-
-
 }
 
 async function parseTasksWithAI(text) {
@@ -79,8 +75,7 @@ async function parseTasksWithAI(text) {
         }
 
         const messages = [
-            new vscode.LanguageModelChatMessage(0, "You are helping a blind beginner Python student. Extract only the concrete steps required to complete the coding assignment below. Each step should be short and clear — under 15 words. Focus on actions the student must take. Format each step as a bullet point like '- [ ] Use fork() to create new process'."
-),
+            new vscode.LanguageModelChatMessage(0, "You are helping a blind beginner Python student. Extract only the concrete steps required to complete the coding assignment below. Each step should be short and clear -- under 15 words. Format each step as a bullet point like '- [ ] Define a function named add().'"),
             new vscode.LanguageModelChatMessage(0, text)
         ];
 
@@ -127,18 +122,94 @@ function readNextTask() {
     speakMessage(`Task ${currentTaskIndex + 1}: ${task}`);
 }
 
-function markTaskComplete() {
-    if (currentTaskIndex < taskList.length) {
-        completedTasks.add(currentTaskIndex);
-        speakMessage(`Marked task ${currentTaskIndex + 1} as complete.`);
-        currentTaskIndex++;
+async function rescanUserCode() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        speakMessage('No open code file to scan.');
+        return;
+    }
+
+    const userCode = editor.document.getText();
+    if (!userCode) {
+        speakMessage('Open code file is empty.');
+        return;
+    }
+
+    try {
+        const [model] = await vscode.lm.selectChatModels({ vendor: 'copilot', family: 'gpt-4o' });
+        if (!model) {
+            vscode.window.showErrorMessage('Copilot model not available.');
+            return;
+        }
+
+        const assignmentText = taskList.map((task, i) => `Task ${i + 1}: ${task}`).join('\n');
+
+        const messages = [
+            new vscode.LanguageModelChatMessage(0, 
+                `You are helping a blind beginner Python student. \nCompare this assignment list to the student's code. \nRespond only with the task numbers that are already complete.`),
+            new vscode.LanguageModelChatMessage(0, `Assignment Tasks:\n${assignmentText}`),
+            new vscode.LanguageModelChatMessage(0, `User's Code:\n${userCode}`)
+        ];
+
+        const response = await model.sendRequest(messages, {}, new vscode.CancellationTokenSource().token);
+
+        let result = '';
+        for await (const chunk of response.text) {
+            result += chunk;
+        }
+
+        updateCompletedTasksFromAI(result);
+
+    } catch (err) {
+        vscode.window.showErrorMessage('AI rescan failed: ' + err.message);
+        speakMessage('Failed to rescan code.');
+    }
+}
+
+function updateCompletedTasksFromAI(responseText) {
+    completedTasks.clear();
+
+    const taskNumbers = responseText.match(/\d+/g);
+    if (taskNumbers) {
+        taskNumbers.forEach(num => {
+            const index = parseInt(num) - 1;
+            if (index >= 0 && index < taskList.length) {
+                completedTasks.add(index);
+            }
+        });
+    }
+
+    speakMessage(`Updated task completion based on your code. ${completedTasks.size} tasks completed.`);
+}
+
+function readNextSequentialTask() {
+    if (taskList.length === 0) {
+        speakMessage('No tasks loaded.');
+        return;
+    }
+
+    let startingIndex = currentTaskIndex;
+    let foundNext = false;
+
+    do {
+        currentTaskIndex = (currentTaskIndex + 1) % taskList.length;
+        if (!completedTasks.has(currentTaskIndex)) {
+            foundNext = true;
+            break;
+        }
+    } while (currentTaskIndex !== startingIndex);
+
+    if (foundNext) {
+        const task = taskList[currentTaskIndex];
+        speakMessage(`Task ${currentTaskIndex + 1}: ${task}`);
     } else {
-        speakMessage('No current task to mark as complete.');
+        speakMessage('All tasks completed.');
     }
 }
 
 module.exports = {
     loadAssignmentFile,
     readNextTask,
-    markTaskComplete
+    rescanUserCode,
+    readNextSequentialTask
 };

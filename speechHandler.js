@@ -10,18 +10,16 @@ async function speakMessage(message) {
   isSpeaking = true;
 
   try {
-    // Create a new promise for this speech instance
     currentSpeechPromise = new Promise((resolve, reject) => {
       const config = vscode.workspace.getConfiguration("echocode");
       let voice = config.get("voice");
-      const rate = config.get("rate") || 1.0;
 
       // Fallback to Zira if not set and on Windows
       if (!voice && process.platform === "win32") {
         voice = "Microsoft Zira Desktop";
       }
 
-      say.speak(message, voice, rate, (err) => {
+      say.speak(message, voice, currentSpeed, (err) => {  // <-- ⭐ use currentSpeed directly
         if (err) {
           console.error("Speech Error:", err);
           reject(err);
@@ -74,16 +72,40 @@ function increaseSpeechSpeed() {
   currentSpeed = Math.min(currentSpeed + 0.1, 3.0);
   console.log(`Speech speed increased to: ${currentSpeed.toFixed(1)}x`);
   queueSpeedAnnouncement();
+  saveSpeechSpeed(); // <-- Save when changed
 }
 
 function decreaseSpeechSpeed() {
   currentSpeed = Math.max(currentSpeed - 0.1, 0.5);
   console.log(`Speech speed decreased to: ${currentSpeed.toFixed(1)}x`);
   queueSpeedAnnouncement();
+  saveSpeechSpeed(); // <-- Save when changed
 }
 
 function getSpeechSpeed() {
   return currentSpeed;
+}
+
+function saveSpeechSpeed() {
+  const config = vscode.workspace.getConfiguration("echocode");
+  config.update("rate", currentSpeed, vscode.ConfigurationTarget.Global)
+    .then(() => {
+      console.log(`Saved speech speed: ${currentSpeed.toFixed(1)}x`);
+    }, (err) => {
+      console.error('Failed to save speech speed:', err);
+    });
+}
+
+function loadSavedSpeechSpeed() {
+  const config = vscode.workspace.getConfiguration("echocode");
+  const savedSpeed = config.get("rate");
+
+  if (savedSpeed && typeof savedSpeed === "number") {
+    currentSpeed = Math.max(0.5, Math.min(savedSpeed, 3.0)); // Clamp between 0.5 and 3.0
+    console.log(`Loaded saved speech speed: ${currentSpeed.toFixed(1)}x`);
+  } else {
+    console.log("No saved speech speed found. Using default 1.0x");
+  }
 }
 
 module.exports = {
@@ -92,4 +114,5 @@ module.exports = {
   increaseSpeechSpeed,
   decreaseSpeechSpeed,
   getSpeechSpeed,
+  loadSavedSpeechSpeed,
 };
