@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { speakMessage } = require('./speechHandler');
+const { speakMessage } = require("../../speechHandler");
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 
@@ -16,6 +16,7 @@ function resetTasks() {
 }
 
 async function loadAssignmentFile() {
+    vscode.window.showInformationMessage("Loading assignment file...");
     const fileUri = await vscode.window.showOpenDialog({
         canSelectMany: false,
         filters: {
@@ -109,20 +110,24 @@ function parseTasksFromText(text) {
 }
 
 function readNextTask() {
+    console.log("readNextTask called");
+    vscode.window.showInformationMessage("Reading the next task...");
     while (currentTaskIndex < taskList.length && completedTasks.has(currentTaskIndex)) {
         currentTaskIndex++;
     }
 
     if (currentTaskIndex >= taskList.length) {
-        speakMessage('All tasks completed.');
+        speakMessage("All tasks completed.");
         return;
     }
 
     const task = taskList[currentTaskIndex];
+    console.log(`Current task: ${task}`);
     speakMessage(`Task ${currentTaskIndex + 1}: ${task}`);
 }
 
 async function rescanUserCode() {
+    vscode.window.showInformationMessage("Rescanning user code...");
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         speakMessage('No open code file to scan.');
@@ -183,6 +188,7 @@ function updateCompletedTasksFromAI(responseText) {
 }
 
 function readNextSequentialTask() {
+    vscode.window.showInformationMessage("Reading the next sequential task...");
     if (taskList.length === 0) {
         speakMessage('No tasks loaded.');
         return;
@@ -207,9 +213,64 @@ function readNextSequentialTask() {
     }
 }
 
+function markTaskComplete() {
+    console.log("markTaskComplete called");
+    if (taskList.length === 0) {
+        speakMessage("No tasks loaded.");
+        return;
+    }
+
+    if (currentTaskIndex < taskList.length) {
+        completedTasks.add(currentTaskIndex);
+        console.log(`Task ${currentTaskIndex + 1} marked as complete.`);
+        speakMessage(`Task ${currentTaskIndex + 1} marked as complete.`);
+        currentTaskIndex++;
+    } else {
+        speakMessage("All tasks are already completed.");
+    }
+}
+
+// Register all assignment tracker commands
+function registerAssignmentTrackerCommands(context) {
+    const loadAssignmentFileDisposable = vscode.commands.registerCommand(
+        "echocode.loadAssignmentFile",
+        loadAssignmentFile
+    );
+
+    const rescanUserCodeDisposable = vscode.commands.registerCommand(
+        "echocode.rescanUserCode",
+        rescanUserCode
+    );
+
+    const readNextSequentialTaskDisposable = vscode.commands.registerCommand(
+        "echocode.readNextSequentialTask",
+        readNextSequentialTask
+    );
+
+    const readNextTaskDisposable = vscode.commands.registerCommand(
+        "echocode.readNextTask",
+        readNextTask
+    );
+
+    const markTaskCompleteDisposable = vscode.commands.registerCommand(
+        "echocode.markTaskComplete",
+        markTaskComplete
+    );
+
+    context.subscriptions.push(
+        loadAssignmentFileDisposable,
+        rescanUserCodeDisposable,
+        readNextSequentialTaskDisposable,
+        readNextTaskDisposable,
+        markTaskCompleteDisposable
+    );
+}
+
 module.exports = {
+    registerAssignmentTrackerCommands,
     loadAssignmentFile,
     readNextTask,
     rescanUserCode,
-    readNextSequentialTask
+    readNextSequentialTask,
+    markTaskComplete,
 };
