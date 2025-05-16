@@ -10,7 +10,7 @@ const {
   summarizeFunction,
   summarizeClass,
   summarizeProgram,
-} = require("./summaryGenerator.js");
+} = require("./program_features/Summarizer/summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
 const { showHotkeyGuide } = require("./hotkeyGuide");
@@ -612,6 +612,9 @@ async function activate(context) {
       }
     }
   );
+
+  context.subscriptions.push(classSummary, functionSummary, programSummary);
+
   let whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
     const editor = vscode.window.activeTextEditor;
     if (editor && editor.document.languageId === "python") {
