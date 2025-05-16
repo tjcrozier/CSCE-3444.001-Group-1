@@ -45,8 +45,12 @@ function speakMessage(message) {
 
     isSpeaking = true;
 
-    // Use say.js to speak the message
-    say.speak(message, null, speechSpeed, (err) => {
+    // Get the configured voice from settings
+    const config = vscode.workspace.getConfiguration("echocode");
+    const voice = config.get("voice") || null; // Use default if not specified
+
+    // Use say.js to speak the message with the configured voice
+    say.speak(message, voice, speechSpeed, (err) => {
       isSpeaking = false;
       currentSpeechProcess = null;
       if (err) {
