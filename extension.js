@@ -10,6 +10,7 @@ const {
   summarizeFunction,
   summarizeClass,
   summarizeProgram,
+  registerSummarizerCommands,
 } = require("./program_features/Summarizer/summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
@@ -25,7 +26,7 @@ const {
   getVisibleCodeWithLineNumbers,
   annotationQueue,
   ANNOTATION_PROMPT,
-  registerAnnotationCommands, // Add this import
+  registerAnnotationCommands,
 } = require("./program_features/Annotations_BigO/annotations");
 
 const {
@@ -99,8 +100,11 @@ async function activate(context) {
   // Register Big O commands
   registerBigOCommand(context);
 
-  // Register annotation commands (now includes all annotation-related commands)
+  // Register annotation commands
   registerAnnotationCommands(context, outputChannel);
+  
+  // Register summarizer commands
+  registerSummarizerCommands(context, outputChannel);
 
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
@@ -128,38 +132,6 @@ async function activate(context) {
     }
   );
 
-  let classSummary = vscode.commands.registerCommand(
-    "echocode.summarizeClass",
-    () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "python") {
-        summarizeClass(editor);
-      }
-    }
-  );
-
-  let functionSummary = vscode.commands.registerCommand(
-    "echocode.summarizeFunction",
-    () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "python") {
-        summarizeFunction(editor);
-      }
-    }
-  );
-
-  let programSummary = vscode.commands.registerCommand(
-    "echocode.summarizeProgram",
-    () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "python") {
-        summarizeProgram(editor);
-      }
-    }
-  );
-
-  context.subscriptions.push(classSummary, functionSummary, programSummary);
-
   let whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
     const editor = vscode.window.activeTextEditor;
     if (editor && editor.document.languageId === "python") {
@@ -183,9 +155,6 @@ async function activate(context) {
 
   context.subscriptions.push(
     hotkeyMenuCommand,
-    classSummary,
-    functionSummary,
-    programSummary,
     whereAmI,
     disposableReadErrors,
     stopSpeechDisposable,

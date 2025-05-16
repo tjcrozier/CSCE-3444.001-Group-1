@@ -76,4 +76,67 @@ function summarizeProgram(editor) {
   });
 }
 
-module.exports = { summarizeFunction, summarizeClass, summarizeProgram };
+// New function to register all summarizer commands
+function registerSummarizerCommands(context, outputChannel) {
+  // Command to summarize a class
+  const classSummaryCommand = vscode.commands.registerCommand(
+    "echocode.summarizeClass",
+    () => {
+      outputChannel.appendLine("echocode.summarizeClass command triggered");
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeClass(editor);
+      } else {
+        vscode.window.showWarningMessage(
+          "Please open a Python file to summarize a class."
+        );
+      }
+    }
+  );
+
+  // Command to summarize a function
+  const functionSummaryCommand = vscode.commands.registerCommand(
+    "echocode.summarizeFunction",
+    () => {
+      outputChannel.appendLine("echocode.summarizeFunction command triggered");
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeFunction(editor);
+      } else {
+        vscode.window.showWarningMessage(
+          "Please open a Python file to summarize a function."
+        );
+      }
+    }
+  );
+
+  // Command to summarize a program
+  const programSummaryCommand = vscode.commands.registerCommand(
+    "echocode.summarizeProgram",
+    () => {
+      outputChannel.appendLine("echocode.summarizeProgram command triggered");
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        summarizeProgram(editor);
+      } else {
+        vscode.window.showWarningMessage(
+          "Please open a Python file to summarize a program."
+        );
+      }
+    }
+  );
+
+  // Add all commands to context.subscriptions
+  context.subscriptions.push(
+    classSummaryCommand,
+    functionSummaryCommand,
+    programSummaryCommand
+  );
+}
+
+module.exports = { 
+  summarizeFunction, 
+  summarizeClass, 
+  summarizeProgram,
+  registerSummarizerCommands // Add this new export
+};
