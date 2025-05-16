@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const Queue = require("./queue_system");
+const { speakMessage } = require("../../speechHandler"); // Add this import
 
 let activeDecorations = [];
 const annotationQueue = new Queue();
@@ -8,6 +9,16 @@ const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn ho
 
 { "line": 1, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }{ "line": 12, "suggestion": "I think you should use a for loop instead of a while loop. A for loop is more concise and easier to read." }
 `;
+
+// Add function to get entire file instead of just visible code
+function getEntireFileWithLineNumbers(textEditor) {
+  const documentLineCount = textEditor.document.lineCount;
+  let code = "";
+  for (let lineNumber = 0; lineNumber < documentLineCount; lineNumber++) {
+    code += `${lineNumber + 1}: ${textEditor.document.lineAt(lineNumber).text}\n`;
+  }
+  return code;
+}
 
 async function parseChatResponse(chatResponse, textEditor) {
   let accumulatedResponse = "";
@@ -80,10 +91,14 @@ function getVisibleCodeWithLineNumbers(textEditor) {
   return code;
 }
 
-function registerAnnotationCommands(context) {
+// Consolidated function to register all annotation-related commands
+function registerAnnotationCommands(context, outputChannel) {
+  // Command to create annotations
   const annotateCommand = vscode.commands.registerTextEditorCommand(
     "echocode.annotate",
     async (textEditor) => {
+      outputChannel.appendLine("echocode.annotate command triggered");
+
       if (annotationsVisible) {
         clearDecorations();
         annotationQueue.clear();
@@ -93,15 +108,24 @@ function registerAnnotationCommands(context) {
       }
 
       try {
-        const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
+        // Use entire file content instead of just visible content
+        const codeWithLineNumbers = getEntireFileWithLineNumbers(textEditor);
+        
+        // Show a status bar message to indicate annotation is in progress
+        const statusBarMessage = vscode.window.setStatusBarMessage(
+          "$(loading~spin) EchoCode is analyzing your file..."
+        );
+        
         const [model] = await vscode.lm.selectChatModels({
           vendor: "copilot",
           family: "gpt-4o",
         });
         if (!model) {
+          statusBarMessage.dispose();
           vscode.window.showErrorMessage(
             "No language model available. Please ensure Copilot is enabled."
           );
+          outputChannel.appendLine("No language model available");
           return;
         }
         const messages = [
@@ -115,7 +139,13 @@ function registerAnnotationCommands(context) {
         );
         await parseChatResponse(chatResponse, textEditor);
         annotationsVisible = true;
+        
+        // Dispose of the status bar message
+        statusBarMessage.dispose();
+        vscode.window.setStatusBarMessage("EchoCode finished analyzing your code", 3000);
+        outputChannel.appendLine("Annotations applied successfully");
       } catch (error) {
+        outputChannel.appendLine("Error in annotate command: " + error.message);
         vscode.window.showErrorMessage(
           "Failed to annotate code: " + error.message
         );
@@ -123,15 +153,58 @@ function registerAnnotationCommands(context) {
     }
   );
 
-  context.subscriptions.push(annotateCommand);
+  // Command to speak the next annotation
+  const speakNextAnnotationCommand = vscode.commands.registerCommand(
+    "echocode.speakNextAnnotation",
+    async () => {
+      outputChannel.appendLine("echocode.speakNextAnnotation command triggered");
+      if (!annotationQueue.isEmpty()) {
+        const nextAnnotation = annotationQueue.dequeue();
+        const message = `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`;
+        vscode.window.showInformationMessage(message); // Display the annotation
+        await speakMessage(message); // Read the annotation aloud
+      } else {
+        vscode.window.showInformationMessage("No more annotations to read.");
+        await speakMessage("No more annotations to read.");
+      }
+    }
+  );
+
+  // Command to read all annotations
+  const readAllAnnotationsCommand = vscode.commands.registerCommand(
+    "echocode.readAllAnnotations",
+    async () => {
+      outputChannel.appendLine("Reading all annotations aloud...");
+      const annotations = annotationQueue.items;
+      if (annotations.length === 0) {
+        vscode.window.showInformationMessage(
+          "No annotations available to read."
+        );
+        return;
+      }
+      for (const annotation of annotations) {
+        await speakMessage(
+          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
+        );
+      }
+    }
+  );
+
+  // Add all commands to context.subscriptions
+  context.subscriptions.push(
+    annotateCommand, 
+    speakNextAnnotationCommand, 
+    readAllAnnotationsCommand
+  );
 }
 
 module.exports = {
-  annotationQueue, // Export the queue
+  annotationQueue,
   parseChatResponse,
   applyDecoration,
   clearDecorations,
   getVisibleCodeWithLineNumbers,
+  getEntireFileWithLineNumbers,
   registerAnnotationCommands,
-  ANNOTATION_PROMPT  // Add this export
+  ANNOTATION_PROMPT
 };

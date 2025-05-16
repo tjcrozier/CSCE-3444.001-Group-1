@@ -24,7 +24,8 @@ const {
   clearDecorations,
   getVisibleCodeWithLineNumbers,
   annotationQueue,
-  ANNOTATION_PROMPT, // Add this import
+  ANNOTATION_PROMPT,
+  registerAnnotationCommands, // Add this import
 } = require("./program_features/Annotations_BigO/annotations");
 
 const {
@@ -42,7 +43,6 @@ const {
   registerAssignmentTrackerCommands,
 } = require("./program_features/Assignment_Tracker/assignmentTracker");
 
-// Import the chat functionality
 const { registerChatCommands } = require("./program_features/ChatBot/chat_tutor");
 
 let activeDecorations = [];
@@ -93,56 +93,14 @@ async function activate(context) {
   );
   context.subscriptions.push(hotkeyMenuCommand);
 
-  // Register chat commands - this replaces all the chat-related code
-  // that was previously in the activate function
+  // Register chat commands
   const chatViewProvider = registerChatCommands(context, outputChannel);
 
   // Register Big O commands
   registerBigOCommand(context);
 
-  // Trigger on file save
-  vscode.workspace.onDidSaveTextDocument((document) => {
-    if (document.languageId === "python") {
-      handlePythonErrorsOnSave(document.uri.fsPath);
-    }
-  });
-
-  vscode.workspace.onDidChangeTextDocument((event) => {
-    const document = event.document;
-
-    if (document.languageId !== "python") {
-      // Not a Python file, ignore it
-      return;
-    }
-
-    outputChannel.appendLine("Python file changed: " + document.uri.fsPath);
-
-    if (event.contentChanges.length > 0) {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
-
-      debounceTimer = setTimeout(() => {
-        handlePythonErrorsOnChange(document.uri.fsPath);
-      }, 1000);
-    }
-  });
-
-  // Speech speed control
-  context.subscriptions.push(
-    vscode.commands.registerCommand("echocode.increaseSpeechSpeed", () => {
-      increaseSpeechSpeed();
-      vscode.window.showInformationMessage(
-        `Speech speed: ${getSpeechSpeed().toFixed(1)}x`
-      );
-    }),
-    vscode.commands.registerCommand("echocode.decreaseSpeechSpeed", () => {
-      decreaseSpeechSpeed();
-      vscode.window.showInformationMessage(
-        `Speech speed: ${getSpeechSpeed().toFixed(1)}x`
-      );
-    })
-  );
+  // Register annotation commands (now includes all annotation-related commands)
+  registerAnnotationCommands(context, outputChannel);
 
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
@@ -159,53 +117,6 @@ async function activate(context) {
     }
   );
 
-  let disposableAnnotate = vscode.commands.registerTextEditorCommand(
-    "echocode.annotate",
-    async (textEditor) => {
-      outputChannel.appendLine("echocode.annotate command triggered");
-
-      if (annotationsVisible) {
-        clearDecorations();
-        annotationQueue.clear();
-        annotationsVisible = false;
-        vscode.window.showInformationMessage("Annotations cleared");
-        return;
-      }
-
-      try {
-        const codeWithLineNumbers = getVisibleCodeWithLineNumbers(textEditor);
-        const [model] = await vscode.lm.selectChatModels({
-          vendor: "copilot",
-          family: "gpt-4o",
-        });
-        if (!model) {
-          vscode.window.showErrorMessage(
-            "No language model available. Please ensure Copilot is enabled."
-          );
-          outputChannel.appendLine("No language model available");
-          return;
-        }
-        const messages = [
-          new vscode.LanguageModelChatMessage(0, ANNOTATION_PROMPT),
-          new vscode.LanguageModelChatMessage(0, codeWithLineNumbers),
-        ];
-        const chatResponse = await model.sendRequest(
-          messages,
-          {},
-          new vscode.CancellationTokenSource().token
-        );
-        await parseChatResponse(chatResponse, textEditor);
-        annotationsVisible = true;
-        outputChannel.appendLine("Annotations applied successfully");
-      } catch (error) {
-        outputChannel.appendLine("Error in annotate command: " + error.message);
-        vscode.window.showErrorMessage(
-          "Failed to annotate code: " + error.message
-        );
-      }
-    }
-  );
-
   let stopSpeechDisposable = vscode.commands.registerCommand(
     "echocode.stopSpeech",
     async () => {
@@ -213,40 +124,6 @@ async function activate(context) {
       if (wasSpeaking) {
         vscode.window.showInformationMessage("Speech stopped");
         outputChannel.appendLine("Speech stopped by user");
-      }
-    }
-  );
-
-  let speakNextAnnotationDisposable = vscode.commands.registerCommand(
-    "echocode.speakNextAnnotation",
-    async () => {
-      if (!annotationQueue.isEmpty()) {
-        const nextAnnotation = annotationQueue.dequeue();
-        const message = `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`;
-        vscode.window.showInformationMessage(message); // Display the annotation
-        await speakMessage(message); // Read the annotation aloud
-      } else {
-        vscode.window.showInformationMessage("No more annotations to read.");
-        await speakMessage("No more annotations to read.");
-      }
-    }
-  );
-
-  let readAllAnnotationsDisposable = vscode.commands.registerCommand(
-    "echocode.readAllAnnotations",
-    async () => {
-      outputChannel.appendLine("Reading all annotations aloud...");
-      const annotations = annotationQueue.items;
-      if (annotations.length === 0) {
-        vscode.window.showInformationMessage(
-          "No annotations available to read."
-        );
-        return;
-      }
-      for (const annotation of annotations) {
-        await speakMessage(
-          `Annotation on line ${annotation.line}: ${annotation.suggestion}`
-        );
       }
     }
   );
@@ -310,11 +187,8 @@ async function activate(context) {
     functionSummary,
     programSummary,
     whereAmI,
-    readAllAnnotationsDisposable,
     disposableReadErrors,
-    disposableAnnotate,
     stopSpeechDisposable,
-    speakNextAnnotationDisposable,
     nextFunction,
     prevFunction
   );
