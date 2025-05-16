@@ -1,7 +1,11 @@
 const vscode = require("vscode"); // VSCode API
 const { Selection } = require("./codeParser");
-const { speakMessage } = require("../../speechHandler");
-const { analyzeAI } = require("../../AIrequest");
+const {
+  speakMessage,
+} = require("../../program_settings/speech_settings/speechHandler");
+const {
+  analyzeAI,
+} = require("../../program_settings/program_settings/AIrequest");
 
 function summarizeClass(editor) {
   // Attempt to retrieve the current class
@@ -134,9 +138,9 @@ function registerSummarizerCommands(context, outputChannel) {
   );
 }
 
-module.exports = { 
-  summarizeFunction, 
-  summarizeClass, 
+module.exports = {
+  summarizeFunction,
+  summarizeClass,
   summarizeProgram,
-  registerSummarizerCommands // Add this new export
+  registerSummarizerCommands, // Add this new export
 };

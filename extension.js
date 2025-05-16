@@ -1,10 +1,15 @@
 const vscode = require("vscode");
-const { runPylint } = require("./pylintHandler");
+const {
+  runPylint,
+} = require("./program_settings/program_settings/pylintHandler");
 const {
   speakMessage,
   stopSpeaking,
   loadSavedSpeechSpeed,
-} = require("./speechHandler");
+  registerSpeechCommands,
+  increaseSpeechSpeed,
+  decreaseSpeechSpeed,
+} = require("./program_settings/speech_settings/speechHandler");
 const { exec } = require("child_process");
 const {
   summarizeFunction,
@@ -14,7 +19,9 @@ const {
 } = require("./program_features/Summarizer/summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
-const { showHotkeyGuide } = require("./hotkeyGuide");
+const {
+  registerHotkeyGuideCommand,
+} = require("./program_settings/guide_settings/hotkeyGuide");
 const Queue = require("./program_features/Annotations_BigO/queue_system");
 const {
   registerBigOCommand,
@@ -36,15 +43,12 @@ const {
   readNextSequentialTask,
 } = require("./program_features/Assignment_Tracker/assignmentTracker");
 const {
-  increaseSpeechSpeed,
-  decreaseSpeechSpeed,
-  getSpeechSpeed,
-} = require("./speechHandler");
-const {
   registerAssignmentTrackerCommands,
 } = require("./program_features/Assignment_Tracker/assignmentTracker");
 
-const { registerChatCommands } = require("./program_features/ChatBot/chat_tutor");
+const {
+  registerChatCommands,
+} = require("./program_features/ChatBot/chat_tutor");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -88,11 +92,8 @@ async function activate(context) {
   // Register assignment tracker commands
   registerAssignmentTrackerCommands(context);
 
-  let hotkeyMenuCommand = vscode.commands.registerCommand(
-    "echocode.readHotkeyGuide",
-    showHotkeyGuide
-  );
-  context.subscriptions.push(hotkeyMenuCommand);
+  // Register hotkey guide command
+  registerHotkeyGuideCommand(context);
 
   // Register chat commands
   const chatViewProvider = registerChatCommands(context, outputChannel);
@@ -102,9 +103,12 @@ async function activate(context) {
 
   // Register annotation commands
   registerAnnotationCommands(context, outputChannel);
-  
+
   // Register summarizer commands
   registerSummarizerCommands(context, outputChannel);
+
+  // Register speech commands
+  registerSpeechCommands(context, outputChannel);
 
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
@@ -117,17 +121,6 @@ async function activate(context) {
         vscode.window.showWarningMessage(
           "Please open a Python file to read errors."
         );
-      }
-    }
-  );
-
-  let stopSpeechDisposable = vscode.commands.registerCommand(
-    "echocode.stopSpeech",
-    async () => {
-      const wasSpeaking = stopSpeaking();
-      if (wasSpeaking) {
-        vscode.window.showInformationMessage("Speech stopped");
-        outputChannel.appendLine("Speech stopped by user");
       }
     }
   );
@@ -154,16 +147,14 @@ async function activate(context) {
   );
 
   context.subscriptions.push(
-    hotkeyMenuCommand,
     whereAmI,
     disposableReadErrors,
-    stopSpeechDisposable,
     nextFunction,
     prevFunction
   );
 
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask"
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
   );
 }
 async function handlePythonErrorsOnSave(filePath) {
@@ -172,7 +163,7 @@ async function handlePythonErrorsOnSave(filePath) {
   }
   isRunning = true;
   try {
-    const errors = await runPylint(filePath);
+    const errors = await runPylint(filePath, outputChannel);
     if (errors.length === 0) {
       vscode.window.showInformationMessage("✅ No issues detected!");
       isRunning = false;
@@ -196,7 +187,7 @@ async function handlePythonErrorsOnSave(filePath) {
 
 async function handlePythonErrors(filePath) {
   try {
-    const errors = await runPylint(filePath);
+    const errors = await runPylint(filePath, outputChannel);
     if (errors.length === 0) {
       vscode.window.showInformationMessage("✅ No issues detected!");
       return;

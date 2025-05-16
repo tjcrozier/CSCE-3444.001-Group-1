@@ -1,6 +1,8 @@
 const vscode = require("vscode");
 const Queue = require("./queue_system"); // Import the Queue system
-const { speakMessage } = require("../../speechHandler"); // Import the speakMessage function
+const {
+  speakMessage,
+} = require("../../program_settings/speech_settings/speechHandler"); // Import the speakMessage function
 const { annotationQueue } = require("./annotations");
 
 const bigOQueue = new Queue(); // Queue for Big O notation problems
