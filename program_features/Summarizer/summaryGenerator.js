@@ -3,7 +3,9 @@ const { Selection } = require("./codeParser");
 const {
   speakMessage,
 } = require("../../program_settings/speech_settings/speechHandler");
-const { analyzeAI } = require("../../AIrequest");
+const {
+  analyzeAI,
+} = require("../../program_settings/program_settings/AIrequest");
 
 function summarizeClass(editor) {
   // Attempt to retrieve the current class

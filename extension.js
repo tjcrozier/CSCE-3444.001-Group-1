@@ -1,5 +1,7 @@
 const vscode = require("vscode");
-const { runPylint } = require("./pylintHandler");
+const {
+  runPylint,
+} = require("./program_settings/program_settings/pylintHandler");
 const {
   speakMessage,
   stopSpeaking,
@@ -161,7 +163,7 @@ async function handlePythonErrorsOnSave(filePath) {
   }
   isRunning = true;
   try {
-    const errors = await runPylint(filePath);
+    const errors = await runPylint(filePath, outputChannel);
     if (errors.length === 0) {
       vscode.window.showInformationMessage("✅ No issues detected!");
       isRunning = false;
@@ -185,7 +187,7 @@ async function handlePythonErrorsOnSave(filePath) {
 
 async function handlePythonErrors(filePath) {
   try {
-    const errors = await runPylint(filePath);
+    const errors = await runPylint(filePath, outputChannel);
     if (errors.length === 0) {
       vscode.window.showInformationMessage("✅ No issues detected!");
       return;
