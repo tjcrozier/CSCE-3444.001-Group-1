@@ -1,5 +1,5 @@
 const vscode = require("vscode");
-const Queue = require("../../queue_system");
+const Queue = require("./queue_system");
 
 let activeDecorations = [];
 const annotationQueue = new Queue();
@@ -21,7 +21,9 @@ async function parseChatResponse(chatResponse, textEditor) {
         annotationQueue.enqueue(annotationData); // Enqueue the annotation
 
         // Log the annotation being added to the queue
-        console.log(`Annotation added to queue: Line ${annotation.line}, Suggestion: ${annotation.suggestion}`);
+        console.log(
+          `Annotation added to queue: Line ${annotation.line}, Suggestion: ${annotation.suggestion}`
+        );
         accumulatedResponse = "";
       } catch (error) {
         console.error("Failed to parse annotation:", error.message);

@@ -14,8 +14,10 @@ const {
 const { moveCursorToFunction } = require("./navigationHandler");
 
 const { showHotkeyGuide } = require("./hotkeyGuide");
-const Queue = require("./queue_system");
-const { registerBigOCommand } = require("./program_features/Annotations_BigO/bigOAnalysis");
+const Queue = require("./program_features/Annotations_BigO/queue_system");
+const {
+  registerBigOCommand,
+} = require("./program_features/Annotations_BigO/bigOAnalysis");
 const {
   parseChatResponse,
   applyDecoration,
