@@ -110,17 +110,19 @@ function parseTasksFromText(text) {
 }
 
 function readNextTask() {
+    console.log("readNextTask called");
     vscode.window.showInformationMessage("Reading the next task...");
     while (currentTaskIndex < taskList.length && completedTasks.has(currentTaskIndex)) {
         currentTaskIndex++;
     }
 
     if (currentTaskIndex >= taskList.length) {
-        speakMessage('All tasks completed.');
+        speakMessage("All tasks completed.");
         return;
     }
 
     const task = taskList[currentTaskIndex];
+    console.log(`Current task: ${task}`);
     speakMessage(`Task ${currentTaskIndex + 1}: ${task}`);
 }
 
@@ -211,6 +213,23 @@ function readNextSequentialTask() {
     }
 }
 
+function markTaskComplete() {
+    console.log("markTaskComplete called");
+    if (taskList.length === 0) {
+        speakMessage("No tasks loaded.");
+        return;
+    }
+
+    if (currentTaskIndex < taskList.length) {
+        completedTasks.add(currentTaskIndex);
+        console.log(`Task ${currentTaskIndex + 1} marked as complete.`);
+        speakMessage(`Task ${currentTaskIndex + 1} marked as complete.`);
+        currentTaskIndex++;
+    } else {
+        speakMessage("All tasks are already completed.");
+    }
+}
+
 // Register all assignment tracker commands
 function registerAssignmentTrackerCommands(context) {
     const loadAssignmentFileDisposable = vscode.commands.registerCommand(
@@ -228,10 +247,22 @@ function registerAssignmentTrackerCommands(context) {
         readNextSequentialTask
     );
 
+    const readNextTaskDisposable = vscode.commands.registerCommand(
+        "echocode.readNextTask",
+        readNextTask
+    );
+
+    const markTaskCompleteDisposable = vscode.commands.registerCommand(
+        "echocode.markTaskComplete",
+        markTaskComplete
+    );
+
     context.subscriptions.push(
         loadAssignmentFileDisposable,
         rescanUserCodeDisposable,
-        readNextSequentialTaskDisposable
+        readNextSequentialTaskDisposable,
+        readNextTaskDisposable,
+        markTaskCompleteDisposable
     );
 }
 
@@ -240,5 +271,6 @@ module.exports = {
     loadAssignmentFile,
     readNextTask,
     rescanUserCode,
-    readNextSequentialTask
+    readNextSequentialTask,
+    markTaskComplete,
 };

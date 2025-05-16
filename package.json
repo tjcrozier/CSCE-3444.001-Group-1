@@ -118,8 +118,8 @@
       },
       {
         "command": "echocode.speakNextAnnotation",
-  "key": "ctrl+alt+s",
-  "when": "editorTextFocus"
+        "key": "ctrl+alt+s",
+        "when": "editorTextFocus"
       },
       {
         "command": "echocode.annotate",
@@ -211,6 +211,16 @@
       {
         "command": "echocode.readNextSequentialTask",
         "key": "ctrl+alt+/",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.readNextTask",
+        "key": "ctrl+alt+t",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.markTaskComplete",
+        "key": "ctrl+alt+m",
         "when": "editorTextFocus"
       }
     ],

@@ -37,7 +37,9 @@ const {
   decreaseSpeechSpeed,
   getSpeechSpeed,
 } = require("./speechHandler");
-const { registerAssignmentTrackerCommands } = require("./program_features/Assignment_Tracker/assignmentTracker");
+const {
+  registerAssignmentTrackerCommands,
+} = require("./program_features/Assignment_Tracker/assignmentTracker");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -172,7 +174,7 @@ class EchoCodeChatViewProvider {
     ) {
       const visibleEditors = vscode.window.visibleTextEditors;
       editor = visibleEditors.find(
-        (ed) => (ed.document && ed.document.languageId === "python")
+        (ed) => ed.document && ed.document.languageId === "python"
       );
       outputChannel.appendLine(
         editor
@@ -631,8 +633,6 @@ async function activate(context) {
     }
   );
 
-
-
   context.subscriptions.push(
     hotkeyMenuCommand,
     openChatDisposable,
@@ -647,7 +647,7 @@ async function activate(context) {
     stopSpeechDisposable,
     speakNextAnnotationDisposable,
     nextFunction,
-    prevFunction,
+    prevFunction
   );
 
   outputChannel.appendLine(
