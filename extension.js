@@ -31,12 +31,13 @@ const {
   readNextTask,
   rescanUserCode,
   readNextSequentialTask,
-} = require("./assignmentTracker");
+} = require("./program_features/Assignment_Tracker/assignmentTracker");
 const {
   increaseSpeechSpeed,
   decreaseSpeechSpeed,
   getSpeechSpeed,
 } = require("./speechHandler");
+const { registerAssignmentTrackerCommands } = require("./program_features/Assignment_Tracker/assignmentTracker");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -171,7 +172,7 @@ class EchoCodeChatViewProvider {
     ) {
       const visibleEditors = vscode.window.visibleTextEditors;
       editor = visibleEditors.find(
-        (ed) => ed.document && ed.document.languageId === "python"
+        (ed) => (ed.document && ed.document.languageId === "python")
       );
       outputChannel.appendLine(
         editor
@@ -381,6 +382,9 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   loadSavedSpeechSpeed();
   await ensurePylintInstalled();
+
+  // Register assignment tracker commands
+  registerAssignmentTrackerCommands(context);
 
   let hotkeyMenuCommand = vscode.commands.registerCommand(
     "echocode.readHotkeyGuide",
@@ -627,21 +631,7 @@ async function activate(context) {
     }
   );
 
-  // ✅ Assignment tracker commands (ONLY these)
-  const loadAssignmentFileDisposable = vscode.commands.registerCommand(
-    "echocode.loadAssignmentFile",
-    loadAssignmentFile
-  );
 
-  const rescanUserCodeDisposable = vscode.commands.registerCommand(
-    "echocode.rescanUserCode",
-    rescanUserCode
-  );
-
-  const readNextSequentialTaskDisposable = vscode.commands.registerCommand(
-    "echocode.readNextSequentialTask",
-    readNextSequentialTask
-  );
 
   context.subscriptions.push(
     hotkeyMenuCommand,
@@ -658,9 +648,6 @@ async function activate(context) {
     speakNextAnnotationDisposable,
     nextFunction,
     prevFunction,
-    loadAssignmentFileDisposable,
-    rescanUserCodeDisposable,
-    readNextSequentialTaskDisposable
   );
 
   outputChannel.appendLine(

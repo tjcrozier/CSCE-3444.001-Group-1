@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { speakMessage } = require('./speechHandler');
+const { speakMessage } = require("../../speechHandler");
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 
@@ -16,6 +16,7 @@ function resetTasks() {
 }
 
 async function loadAssignmentFile() {
+    vscode.window.showInformationMessage("Loading assignment file...");
     const fileUri = await vscode.window.showOpenDialog({
         canSelectMany: false,
         filters: {
@@ -109,6 +110,7 @@ function parseTasksFromText(text) {
 }
 
 function readNextTask() {
+    vscode.window.showInformationMessage("Reading the next task...");
     while (currentTaskIndex < taskList.length && completedTasks.has(currentTaskIndex)) {
         currentTaskIndex++;
     }
@@ -123,6 +125,7 @@ function readNextTask() {
 }
 
 async function rescanUserCode() {
+    vscode.window.showInformationMessage("Rescanning user code...");
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         speakMessage('No open code file to scan.');
@@ -183,6 +186,7 @@ function updateCompletedTasksFromAI(responseText) {
 }
 
 function readNextSequentialTask() {
+    vscode.window.showInformationMessage("Reading the next sequential task...");
     if (taskList.length === 0) {
         speakMessage('No tasks loaded.');
         return;
@@ -207,7 +211,32 @@ function readNextSequentialTask() {
     }
 }
 
+// Register all assignment tracker commands
+function registerAssignmentTrackerCommands(context) {
+    const loadAssignmentFileDisposable = vscode.commands.registerCommand(
+        "echocode.loadAssignmentFile",
+        loadAssignmentFile
+    );
+
+    const rescanUserCodeDisposable = vscode.commands.registerCommand(
+        "echocode.rescanUserCode",
+        rescanUserCode
+    );
+
+    const readNextSequentialTaskDisposable = vscode.commands.registerCommand(
+        "echocode.readNextSequentialTask",
+        readNextSequentialTask
+    );
+
+    context.subscriptions.push(
+        loadAssignmentFileDisposable,
+        rescanUserCodeDisposable,
+        readNextSequentialTaskDisposable
+    );
+}
+
 module.exports = {
+    registerAssignmentTrackerCommands,
     loadAssignmentFile,
     readNextTask,
     rescanUserCode,
