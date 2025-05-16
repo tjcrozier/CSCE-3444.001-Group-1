@@ -1,15 +1,34 @@
 const vscode = require("vscode");
 const { runPylint } = require("./pylintHandler");
-const { speakMessage, stopSpeaking, loadSavedSpeechSpeed } = require("./speechHandler");
+const {
+  speakMessage,
+  stopSpeaking,
+  loadSavedSpeechSpeed,
+} = require("./speechHandler");
 const { exec } = require("child_process");
-const { summarizeFunction, summarizeClass, summarizeProgram } = require("./summaryGenerator.js");
+const {
+  summarizeFunction,
+  summarizeClass,
+  summarizeProgram,
+} = require("./summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
 const { showHotkeyGuide } = require("./hotkeyGuide");
 const Queue = require("./queue_system");
-const { registerBigOCommand } = require("./bigOAnalysis");
+const { registerBigOCommand } = require("./program_features/Annotations_BigO/bigOAnalysis");
+const {
+  parseChatResponse,
+  applyDecoration,
+  clearDecorations,
+  getVisibleCodeWithLineNumbers,
+} = require("./program_features/Annotations_BigO/annotations");
 
-const { loadAssignmentFile, readNextTask, rescanUserCode, readNextSequentialTask } = require('./assignmentTracker');
+const {
+  loadAssignmentFile,
+  readNextTask,
+  rescanUserCode,
+  readNextSequentialTask,
+} = require("./assignmentTracker");
 const {
   increaseSpeechSpeed,
   decreaseSpeechSpeed,
@@ -415,21 +434,19 @@ async function activate(context) {
 
   vscode.workspace.onDidChangeTextDocument((event) => {
     const document = event.document;
-  
+
     if (document.languageId !== "python") {
       // Not a Python file, ignore it
       return;
     }
-  
-    outputChannel.appendLine(
-      "Python file changed: " + document.uri.fsPath
-    );
-  
+
+    outputChannel.appendLine("Python file changed: " + document.uri.fsPath);
+
     if (event.contentChanges.length > 0) {
       if (debounceTimer) {
         clearTimeout(debounceTimer);
       }
-  
+
       debounceTimer = setTimeout(() => {
         handlePythonErrorsOnChange(document.uri.fsPath);
       }, 1000);
@@ -587,14 +604,12 @@ async function activate(context) {
       }
     }
   );
-  let whereAmI = vscode.commands.registerCommand(
-    "echocode.whereAmI", () => {
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "python") {
-        describeCursorPosition(editor);
-      }
+  let whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor && editor.document.languageId === "python") {
+      describeCursorPosition(editor);
     }
-  );
+  });
 
   let nextFunction = vscode.commands.registerCommand(
     "echocode.jumpToNextFunction",
@@ -644,7 +659,7 @@ async function activate(context) {
     loadAssignmentFileDisposable,
     rescanUserCodeDisposable,
     readNextSequentialTaskDisposable
-);
+  );
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask"
@@ -698,70 +713,6 @@ async function handlePythonErrors(filePath) {
 
 function handlePythonErrorsOnChange(filePath) {
   outputChannel.appendLine("Handling Python errors on change for: " + filePath);
-}
-
-function getVisibleCodeWithLineNumbers(textEditor) {
-  let currentLine = textEditor.visibleRanges[0].start.line;
-  const endLine = textEditor.visibleRanges[0].end.line;
-  let code = "";
-  while (currentLine < endLine) {
-    code += `${currentLine + 1}: ${
-      textEditor.document.lineAt(currentLine).text
-    }\n`;
-    currentLine++;
-  }
-  return code;
-}
-
-async function parseChatResponse(chatResponse, textEditor) {
-  let accumulatedResponse = "";
-  for await (const fragment of chatResponse.text) {
-    accumulatedResponse += fragment;
-    if (fragment.includes("}")) {
-      try {
-        const annotation = JSON.parse(accumulatedResponse);
-        applyDecoration(textEditor, annotation.line, annotation.suggestion);
-        const annotationData = {
-          line: annotation.line,
-          suggestion: annotation.suggestion,
-        };
-        annotationQueue.enqueue(annotationData);
-        accumulatedResponse = "";
-      } catch {
-        // Wait for more fragments if JSON parsing fails
-      }
-    }
-  }
-}
-
-function applyDecoration(editor, line, suggestion) {
-  const decorationType = vscode.window.createTextEditorDecorationType({
-    after: {
-      contentText: ` ${suggestion.substring(0, 25) + "..."}`,
-      color: "grey",
-    },
-  });
-  const lineLength = editor.document.lineAt(line - 1).text.length;
-  const range = new vscode.Range(
-    new vscode.Position(line - 1, lineLength),
-    new vscode.Position(line - 1, lineLength)
-  );
-  editor.setDecorations(decorationType, [
-    { range: range, hoverMessage: suggestion },
-  ]);
-
-  // Store the decoration for later removal
-  activeDecorations.push({
-    decorationType,
-    editor,
-  });
-}
-
-function clearDecorations() {
-  for (const decoration of activeDecorations) {
-    decoration.editor.setDecorations(decoration.decorationType, []);
-  }
-  activeDecorations = [];
 }
 
 function deactivate() {
