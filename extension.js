@@ -17,7 +17,9 @@ const {
 } = require("./program_features/Summarizer/summaryGenerator.js");
 const { moveCursorToFunction } = require("./navigationHandler");
 
-const { showHotkeyGuide } = require("./hotkeyGuide");
+const {
+  registerHotkeyGuideCommand,
+} = require("./program_settings/guide_settings/hotkeyGuide");
 const Queue = require("./program_features/Annotations_BigO/queue_system");
 const {
   registerBigOCommand,
@@ -88,11 +90,8 @@ async function activate(context) {
   // Register assignment tracker commands
   registerAssignmentTrackerCommands(context);
 
-  let hotkeyMenuCommand = vscode.commands.registerCommand(
-    "echocode.readHotkeyGuide",
-    showHotkeyGuide
-  );
-  context.subscriptions.push(hotkeyMenuCommand);
+  // Register hotkey guide command
+  registerHotkeyGuideCommand(context);
 
   // Register chat commands
   const chatViewProvider = registerChatCommands(context, outputChannel);
@@ -146,7 +145,6 @@ async function activate(context) {
   );
 
   context.subscriptions.push(
-    hotkeyMenuCommand,
     whereAmI,
     disposableReadErrors,
     nextFunction,

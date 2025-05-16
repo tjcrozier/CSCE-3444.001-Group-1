@@ -1,7 +1,5 @@
 const vscode = require("vscode");
-const {
-  speakMessage,
-} = require("./program_settings/speech_settings/speechHandler");
+const { speakMessage } = require("../speech_settings/speechHandler");
 
 async function showHotkeyGuide() {
   const guideMenu = `
@@ -88,6 +86,16 @@ async function showHotkeyGuide() {
   }
 }
 
+function registerHotkeyGuideCommand(context) {
+  const hotkeyMenuCommand = vscode.commands.registerCommand(
+    "echocode.readHotkeyGuide",
+    showHotkeyGuide
+  );
+
+  context.subscriptions.push(hotkeyMenuCommand);
+}
+
 module.exports = {
   showHotkeyGuide,
+  registerHotkeyGuideCommand,
 };
