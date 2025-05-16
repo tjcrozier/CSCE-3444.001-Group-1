@@ -4,7 +4,10 @@ const {
   speakMessage,
   stopSpeaking,
   loadSavedSpeechSpeed,
-} = require("./speechHandler");
+  registerSpeechCommands,
+  increaseSpeechSpeed,
+  decreaseSpeechSpeed,
+} = require("./program_settings/speech_settings/speechHandler");
 const { exec } = require("child_process");
 const {
   summarizeFunction,
@@ -36,15 +39,12 @@ const {
   readNextSequentialTask,
 } = require("./program_features/Assignment_Tracker/assignmentTracker");
 const {
-  increaseSpeechSpeed,
-  decreaseSpeechSpeed,
-  getSpeechSpeed,
-} = require("./speechHandler");
-const {
   registerAssignmentTrackerCommands,
 } = require("./program_features/Assignment_Tracker/assignmentTracker");
 
-const { registerChatCommands } = require("./program_features/ChatBot/chat_tutor");
+const {
+  registerChatCommands,
+} = require("./program_features/ChatBot/chat_tutor");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -102,9 +102,12 @@ async function activate(context) {
 
   // Register annotation commands
   registerAnnotationCommands(context, outputChannel);
-  
+
   // Register summarizer commands
   registerSummarizerCommands(context, outputChannel);
+
+  // Register speech commands
+  registerSpeechCommands(context, outputChannel);
 
   let disposableReadErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
@@ -117,17 +120,6 @@ async function activate(context) {
         vscode.window.showWarningMessage(
           "Please open a Python file to read errors."
         );
-      }
-    }
-  );
-
-  let stopSpeechDisposable = vscode.commands.registerCommand(
-    "echocode.stopSpeech",
-    async () => {
-      const wasSpeaking = stopSpeaking();
-      if (wasSpeaking) {
-        vscode.window.showInformationMessage("Speech stopped");
-        outputChannel.appendLine("Speech stopped by user");
       }
     }
   );
@@ -157,13 +149,12 @@ async function activate(context) {
     hotkeyMenuCommand,
     whereAmI,
     disposableReadErrors,
-    stopSpeechDisposable,
     nextFunction,
     prevFunction
   );
 
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask"
+    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
   );
 }
 async function handlePythonErrorsOnSave(filePath) {

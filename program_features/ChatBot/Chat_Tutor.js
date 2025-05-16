@@ -1,5 +1,7 @@
 const vscode = require("vscode");
-const { speakMessage } = require("../../speechHandler");
+const {
+  speakMessage,
+} = require("../../program_settings/speech_settings/speechHandler");
 
 // Mock voice recognition for demo/development purposes
 function performVoiceRecognition() {
@@ -93,7 +95,9 @@ class EchoCodeChatViewProvider {
         // Let the user press enter to send it
       }
     } catch (error) {
-      this.outputChannel.appendLine(`Voice recognition error: ${error.message}`);
+      this.outputChannel.appendLine(
+        `Voice recognition error: ${error.message}`
+      );
       if (this._view) {
         this._view.webview.postMessage({
           type: "voiceRecognitionError",
@@ -129,7 +133,9 @@ class EchoCodeChatViewProvider {
           : "No active or visible Python editor found."
       );
     } else {
-      this.outputChannel.appendLine("Active editor: " + editor.document.fileName);
+      this.outputChannel.appendLine(
+        "Active editor: " + editor.document.fileName
+      );
     }
 
     let fileContent = "";
@@ -304,7 +310,7 @@ function getNonce() {
 function registerChatCommands(context, outputChannel) {
   // Create the chat view provider
   const chatViewProvider = new EchoCodeChatViewProvider(context, outputChannel);
-  
+
   // Register the chat view provider
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -341,12 +347,12 @@ function registerChatCommands(context, outputChannel) {
 
   // Add commands to subscriptions
   context.subscriptions.push(openChatDisposable, startVoiceInputDisposable);
-  
+
   // Return the chatViewProvider so extension.js can access it if needed
   return chatViewProvider;
 }
 
 module.exports = {
   registerChatCommands,
-  EchoCodeChatViewProvider
+  EchoCodeChatViewProvider,
 };
