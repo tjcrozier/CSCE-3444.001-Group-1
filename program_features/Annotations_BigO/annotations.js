@@ -18,13 +18,19 @@ async function parseChatResponse(chatResponse, textEditor) {
           line: annotation.line,
           suggestion: annotation.suggestion,
         };
-        annotationQueue.enqueue(annotationData);
+        annotationQueue.enqueue(annotationData); // Enqueue the annotation
+
+        // Log the annotation being added to the queue
+        console.log(`Annotation added to queue: Line ${annotation.line}, Suggestion: ${annotation.suggestion}`);
         accumulatedResponse = "";
-      } catch {
-        // Wait for more fragments if JSON parsing fails
+      } catch (error) {
+        console.error("Failed to parse annotation:", error.message);
       }
     }
   }
+
+  // Log the entire queue after processing
+  console.log("Current annotation queue:", annotationQueue.items);
 }
 
 function applyDecoration(editor, line, suggestion) {
@@ -116,6 +122,7 @@ function registerAnnotationCommands(context) {
 }
 
 module.exports = {
+  annotationQueue, // Export the queue
   parseChatResponse,
   applyDecoration,
   clearDecorations,

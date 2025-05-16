@@ -21,6 +21,7 @@ const {
   applyDecoration,
   clearDecorations,
   getVisibleCodeWithLineNumbers,
+  annotationQueue,
 } = require("./program_features/Annotations_BigO/annotations");
 
 const {
@@ -43,8 +44,6 @@ let outputChannel;
 let debounceTimer = null;
 let isRunning = false;
 let chatViewProvider = null;
-
-const annotationQueue = new Queue();
 
 const ANNOTATION_PROMPT = `You are an EchoCode tutor who helps students learn how to write better code. Your job is to evaluate a block of code that the user gives you. You will then annotate any lines that could be improved with a brief suggestion and the reason why you are making that suggestion. Only make suggestions when you feel the severity is enough that it will impact the readability and maintainability of the code. Be friendly with your suggestions and remember that these are students so they need gentle guidance. Format each suggestion as a single JSON object. It is not necessary to wrap your response in triple backticks. Here is an example of what your response should look like:
 
@@ -547,11 +546,12 @@ async function activate(context) {
     async () => {
       if (!annotationQueue.isEmpty()) {
         const nextAnnotation = annotationQueue.dequeue();
-        await speakMessage(
-          `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`
-        );
+        const message = `Annotation on line ${nextAnnotation.line}: ${nextAnnotation.suggestion}`;
+        vscode.window.showInformationMessage(message); // Display the annotation
+        await speakMessage(message); // Read the annotation aloud
       } else {
         vscode.window.showInformationMessage("No more annotations to read.");
+        await speakMessage("No more annotations to read.");
       }
     }
   );
