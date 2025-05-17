@@ -1,4 +1,30 @@
-const { spawn } = require("child_process");
+const vscode = require("vscode");
+const { spawn, exec } = require("child_process");
+
+function ensurePylintInstalled() {
+  return new Promise((resolve, reject) => {
+    exec(`python -m pylint --version`, (error) => {
+      if (error) {
+        vscode.window
+          .showErrorMessage(
+            "Pylint is not installed. Click here to install it.",
+            "Install"
+          )
+          .then((selection) => {
+            if (selection === "Install") {
+              vscode.commands.executeCommand("workbench.action.terminal.new");
+              vscode.window.showInformationMessage(
+                "Run: pip install pylint in the terminal."
+              );
+            }
+          });
+        reject("Pylint not installed");
+        return;
+      }
+      resolve(true);
+    });
+  });
+}
 
 /**
  * Runs Pylint on the given file and parses the output.
@@ -97,4 +123,4 @@ function simplifyError(symbol, message) {
   return explanations[symbol] || message;
 }
 
-module.exports = { runPylint };
+module.exports = { ensurePylintInstalled, runPylint };
