@@ -1,8 +1,8 @@
 const vscode = require("vscode"); // VSCode API
 const {
   speakMessage,
-} = require("./program_settings/speech_settings/speechHandler");
-const { analyzeAI } = require("./program_settings/program_settings/AIrequest");
+} = require("../program_settings/speech_settings/speechHandler");
+const { analyzeAI } = require("../program_settings/program_settings/AIrequest");
 
 async function describeCursorPosition(editor) {
   const document = editor.document;
@@ -55,4 +55,15 @@ async function describeCursorPosition(editor) {
   }
 }
 
-module.exports = { describeCursorPosition };
+function registerWhereAmICommand(context) {
+  const whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor && editor.document.languageId === "python") {
+      describeCursorPosition(editor);
+    }
+  });
+
+  context.subscriptions.push(whereAmI);
+}
+
+module.exports = { registerWhereAmICommand };

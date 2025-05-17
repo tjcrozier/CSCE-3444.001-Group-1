@@ -1,7 +1,10 @@
 const vscode = require("vscode");
+
+// Set up and run Pylint
 const {
-  runPylint,
+  ensurePylintInstalled, runPylint,
 } = require("./program_settings/program_settings/pylintHandler");
+
 const {
   speakMessage,
   stopSpeaking,
@@ -10,14 +13,10 @@ const {
   increaseSpeechSpeed,
   decreaseSpeechSpeed,
 } = require("./program_settings/speech_settings/speechHandler");
-const { exec } = require("child_process");
+
 const {
-  summarizeFunction,
-  summarizeClass,
-  summarizeProgram,
   registerSummarizerCommands,
 } = require("./program_features/Summarizer/summaryGenerator.js");
-const { moveCursorToFunction } = require("./navigationHandler");
 
 const {
   registerHotkeyGuideCommand,
@@ -50,38 +49,16 @@ const {
   registerChatCommands,
 } = require("./program_features/ChatBot/chat_tutor");
 
+// Navigation features
+const {registerMoveCursor} = require("./navigation_features/navigationHandler");
+const {registerWhereAmICommand} = require("./navigation_features/whereAmI");
+
 let activeDecorations = [];
 let annotationsVisible = false;
-const { describeCursorPosition } = require("./whereAmI.js");
 
 let outputChannel;
 let debounceTimer = null;
 let isRunning = false;
-
-function ensurePylintInstalled() {
-  return new Promise((resolve, reject) => {
-    exec(`python -m pylint --version`, (error) => {
-      if (error) {
-        vscode.window
-          .showErrorMessage(
-            "Pylint is not installed. Click here to install it.",
-            "Install"
-          )
-          .then((selection) => {
-            if (selection === "Install") {
-              vscode.commands.executeCommand("workbench.action.terminal.new");
-              vscode.window.showInformationMessage(
-                "Run: pip install pylint in the terminal."
-              );
-            }
-          });
-        reject("Pylint not installed");
-        return;
-      }
-      resolve(true);
-    });
-  });
-}
 
 async function activate(context) {
   outputChannel = vscode.window.createOutputChannel("EchoCode");
@@ -110,7 +87,14 @@ async function activate(context) {
   // Register speech commands
   registerSpeechCommands(context, outputChannel);
 
-  let disposableReadErrors = vscode.commands.registerCommand(
+  // Trigger on file save
+  vscode.workspace.onDidSaveTextDocument((document) => {
+    if (document.languageId === "python") {
+      handlePythonErrorsOnSave(document.uri.fsPath);
+    }
+  });
+
+  let readErrors = vscode.commands.registerCommand(
     "echocode.readErrors",
     () => {
       outputChannel.appendLine("echocode.readErrors command triggered");
@@ -125,38 +109,19 @@ async function activate(context) {
     }
   );
 
-  let whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
-    const editor = vscode.window.activeTextEditor;
-    if (editor && editor.document.languageId === "python") {
-      describeCursorPosition(editor);
-    }
-  });
-
-  let nextFunction = vscode.commands.registerCommand(
-    "echocode.jumpToNextFunction",
-    () => {
-      moveCursorToFunction("next");
-    }
-  );
-
-  let prevFunction = vscode.commands.registerCommand(
-    "echocode.jumpToPreviousFunction",
-    () => {
-      moveCursorToFunction("previous");
-    }
-  );
+  // Navigation commands
+  registerWhereAmICommand(context);
+  registerMoveCursor(context);
 
   context.subscriptions.push(
-    whereAmI,
-    disposableReadErrors,
-    nextFunction,
-    prevFunction
+    readErrors,
   );
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
   );
 }
+
 async function handlePythonErrorsOnSave(filePath) {
   if (isRunning) {
     return;
