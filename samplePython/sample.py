@@ -17,7 +17,7 @@ class Calculator:
 
     @staticmethod
     def subtract(x, y):
-        return x - y
+        return x - Y
 
 
 greet("Morgan")
