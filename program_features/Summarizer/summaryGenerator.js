@@ -1,8 +1,12 @@
 const vscode = require("vscode"); // VSCode API
 const { Selection } = require("./codeParser");
+
+// To speak summary aloud
 const {
   speakMessage,
 } = require("../../program_settings/speech_settings/speechHandler");
+
+// To call the AI to summarize text
 const {
   analyzeAI,
 } = require("../../program_settings/program_settings/AIrequest");
@@ -138,9 +142,4 @@ function registerSummarizerCommands(context, outputChannel) {
   );
 }
 
-module.exports = {
-  summarizeFunction,
-  summarizeClass,
-  summarizeProgram,
-  registerSummarizerCommands, // Add this new export
-};
+module.exports = { registerSummarizerCommands };
