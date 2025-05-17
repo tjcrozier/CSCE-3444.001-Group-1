@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 const {
   speakMessage,
-} = require("./program_settings/speech_settings/speechHandler");
+} = require("../program_settings/speech_settings/speechHandler");
 
 let lastTimeout = null; // Stores the last scheduled speech event
 
@@ -70,4 +70,22 @@ function moveCursorToFunction(direction) {
   }
 }
 
-module.exports = { moveCursorToFunction };
+function registerMoveCursor(context) {
+  const nextFunction = vscode.commands.registerCommand(
+    "echocode.jumpToNextFunction",
+    () => {
+      moveCursorToFunction("next");
+    }
+  );
+
+  const prevFunction = vscode.commands.registerCommand(
+    "echocode.jumpToPreviousFunction",
+    () => {
+      moveCursorToFunction("previous");
+    }
+  );
+
+  context.subscriptions.push(nextFunction, prevFunction);
+}
+
+module.exports = { registerMoveCursor };
