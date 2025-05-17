@@ -14,6 +14,12 @@ const {
   decreaseSpeechSpeed,
 } = require("./program_settings/speech_settings/speechHandler");
 
+// Error handling
+const {
+  initializeErrorHandling,
+  handlePythonErrorsOnSave,
+} = require("./program_features/ErrorHandling/errorHandler");
+
 const {
   registerSummarizerCommands,
 } = require("./program_features/Summarizer/summaryGenerator.js");
@@ -30,8 +36,8 @@ const {
   applyDecoration,
   clearDecorations,
   getVisibleCodeWithLineNumbers,
-  annotationQueue,
-  ANNOTATION_PROMPT,
+  annotationQueue,      // Unused?
+  ANNOTATION_PROMPT,    // Unused?
   registerAnnotationCommands,
 } = require("./program_features/Annotations_BigO/annotations");
 
@@ -65,6 +71,8 @@ async function activate(context) {
   outputChannel.appendLine("EchoCode activated.");
   loadSavedSpeechSpeed();
   await ensurePylintInstalled();
+  initializeErrorHandling(outputChannel);
+  outputChannel.appendLine("Pylint installed and initialized.");
 
   // Register assignment tracker commands
   registerAssignmentTrackerCommands(context);
@@ -120,56 +128,6 @@ async function activate(context) {
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
   );
-}
-
-async function handlePythonErrorsOnSave(filePath) {
-  if (isRunning) {
-    return;
-  }
-  isRunning = true;
-  try {
-    const errors = await runPylint(filePath, outputChannel);
-    if (errors.length === 0) {
-      vscode.window.showInformationMessage("✅ No issues detected!");
-      isRunning = false;
-      return;
-    }
-    outputChannel.appendLine(`📢 Found ${errors.length} Pylint error(s):`);
-    for (const error of errors) {
-      const message = `Line ${error.line}: ${error.message}`;
-      outputChannel.appendLine(message);
-      if (error.critical) {
-        await speakMessage(message);
-      }
-    }
-    outputChannel.show();
-  } catch (err) {
-    vscode.window.showErrorMessage(`Failed to run Pylint: ${err}`);
-  } finally {
-    isRunning = false;
-  }
-}
-
-async function handlePythonErrors(filePath) {
-  try {
-    const errors = await runPylint(filePath, outputChannel);
-    if (errors.length === 0) {
-      vscode.window.showInformationMessage("✅ No issues detected!");
-      return;
-    }
-    outputChannel.appendLine(`📢 Found ${errors.length} Pylint error(s):`);
-    for (const error of errors) {
-      const message = `Line ${error.line}: ${error.message}`;
-      outputChannel.appendLine(message);
-    }
-    outputChannel.show();
-  } catch (err) {
-    vscode.window.showErrorMessage(`Failed to run Pylint: ${err}`);
-  }
-}
-
-function handlePythonErrorsOnChange(filePath) {
-  outputChannel.appendLine("Handling Python errors on change for: " + filePath);
 }
 
 function deactivate() {
