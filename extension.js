@@ -17,7 +17,7 @@ const {
 // Error handling
 const {
   initializeErrorHandling,
-  handlePythonErrorsOnSave,
+  registerErrorHandlingCommands
 } = require("./program_features/ErrorHandling/errorHandler");
 
 const {
@@ -73,6 +73,8 @@ async function activate(context) {
   await ensurePylintInstalled();
   initializeErrorHandling(outputChannel);
   outputChannel.appendLine("Pylint installed and initialized.");
+  registerErrorHandlingCommands(context);
+  outputChannel.appendLine("Error handling commands registered.");
 
   // Register assignment tracker commands
   registerAssignmentTrackerCommands(context);
@@ -95,35 +97,9 @@ async function activate(context) {
   // Register speech commands
   registerSpeechCommands(context, outputChannel);
 
-  // Trigger on file save
-  vscode.workspace.onDidSaveTextDocument((document) => {
-    if (document.languageId === "python") {
-      handlePythonErrorsOnSave(document.uri.fsPath);
-    }
-  });
-
-  let readErrors = vscode.commands.registerCommand(
-    "echocode.readErrors",
-    () => {
-      outputChannel.appendLine("echocode.readErrors command triggered");
-      const editor = vscode.window.activeTextEditor;
-      if (editor && editor.document.languageId === "python") {
-        handlePythonErrorsOnSave(editor.document.uri.fsPath);
-      } else {
-        vscode.window.showWarningMessage(
-          "Please open a Python file to read errors."
-        );
-      }
-    }
-  );
-
   // Navigation commands
   registerWhereAmICommand(context);
   registerMoveCursor(context);
-
-  context.subscriptions.push(
-    readErrors,
-  );
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"

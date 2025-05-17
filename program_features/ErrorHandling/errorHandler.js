@@ -37,7 +37,36 @@ async function handlePythonErrorsOnSave(filePath) {
   }
 }
 
+function registerErrorHandlingCommands(context) {
+  // Command to read errors aloud
+  const readErrors = vscode.commands.registerCommand(
+    "echocode.readErrors",
+    () => {
+      outputChannel.appendLine("echocode.readErrors command triggered");
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.document.languageId === "python") {
+        handlePythonErrorsOnSave(editor.document.uri.fsPath);
+      } else {
+        vscode.window.showWarningMessage(
+          "Please open a Python file to read errors."
+        );
+      }
+    }
+  );
+
+  // Automatically trigger on save
+  const saveListener = vscode.workspace.onDidSaveTextDocument((document) => {
+    if (document.languageId === "python") {
+      handlePythonErrorsOnSave(document.uri.fsPath);
+    }
+  });
+
+  context.subscriptions.push(readErrors, saveListener);
+}
+
+
 module.exports = {
   initializeErrorHandling,
   handlePythonErrorsOnSave,
+  registerErrorHandlingCommands,
 };
