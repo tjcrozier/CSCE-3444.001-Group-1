@@ -1,9 +1,11 @@
 const vscode = require("vscode");
 const Queue = require("./queue_system"); // Import the Queue system
-const { speakMessage } = require("./speechHandler"); // Import the speakMessage function
+const {
+  speakMessage,
+} = require("../../program_settings/speech_settings/speechHandler"); // Import the speakMessage function
+const { annotationQueue } = require("./annotations");
 
 const bigOQueue = new Queue(); // Queue for Big O notation problems
-const annotationQueue = new Queue(); // Queue for annotations
 
 const ANNOTATION_PROMPT = `
 You are a Big O complexity analyzer. For each code pattern that causes performance issues, provide a single concise sentence. Just one sentence. that explains the issue and suggests an improvement. Format each suggestion as a single JSON object without any formatting:
@@ -72,6 +74,12 @@ async function parseChatResponse(chatResponse, textEditor) {
           console.log(
             `Annotation added to bigOQueue: Line ${line}, Suggestion: ${annotation.suggestion}`
           );
+
+          // Enqueue a specific annotation for optimization
+          annotationQueue.enqueue({
+            line: line,
+            suggestion: "Optimize this loop for better performance.",
+          });
         });
 
         accumulatedResponse = "";
