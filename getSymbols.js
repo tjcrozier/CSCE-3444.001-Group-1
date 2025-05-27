@@ -1,5 +1,4 @@
 const vscode = require("vscode");
-const { getCursorPos } = require("./navigation_features/navigationHandler");
 
 /* Currently supported languages */
 const languages = {
@@ -47,6 +46,86 @@ async function getSymbolText(position, symKind, editor) {
     // No symbols of the specified kind found
     return null;
 }
+
+// Returns a flat array of all the class and function symbols in the file
+async function flattenSymbols(editor) {
+    // Retrieve the symbol tree
+    const symbols = await vscode.commands.executeCommand(
+        "vscode.executeDocumentSymbolProvider", editor.document.uri
+    );
+
+    // Push all class/struct and function/method symbols into a flat array
+    const symbolsFlat = flattenSymbolsRecursive(symbols);
+    
+    // Sort the symbols by their range's start line
+    symbolsFlat.sort((a, b) => a.range.start.line - b.range.start.line);
+
+    // Print for debugging
+    console.log("Flattened symbols:");
+    for (const symbol of symbolsFlat) {
+        const kindLabel = getGenericKindLabel(symbol.kind);
+        console.log(`- ${kindLabel}: ${symbol.name} at line ${symbol.range.start.line + 1}`);
+    }
+
+    return symbolsFlat;
+}
+
+function flattenSymbolsRecursive(symbols, symbolsFlat = []) {
+    // Push each symbol into the array
+    for (const symbol of symbols) {
+        // Check if the symbol is a class/struct or function/method
+        const isRelevant = Object.values(symKinds).some(kinds =>
+            kinds.includes(symbol.kind)
+        );
+
+        // If the symbol is relevant, push it into the flat array
+        if (isRelevant) {
+            symbolsFlat.push(symbol);
+        }
+
+        // Always recurse regardless of parent relevance
+        flattenSymbolsRecursive(symbol.children || [], symbolsFlat);
+    }
+
+    // Unroll the recursion
+    return symbolsFlat;
+}
+
+
+// Returns the innermost function or class symbol at a position
+async function getInnermostSymbol(editor, position) {
+    // Retrieve the symbol tree
+    const symbols = await vscode.commands.executeCommand(
+        "vscode.executeDocumentSymbolProvider", editor.document.uri
+    );
+
+    // Get the innermost symbol containing the cursor
+    return getInnermostSymbolRecursive(symbols, position);
+}
+
+function getInnermostSymbolRecursive(symbols, position, curSymbol = null) {
+    // Get the next inner symbol containing the position
+    for (const symbol of symbols) {
+        for (const kind of Object.keys(symKinds)) {
+            const isFuncOrClass = symKinds[kind].includes(symbol.kind);
+            const posIsInSymbol = symbol.range.contains(position);
+
+            // If the current symbol has no children, return it. Otherwise, 
+            // enter the curent symbol's children
+            if (isFuncOrClass && posIsInSymbol) {
+                // Recurse into children *before* returning
+                const childSymbol = getInnermostSymbolRecursive(
+                    symbol.children || [], position
+                );
+                return childSymbol || symbol;
+            }
+        }
+    }
+
+    // Return the innermost symbol at the position
+    return curSymbol
+}
+
 
 /**
  * Helpers defined below: getAncestryRecursive()
@@ -98,4 +177,4 @@ function getAncestryRecursive(symbols, position, ancestry = []) {
 }
 
 module.exports = { SUPPORTED_LANGUAGES, symKinds, getSymbolText, 
-    getAncestry, getGenericKindLabel };
+    getAncestry, getGenericKindLabel, flattenSymbols, getInnermostSymbol };
