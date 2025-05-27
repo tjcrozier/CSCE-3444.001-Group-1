@@ -70,6 +70,18 @@ function moveCursorToFunction(direction) {
   }
 }
 
+function getCursorPos(editor) {
+    const document = editor.document; // Document in the editor
+    const cursorPos = editor.selection.active; // Cursor position object
+
+    // Return a position object
+    return {
+        pos: cursorPos,
+        line: cursorPos.line,
+        col: cursorPos.character
+    };
+}
+
 function registerMoveCursor(context) {
   const nextFunction = vscode.commands.registerCommand(
     "echocode.jumpToNextFunction",
@@ -88,4 +100,4 @@ function registerMoveCursor(context) {
   context.subscriptions.push(nextFunction, prevFunction);
 }
 
-module.exports = { registerMoveCursor };
+module.exports = { registerMoveCursor, getCursorPos };
