@@ -101,8 +101,15 @@ async function activate(context) {
   registerWhereAmICommand(context);
   registerMoveCursor(context);
 
+  // Do we need this?
   outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
+    "Commands registered: echocode.readErrors, echocode.annotate, \
+    echocode.speakNextAnnotation, echocode.readAllAnnotations, \
+    echocode.summarizeClass, echocode.summarizeFunction, \
+    echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, \
+    echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, \
+    echocode.rescanUserCode, echocode.readNextSequentialTask, \
+    echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
   );
 }
 
