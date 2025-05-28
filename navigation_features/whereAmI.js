@@ -41,7 +41,7 @@ function registerWhereAmICommand(context) {
   const whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
     const editor = vscode.window.activeTextEditor;
 
-    if (editor&&Object.values(languages).includes(editor.document.languageId)) {
+    if (editor && SUPPORTED_LANGUAGES.includes(editor.document.languageId)) {
       describeCursorPosition(editor);
     }
   });
