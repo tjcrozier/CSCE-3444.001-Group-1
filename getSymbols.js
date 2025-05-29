@@ -18,9 +18,15 @@ const symKinds = {
 
 // This can also be added to if there are any other kinds we want to simplify
 function getGenericKindLabel(symbolKind) {
-  if (symKinds.function.includes(symbolKind)) return "function";
-  if (symKinds.class.includes(symbolKind)) return "class";
-  return vscode.SymbolKind[symbolKind].toLowerCase();
+    if (symKinds.function.includes(symbolKind)) return "function";
+    if (symbolKind === vscode.SymbolKind.Class) return "class";
+    if (symbolKind === vscode.SymbolKind.Struct) return "struct";
+
+    const kindName = Object.entries(vscode.SymbolKind).find(
+        ([, value]) => value === symbolKind
+    )?.[0];
+
+    return kindName ? kindName.toLowerCase() : "unknown";
 }
 
 /**

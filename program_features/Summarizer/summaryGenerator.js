@@ -18,8 +18,9 @@ function buildPrompt(language, symKind) {
     let instructions;
 
     if (symKind === "class") {
-        instructions = "Mention thename of the class as well as the names of \
-        variables and functions defined therein";
+        instructions = "If the class is actually a struct, call it a struct in \
+        your summary. Mention the name of the class (or struct) as well as the \
+        names of variables and functions defined therein";
     } else if (symKind === "function") {
         instructions = "Be sure to mention the name of the function being \
         summarized";
