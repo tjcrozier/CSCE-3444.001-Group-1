@@ -134,7 +134,7 @@ Before using Echo Code, ensure the following are installed:
 
 ## **Release Notes**
 
-### **1.6.0**
+### **1.6.1**
 - Added Chat Tutor, a copilot chat that incorporates more userfriendly features
 - Added hotkey read out by pressing f1 and then entering a number 1-7
 - Frame work for speech to text added
