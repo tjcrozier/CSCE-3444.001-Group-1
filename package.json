@@ -2,7 +2,7 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
