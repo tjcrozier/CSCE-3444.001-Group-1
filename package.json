@@ -2,7 +2,7 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/tjcrozier/CSCE-3444.001-Group-1.git"
@@ -20,7 +20,23 @@
     "onLanguage:python",
     "onSave",
     "onView:echocode.chatView",
-    "onCommand:echocode.openChat"
+    "onCommand:echocode.openChat",
+    "onCommand:echocode.readHotkeyGuide",
+    "onCommand:echocode.readErrors",
+    "onCommand:echocode.annotate",
+    "onCommand:echocode.readAllAnnotations",
+    "onCommand:echocode.jumpToNextFunction",
+    "onCommand:echocode.jumpToPreviousFunction",
+    "onCommand:echocode.summarizeClass",
+    "onCommand:echocode.summarizeFunction",
+    "onCommand:echocode.summarizeProgram",
+    "onCommand:echocode.startVoiceInput",
+    "onCommand:echocode.loadAssignmentFile",
+    "onCommand:echocode.increaseSpeechSpeed",
+    "onCommand:echocode.decreaseSpeechSpeed",
+    "onCommand:echocode.rescanUserCode",
+    "onCommand:echocode.readNextSequentialTask",
+    "onCommand:echocode.whereAmI"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
