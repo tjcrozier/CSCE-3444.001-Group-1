@@ -121,6 +121,10 @@
       {
         "command": "echocode.describeCurrentLine",
         "title": "Describe Current Line"
+      },
+      {
+        "command": "echocode.toggleCharacterReadOut",
+        "title": "Toggle Character Read-Out"
       }
     ],
     "configuration": {
@@ -259,6 +263,11 @@
       {
         "command": "echocode.describeCurrentLine",
         "key": "ctrl+alt+k",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.toggleCharacterReadOut",
+        "key": "ctrl+alt+r",
         "when": "editorTextFocus"
       }
     ],
