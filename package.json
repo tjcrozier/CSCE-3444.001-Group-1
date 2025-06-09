@@ -117,6 +117,10 @@
       {
         "command": "echocode.readCurrentLine",
         "title": "Read Current Line"
+      },
+      {
+        "command": "echocode.describeCurrentLine",
+        "title": "Describe Current Line"
       }
     ],
     "configuration": {
@@ -250,6 +254,11 @@
       {
         "command": "echocode.readCurrentLine",
         "key": "ctrl+alt+l",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.describeCurrentLine",
+        "key": "ctrl+alt+k",
         "when": "editorTextFocus"
       }
     ],
