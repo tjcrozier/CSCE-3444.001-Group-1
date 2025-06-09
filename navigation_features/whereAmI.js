@@ -1,55 +1,37 @@
 const vscode = require("vscode"); // VSCode API
+const { getCursorPos } = require("../navigation_features/navigationHandler")
+const {
+  getAncestry, SUPPORTED_LANGUAGES, symKinds, getGenericKindLabel
+} = require("../getSymbols");
 const {
   speakMessage,
 } = require("../program_settings/speech_settings/speechHandler");
-const { analyzeAI } = require("../program_settings/program_settings/AIrequest");
 
 async function describeCursorPosition(editor) {
-  const document = editor.document;
-  const cursorPos = editor.selection.active;
-  const cursorLineNo = cursorPos.line;
-  const cursorColNo = cursorPos.character;
+  const curPos = getCursorPos(editor);
 
-  const symbols = await vscode.commands.executeCommand(
-    "vscode.executeDocumentSymbolProvider",
-    document.uri
-  );
+  // Get the ancestry path to the cursor's position
+  const cursorAncestry = await getAncestry(editor, curPos.pos);
 
-  // Collect nested symbols from outermost to innermost
-  function getSymbolAncestry(symbols, position, ancestry = []) {
-    for (const symbol of symbols) {
-      const contains = symbol.range.contains(position);
-      const isOnHeaderLine = position.line === symbol.range.start.line;
-
-      if (contains || isOnHeaderLine) {
-        ancestry.push(symbol);
-        return getSymbolAncestry(symbol.children || [], position, ancestry);
-      }
-    }
-    return ancestry;
-  }
-
-  const ancestry = getSymbolAncestry(symbols || [], cursorPos);
-
-  if (ancestry.length > 0) {
+  if (cursorAncestry.length > 0) {
     // Format: innermost first, outermost last
-    const levels = ancestry
+    const levels = cursorAncestry
       .map((symbol) => {
-        const kind = vscode.SymbolKind[symbol.kind].toLowerCase();
+        const kind = getGenericKindLabel(symbol.kind);
         return `${kind} "${symbol.name}"`;
       })
       .reverse();
 
     const context = levels.join(", inside ");
-    const message = `You are inside ${context}, at line ${
-      cursorLineNo + 1
-    }, column ${cursorColNo + 1}.`;
+    const message = `You are in ${context}, at line ${
+      curPos.line + 1
+    }, column ${curPos.col + 1}.`;
 
     console.log(message);
     await speakMessage(message);
   } else {
     // Assume the user is in global scope
-    const message = `You are inside global scope, at line ${cursorLineNo + 1}`;
+    const message = `You are in global scope, at line ${curPos.line + 1}`;
     console.log(message);
     await speakMessage(message);
   }
@@ -58,7 +40,8 @@ async function describeCursorPosition(editor) {
 function registerWhereAmICommand(context) {
   const whereAmI = vscode.commands.registerCommand("echocode.whereAmI", () => {
     const editor = vscode.window.activeTextEditor;
-    if (editor && editor.document.languageId === "python") {
+
+    if (editor && SUPPORTED_LANGUAGES.includes(editor.document.languageId)) {
       describeCursorPosition(editor);
     }
   });

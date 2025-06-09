@@ -18,25 +18,7 @@
   ],
   "activationEvents": [
     "onLanguage:python",
-    "onSave",
-    "onView:echocode.chatView",
-    "onCommand:echocode.openChat",
-    "onCommand:echocode.readHotkeyGuide",
-    "onCommand:echocode.readErrors",
-    "onCommand:echocode.annotate",
-    "onCommand:echocode.readAllAnnotations",
-    "onCommand:echocode.jumpToNextFunction",
-    "onCommand:echocode.jumpToPreviousFunction",
-    "onCommand:echocode.summarizeClass",
-    "onCommand:echocode.summarizeFunction",
-    "onCommand:echocode.summarizeProgram",
-    "onCommand:echocode.startVoiceInput",
-    "onCommand:echocode.loadAssignmentFile",
-    "onCommand:echocode.increaseSpeechSpeed",
-    "onCommand:echocode.decreaseSpeechSpeed",
-    "onCommand:echocode.rescanUserCode",
-    "onCommand:echocode.readNextSequentialTask",
-    "onCommand:echocode.whereAmI"
+    "onSave"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
@@ -164,17 +146,17 @@
       {
         "command": "echocode.summarizeClass",
         "key": "ctrl+alt+space C",
-        "when": "editorTextFocus && editorLangId == 'python'"
+        "when": "editorTextFocus"
       },
       {
         "command": "echocode.summarizeFunction",
         "key": "ctrl+alt+space F",
-        "when": "editorTextFocus && editorLangId == 'python'"
+        "when": "editorTextFocus"
       },
       {
         "command": "echocode.summarizeProgram",
         "key": "ctrl+alt+space P",
-        "when": "editorTextFocus && editorLangId == 'python'"
+        "when": "editorTextFocus"
       },
       {
         "command": "echocode.startVoiceInput",
@@ -188,12 +170,12 @@
       {
         "command": "code-tutor.analyzeBigO",
         "key": "ctrl+alt+n",
-        "when": "editorTextFocus && editorLangId == 'python'"
+        "when": "editorTextFocus"
       },
       {
         "command": "echocode.whereAmI",
         "key": "ctrl+alt+space W",
-        "when": "editorTextFocus && editorLangId == 'python'"
+        "when": "editorTextFocus"
       },
       {
         "command": "code-tutor.iterateBigOQueue",
@@ -258,7 +240,8 @@
         {
           "id": "echocode.chatView",
           "name": "EchoCode Tutor",
-          "type": "webview"
+          "type": "webview",
+          "icon": "images/icon.png"
         }
       ]
     },
