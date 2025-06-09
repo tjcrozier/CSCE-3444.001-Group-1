@@ -113,6 +113,10 @@
       {
         "command": "echocode.whereAmI",
         "title": "Where Am I?"
+      },
+      {
+        "command": "echocode.readCurrentLine",
+        "title": "Read Current Line"
       }
     ],
     "configuration": {
@@ -241,6 +245,11 @@
       {
         "command": "echocode.markTaskComplete",
         "key": "ctrl+alt+m",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.readCurrentLine",
+        "key": "ctrl+alt+l",
         "when": "editorTextFocus"
       }
     ],

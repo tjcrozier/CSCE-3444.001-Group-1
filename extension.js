@@ -2,7 +2,8 @@ const vscode = require("vscode");
 
 // Set up and run Pylint
 const {
-  ensurePylintInstalled, runPylint,
+  ensurePylintInstalled,
+  runPylint,
 } = require("./program_settings/program_settings/pylintHandler");
 
 const {
@@ -17,7 +18,7 @@ const {
 // Error handling
 const {
   initializeErrorHandling,
-  registerErrorHandlingCommands
+  registerErrorHandlingCommands,
 } = require("./program_features/ErrorHandling/errorHandler");
 
 const {
@@ -36,8 +37,8 @@ const {
   applyDecoration,
   clearDecorations,
   getVisibleCodeWithLineNumbers,
-  annotationQueue,      // Unused?
-  ANNOTATION_PROMPT,    // Unused?
+  annotationQueue, // Unused?
+  ANNOTATION_PROMPT, // Unused?
   registerAnnotationCommands,
 } = require("./program_features/Annotations_BigO/annotations");
 
@@ -56,8 +57,13 @@ const {
 } = require("./program_features/ChatBot/chat_tutor");
 
 // Navigation features
-const {registerMoveCursor} = require("./navigation_features/navigationHandler");
-const {registerWhereAmICommand} = require("./navigation_features/whereAmI");
+const {
+  registerMoveCursor,
+} = require("./navigation_features/navigationHandler");
+const { registerWhereAmICommand } = require("./navigation_features/whereAmI");
+const {
+  registerReadCurrentLineCommand,
+} = require("./program_features/WhatIsThis/WhatIsThis");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -100,6 +106,7 @@ async function activate(context) {
   // Navigation commands
   registerWhereAmICommand(context);
   registerMoveCursor(context);
+  registerReadCurrentLineCommand(context);
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
