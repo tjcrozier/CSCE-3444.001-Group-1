@@ -67,19 +67,22 @@
 | `Ctrl+Alt+Space C` | `echocode.summarizeClass` | Summarizes the current class. |
 | `Ctrl+Alt+Space F` | `echocode.summarizeFunction` | Summarizes the current function. |
 | `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | Summarize full program. |
-| `Ctrl+Alt+Space W` | `echocode.whereAmI` | Describes the scope the user is in.               🆕|
+| `Ctrl+Alt+Space W` | `echocode.whereAmI` | Describes the scope the user is in.               |
 | `Ctrl+Alt+U` | `echocode.increaseSpeechSpeed` | Increases speech rate. |
 | `Ctrl+Alt+D` | `echocode.decreaseSpeechSpeed` | Decreases speech rate. |
 | `Ctrl+Alt+X` | `echocode.stopSpeech` | Stops current speech playback. |
 | `Ctrl+Alt+O` | `echocode.loadAssignmentFile` | Uploads an assignment file for task tracking.  |
 | `Ctrl+Alt+T` | `echocode.readNextTask` | Reads the next task aloud. |
 | `Ctrl+Alt+M` | `echocode.markTaskComplete` | Marks the current task as complete.  |
-| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               🆕|
-| `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud      🆕 |
-| `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time 🆕|
-| `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface. 🆕       |
-| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  Future feature 🆕 |
+| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               |
+| `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud       |
+| `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time |
+| `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface.        |
+| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  Future feature  |
 | `f1`  | Reads out the hotkey options by letting you choose 1-7 depending on the option |
+| `Ctrl+Alt+L`          |`echocode.`| Tells the user what is on the line exactly        🆕|
+| `Ctrl+Alt+K`          |`echocode.`| Generates and tells a user what is on the line 🆕|
+| `Ctrl+Alt+R`  |`echocode.`| Toggles the character reader 🆕|
 
 
 
