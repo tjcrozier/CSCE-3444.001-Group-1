@@ -80,9 +80,9 @@
 | `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface.        |
 | `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  Future feature  |
 | `f1`  | Reads out the hotkey options by letting you choose 1-7 depending on the option |
-| `Ctrl+Alt+L`          |`echocode.`| Tells the user what is on the line exactly        🆕|
-| `Ctrl+Alt+K`          |`echocode.`| Generates and tells a user what is on the line 🆕|
-| `Ctrl+Alt+R`  |`echocode.`| Toggles the character reader 🆕|
+| `Ctrl+Alt+L`          |`echocode.readCurrentLine`| Tells the user what is on the line exactly        🆕|
+| `Ctrl+Alt+K`          |`echocode.describeCurrentLine`| Generates and tells a user what is on the line 🆕|
+| `Ctrl+Alt+R`  |`echocode.toggleCharacterReadOut`| Toggles the character reader 🆕|
 
 
 
