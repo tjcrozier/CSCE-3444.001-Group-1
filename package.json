@@ -113,6 +113,14 @@
       {
         "command": "echocode.whereAmI",
         "title": "Where Am I?"
+      },
+      {
+        "command": "echocode.createFile",
+        "title": "Create File"
+      },
+      {
+        "command": "echocode.createFolder",
+        "title": "Create Folder"
       }
     ],
     "configuration": {
@@ -241,6 +249,16 @@
       {
         "command": "echocode.markTaskComplete",
         "key": "ctrl+alt+m",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.createFile",
+        "key": "ctrl+alt+n",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.createFolder",
+        "key": "ctrl+alt+f",
         "when": "editorTextFocus"
       }
     ],
