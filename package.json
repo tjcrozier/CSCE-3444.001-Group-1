@@ -113,6 +113,18 @@
       {
         "command": "echocode.whereAmI",
         "title": "Where Am I?"
+      },
+      {
+        "command": "echocode.readCurrentLine",
+        "title": "Read Current Line"
+      },
+      {
+        "command": "echocode.describeCurrentLine",
+        "title": "Describe Current Line"
+      },
+      {
+        "command": "echocode.toggleCharacterReadOut",
+        "title": "Toggle Character Read-Out"
       }
     ],
     "configuration": {
@@ -241,6 +253,21 @@
       {
         "command": "echocode.markTaskComplete",
         "key": "ctrl+alt+m",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.readCurrentLine",
+        "key": "ctrl+alt+l",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.describeCurrentLine",
+        "key": "ctrl+alt+k",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.toggleCharacterReadOut",
+        "key": "ctrl+alt+r",
         "when": "editorTextFocus"
       }
     ],
