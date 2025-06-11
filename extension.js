@@ -67,6 +67,9 @@ const {
 const {
   registerFolderCreatorCommand,
 } = require("./program_features/Folder_File_Creator/FolderCreator");
+const {
+  registerFileNavigatorCommand,
+} = require("./navigation_features/Folder_File_Navigator/file_navigator");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -111,6 +114,7 @@ async function activate(context) {
   registerMoveCursor(context);
   registerFileCreatorCommand(context);
   registerFolderCreatorCommand(context);
+  registerFileNavigatorCommand(context);
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
