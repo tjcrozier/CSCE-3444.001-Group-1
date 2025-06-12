@@ -313,7 +313,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "postinstall": "npm install && npm rebuild"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
