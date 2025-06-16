@@ -2,7 +2,7 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.7",
+  "version": "1.7.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/tjcrozier/CSCE-3444.001-Group-1.git"
