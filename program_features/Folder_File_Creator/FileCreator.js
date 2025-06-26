@@ -1,23 +1,24 @@
 const vscode = require("vscode");
+const fs = require("fs");
+const path = require("path");
 const {
   speakMessage,
 } = require("../../program_settings/speech_settings/speechHandler");
-const fs = require("fs");
-const path = require("path");
+const {
+  getCurrentFolder,
+} = require("../../navigation_features/Folder_File_Navigator/folder_navigator");
 
 /**
- * Creates a new file, announces its creation, and opens it in the editor.
+ * Creates a new file in the currently selected folder.
  */
 async function createFile() {
-  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const currentFolder = getCurrentFolder();
 
-  if (!workspaceFolders) {
-    vscode.window.showErrorMessage("No workspace folder is open.");
-    await speakMessage("No workspace folder is open.");
+  if (!currentFolder) {
+    vscode.window.showErrorMessage("No folder selected to create a file.");
+    await speakMessage("No folder selected to create a file.");
     return;
   }
-
-  const workspacePath = workspaceFolders[0].uri.fsPath;
 
   // Prompt the user for the file name
   const fileName = await vscode.window.showInputBox({
@@ -30,7 +31,7 @@ async function createFile() {
     return;
   }
 
-  const filePath = path.join(workspacePath, fileName);
+  const filePath = path.join(currentFolder, fileName);
 
   // Check if the file already exists
   if (fs.existsSync(filePath)) {

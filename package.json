@@ -125,6 +125,22 @@
       {
         "command": "echocode.navigateToNextFile",
         "title": "Navigate to Next File"
+      },
+      {
+        "command": "echocode.initializeFolderList",
+        "title": "Initialize Folder List"
+      },
+      {
+        "command": "echocode.moveToNextFolder",
+        "title": "Move to Next Folder"
+      },
+      {
+        "command": "echocode.moveToPreviousFolder",
+        "title": "Move to Previous Folder"
+      },
+      {
+        "command": "echocode.navigateFilesInCurrentFolder",
+        "title": "Navigate Files in Current Folder"
       }
     ],
     "configuration": {
@@ -267,8 +283,22 @@
       },
       {
         "command": "echocode.navigateToNextFile",
-        "key": "ctrl+alt+right",
+        "key": "ctrl+alt+p",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.moveToNextFolder",
+        "key": "ctrl+alt+[",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.moveToPreviousFolder",
+        "key": "ctrl+alt+]",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.initializeFolderList",
+        "title": "Initialize Folder List"
       }
     ],
     "viewsContainers": {
