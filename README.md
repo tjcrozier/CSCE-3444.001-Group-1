@@ -46,6 +46,12 @@
 - **Integration with GitHub Copilot**  
   Leverages GitHub Copilot and Copilot Chat for enhanced AI-powered coding assistance.
 
+- **Line Reader**
+  Allows the user to see what is put on the line exactly and generate a brief summary that also checks for issues
+
+- **Character Reader**
+  Alerts the user to what key is being pressed while typing and alerts to where their cursor is. 
+
 ---
 
 ## **Keyboard Shortcuts**
@@ -61,19 +67,22 @@
 | `Ctrl+Alt+Space C` | `echocode.summarizeClass` | Summarizes the current class. |
 | `Ctrl+Alt+Space F` | `echocode.summarizeFunction` | Summarizes the current function. |
 | `Ctrl+Alt+Space P` | `echocode.summarizeProgram` | Summarize full program. |
-| `Ctrl+Alt+Space W` | `echocode.whereAmI` | Describes the scope the user is in.               🆕|
+| `Ctrl+Alt+Space W` | `echocode.whereAmI` | Describes the scope the user is in.               |
 | `Ctrl+Alt+U` | `echocode.increaseSpeechSpeed` | Increases speech rate. |
 | `Ctrl+Alt+D` | `echocode.decreaseSpeechSpeed` | Decreases speech rate. |
 | `Ctrl+Alt+X` | `echocode.stopSpeech` | Stops current speech playback. |
 | `Ctrl+Alt+O` | `echocode.loadAssignmentFile` | Uploads an assignment file for task tracking.  |
 | `Ctrl+Alt+T` | `echocode.readNextTask` | Reads the next task aloud. |
 | `Ctrl+Alt+M` | `echocode.markTaskComplete` | Marks the current task as complete.  |
-| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               🆕|
-| `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud      🆕 |
-| `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time 🆕|
-| `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface. 🆕       |
-| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  Future feature 🆕 |
+| `Ctrl + Alt + N` | `code-tutor.analyzeBigO` | Queue up the big O annotations               |
+| `Ctrl + Alt + B` | `code-tutor.iterateBigOQueue` | Read next big O recommendation outloud       |
+| `Ctrl + Alt + H` | `code-tutor.readEntireBigOQueue` |Read all big O recommendations one at a time |
+| `Ctrl+Alt+C`          | `echocode.openChat`            | Opens the EchoCode Tutor chat interface.        |
+| `Ctrl+Alt+V`          | `echocode.voiceInput`          | Starts voice input to ask the chat a question.  Future feature  |
 | `f1`  | Reads out the hotkey options by letting you choose 1-7 depending on the option |
+| `Ctrl+Alt+L`          |`echocode.readCurrentLine`| Tells the user what is on the line exactly        🆕|
+| `Ctrl+Alt+K`          |`echocode.describeCurrentLine`| Generates and tells a user what is on the line 🆕|
+| `Ctrl+Alt+R`  |`echocode.toggleCharacterReadOut`| Toggles the character reader 🆕|
 
 
 
@@ -134,24 +143,20 @@ Before using Echo Code, ensure the following are installed:
 
 ## **Release Notes**
 
-### **1.6.2**
-- Added Chat Tutor, a copilot chat that incorporates more userfriendly features
-- Added hotkey read out by pressing f1 and then entering a number 1-7
-- Frame work for speech to text added
-- Annotations now go away when pressing the generate annotations hotkey
-- Big fix: speed control error not registering correctly should be fixed
-- Chat Tutor's TTS playback works without having to focus on a python document
-- Program Summarization is now functional
-- Added feature to read out the scope the cursor is in
+### **1.7**
+- Added function to see what has been typed on the line
+- Added function to generate a summary on what the line does and check if there is any error
+- Added function to toggle on and off a character reader
+- Added new hot keys for the above functions
 **New Hotkeys:**
 
 
 | Shortcut        | Description                            |
 |----------------|----------------------------------------|
-| `Ctrl+Alt+C`          | Opens the EchoCode Tutor chat interface.        |
-| `Ctrl+Alt+V`          | Starts voice input to ask the chat a question.  Future feature  |
-| `f1`  | Reads out the hotkey options by letting you choose 1-7 depending on the option |
-| `Ctrl+Alt+Space W`  | Describes the scope the user is in |
+| `Ctrl+Alt+L`          | Tells the user what is on the line exactly        |
+| `Ctrl+Alt+K`          | Generates and tells a user what is on the line |
+| `Ctrl+Alt+R`  | Toggles the character reader |
+
 
 ---
 

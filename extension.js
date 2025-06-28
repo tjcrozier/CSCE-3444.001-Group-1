@@ -74,6 +74,15 @@ const {
   initializeFolderList,
   registerFolderNavigatorCommands,
 } = require("./navigation_features/Folder_File_Navigator/folder_navigator");
+const {
+  registerReadCurrentLineCommand,
+} = require("./program_features/WhatIsThis/WhatIsThis");
+const {
+  registerDescribeCurrentLineCommand,
+} = require("./program_features/WhatIsThis/DescribeThis");
+const {
+  registerCharacterReadOutCommand,
+} = require("./program_features/WhatIsThis/CharacterReadOut");
 
 let activeDecorations = [];
 let annotationsVisible = false;
@@ -120,6 +129,11 @@ async function activate(context) {
   registerFolderCreatorCommand(context);
   registerFileNavigatorCommand(context);
   registerFolderNavigatorCommands(context);
+
+  // What is this commands
+  registerReadCurrentLineCommand(context);
+  registerDescribeCurrentLineCommand(context);
+  registerCharacterReadOutCommand(context);
 
   outputChannel.appendLine(
     "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed, echocode.moveToNextFolder, echocode.moveToPreviousFolder"
