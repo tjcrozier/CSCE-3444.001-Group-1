@@ -273,7 +273,7 @@
       },
       {
         "command": "echocode.createFile",
-        "key": "ctrl+alt+n",
+        "key": "ctrl+alt+/",
         "when": "editorTextFocus"
       },
       {

@@ -13,12 +13,12 @@ let currentFolderIndex = 0; // Tracks the current folder index
 /**
  * Initializes the folder list with the project folder and its subfolders.
  */
-function initializeFolderList() {
+async function initializeFolderList() {
   const workspaceFolders = vscode.workspace.workspaceFolders;
 
   if (!workspaceFolders || workspaceFolders.length === 0) {
     vscode.window.showErrorMessage("No workspace folder is open.");
-    speakMessage("No workspace folder is open.");
+    await speakMessage("No workspace folder is open.");
     return;
   }
 
@@ -41,13 +41,15 @@ function initializeFolderList() {
     vscode.window.showInformationMessage(
       `Initialized folder list with ${folderList.length} folders.`
     );
-    speakMessage(`Initialized folder list with ${folderList.length} folders.`);
+    await speakMessage(
+      `Initialized folder list with ${folderList.length} folders.`
+    );
     console.log("Initialized folder list:", folderList);
   } catch (error) {
     vscode.window.showErrorMessage(
       `Failed to initialize folder list: ${error.message}`
     );
-    speakMessage(`Failed to initialize folder list: ${error.message}`);
+    await speakMessage(`Failed to initialize folder list: ${error.message}`);
     console.error("Error initializing folder list:", error);
   }
 }
@@ -120,12 +122,12 @@ async function moveToPreviousFolder() {
 /**
  * Dynamically updates the folder contents when a file is created.
  */
-function watchFolderForChanges() {
+async function watchFolderForChanges() {
   const currentFolder = folderList[currentFolderIndex];
 
   if (!currentFolder) {
     vscode.window.showErrorMessage("No folder selected to watch for changes.");
-    speakMessage("No folder selected to watch for changes.");
+    await speakMessage("No folder selected to watch for changes.");
     return;
   }
 
@@ -142,7 +144,7 @@ function watchFolderForChanges() {
   vscode.window.showInformationMessage(
     `Watching folder for changes: ${currentFolder}`
   );
-  speakMessage(`Watching folder for changes: ${currentFolder}`);
+  await speakMessage(`Watching folder for changes: ${currentFolder}`);
 }
 
 /**
@@ -177,7 +179,19 @@ function registerFolderNavigatorCommands(context) {
   );
 }
 
+/**
+ * Gets the current folder from the folder list.
+ * @returns {string|null} The current folder path, or null if no folder is selected.
+ */
+function getCurrentFolder() {
+  if (folderList.length === 0) {
+    return null;
+  }
+  return folderList[currentFolderIndex];
+}
+
 module.exports = {
   initializeFolderList,
   registerFolderNavigatorCommands,
+  getCurrentFolder,
 };
