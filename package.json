@@ -114,7 +114,7 @@
         "command": "echocode.whereAmI",
         "title": "Where Am I?"
       },
-{
+      {
         "command": "echocode.createFile",
         "title": "Create File"
       },
@@ -283,50 +283,50 @@
         "key": "ctrl+alt+m",
         "when": "editorTextFocus"
       },
-{
-  "command": "echocode.createFile",
-  "key": "ctrl+alt+/",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.createFolder",
-  "key": "ctrl+alt+f",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.navigateToNextFile",
-  "key": "ctrl+alt+p",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.moveToNextFolder",
-  "key": "ctrl+alt+[",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.moveToPreviousFolder",
-  "key": "ctrl+alt+]",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.initializeFolderList",
-  "title": "Initialize Folder List"
-},
-{
-  "command": "echocode.readCurrentLine",
-  "key": "ctrl+alt+l",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.describeCurrentLine",
-  "key": "ctrl+alt+k",
-  "when": "editorTextFocus"
-},
-{
-  "command": "echocode.toggleCharacterReadOut",
-  "key": "ctrl+alt+r",
-  "when": "editorTextFocus"
-}
+      {
+        "command": "echocode.createFile",
+        "key": "ctrl+alt+;",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.createFolder",
+        "key": "ctrl+alt+f",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.navigateToNextFile",
+        "key": "ctrl+alt+p",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.moveToNextFolder",
+        "key": "ctrl+alt+[",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.moveToPreviousFolder",
+        "key": "ctrl+alt+]",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.initializeFolderList",
+        "title": "Initialize Folder List"
+      },
+      {
+        "command": "echocode.readCurrentLine",
+        "key": "ctrl+alt+l",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.describeCurrentLine",
+        "key": "ctrl+alt+k",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "echocode.toggleCharacterReadOut",
+        "key": "ctrl+alt+r",
+        "when": "editorTextFocus"
+      }
     ],
     "viewsContainers": {
       "activitybar": [
