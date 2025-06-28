@@ -1,6 +1,9 @@
-const vscode = require("vscode");
+const vscode = require('vscode');
+const path = require('path');
+const fs = require('fs');
+const { transcribe } = require('./voiceCommand');
 
-// Set up and run Pylint
+// Core imports (existing features)
 const {
   ensurePylintInstalled,
   runPylint,
@@ -15,10 +18,9 @@ const {
   decreaseSpeechSpeed,
 } = require("./program_settings/speech_settings/speechHandler");
 
-// Error handling
 const {
   initializeErrorHandling,
-  registerErrorHandlingCommands,
+  registerErrorHandlingCommands
 } = require("./program_features/ErrorHandling/errorHandler");
 
 const {
@@ -28,17 +30,12 @@ const {
 const {
   registerHotkeyGuideCommand,
 } = require("./program_settings/guide_settings/hotkeyGuide");
-const Queue = require("./program_features/Annotations_BigO/queue_system");
+
 const {
   registerBigOCommand,
 } = require("./program_features/Annotations_BigO/bigOAnalysis");
+
 const {
-  parseChatResponse,
-  applyDecoration,
-  clearDecorations,
-  getVisibleCodeWithLineNumbers,
-  annotationQueue, // Unused?
-  ANNOTATION_PROMPT, // Unused?
   registerAnnotationCommands,
 } = require("./program_features/Annotations_BigO/annotations");
 
@@ -47,8 +44,6 @@ const {
   readNextTask,
   rescanUserCode,
   readNextSequentialTask,
-} = require("./program_features/Assignment_Tracker/assignmentTracker");
-const {
   registerAssignmentTrackerCommands,
 } = require("./program_features/Assignment_Tracker/assignmentTracker");
 
@@ -56,71 +51,134 @@ const {
   registerChatCommands,
 } = require("./program_features/ChatBot/chat_tutor");
 
-// Navigation features
-const {
-  registerMoveCursor,
-} = require("./navigation_features/navigationHandler");
+const { registerMoveCursor } = require("./navigation_features/navigationHandler");
 const { registerWhereAmICommand } = require("./navigation_features/whereAmI");
-const {
-  registerReadCurrentLineCommand,
-} = require("./program_features/WhatIsThis/WhatIsThis");
-const {
-  registerDescribeCurrentLineCommand,
-} = require("./program_features/WhatIsThis/DescribeThis");
-const {
-  registerCharacterReadOutCommand,
-} = require("./program_features/WhatIsThis/CharacterReadOut");
 
-let activeDecorations = [];
-let annotationsVisible = false;
+function getRecorderWebview() {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Voice Recorder</title>
+      <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { font-size: 1.2em; margin-right: 10px; }
+      </style>
+    </head>
+    <body>
+      <h2>🎙️ EchoCode Voice Recorder</h2>
+      <button id="startBtn">Start Recording</button>
+      <button id="stopBtn" disabled>Stop Recording</button>
+      <p id="status"></p>
+
+      <script>
+        const vscode = acquireVsCodeApi();
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const status = document.getElementById('status');
+
+        startBtn.addEventListener('click', async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+              if (event.data.size > 0) {
+                audioChunks.push(event.data);
+              }
+            };
+
+            mediaRecorder.onstop = async () => {
+              const blob = new Blob(audioChunks, { type: 'audio/wav' });
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64data = reader.result.split(',')[1];
+                vscode.postMessage({ type: 'audio', base64: base64data });
+                status.textContent = '✅ Audio sent to extension';
+              };
+              reader.readAsDataURL(blob);
+            };
+
+            mediaRecorder.start();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            status.textContent = '🎙️ Recording...';
+          } catch (err) {
+            status.textContent = '❌ Error accessing mic: ' + err.message;
+          }
+        });
+
+        stopBtn.addEventListener('click', () => {
+          if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            status.textContent = '🛑 Stopped. Processing audio...';
+          }
+        });
+      </script>
+    </body>
+    </html>
+  `;
+}
 
 let outputChannel;
-let debounceTimer = null;
-let isRunning = false;
 
 async function activate(context) {
   outputChannel = vscode.window.createOutputChannel("EchoCode");
   outputChannel.appendLine("EchoCode activated.");
+
   loadSavedSpeechSpeed();
   await ensurePylintInstalled();
   initializeErrorHandling(outputChannel);
-  outputChannel.appendLine("Pylint installed and initialized.");
+
   registerErrorHandlingCommands(context);
-  outputChannel.appendLine("Error handling commands registered.");
-
-  // Register assignment tracker commands
   registerAssignmentTrackerCommands(context);
-
-  // Register hotkey guide command
   registerHotkeyGuideCommand(context);
-
-  // Register chat commands
-  const chatViewProvider = registerChatCommands(context, outputChannel);
-
-  // Register Big O commands
+  registerChatCommands(context, outputChannel);
   registerBigOCommand(context);
-
-  // Register annotation commands
   registerAnnotationCommands(context, outputChannel);
-
-  // Register summarizer commands
   registerSummarizerCommands(context, outputChannel);
-
-  // Register speech commands
   registerSpeechCommands(context, outputChannel);
-
-  // Navigation commands
   registerWhereAmICommand(context);
   registerMoveCursor(context);
 
-  // What is this commands
-  registerReadCurrentLineCommand(context);
-  registerDescribeCurrentLineCommand(context);
-  registerCharacterReadOutCommand(context);
+  // 🔊 Register new voice webview command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('echocode.voiceWebview', () => {
+      const panel = vscode.window.createWebviewPanel(
+        'voiceRecorder',
+        'EchoCode Voice Recorder',
+        vscode.ViewColumn.One,
+        { enableScripts: true }
+      );
 
-  outputChannel.appendLine(
-    "Commands registered: echocode.readErrors, echocode.annotate, echocode.speakNextAnnotation, echocode.readAllAnnotations, echocode.summarizeClass, echocode.summarizeFunction, echocode.jumpToNextFunction, echocode.jumpToPreviousFunction, echocode.openChat, echocode.startVoiceInput, echocode.loadAssignmentFile, echocode.rescanUserCode, echocode.readNextSequentialTask, echocode.increaseSpeechSpeed, echocode.decreaseSpeechSpeed"
+      panel.webview.html = getRecorderWebview();
+
+      panel.webview.onDidReceiveMessage(async (msg) => {
+        if (msg.type === 'audio') {
+          try {
+            const buffer = Buffer.from(msg.base64, 'base64');
+            const filePath = path.join(__dirname, 'recorded.wav');
+            fs.writeFileSync(filePath, buffer);
+
+            const transcript = await transcribe(filePath);
+            vscode.window.showInformationMessage(`Transcript: ${transcript}`);
+          } catch (err) {
+            vscode.window.showErrorMessage(`Voice command failed: ${err.message}`);
+          }
+        }
+      });
+    })
   );
+
+  outputChannel.appendLine("All EchoCode commands registered.");
 }
 
 function deactivate() {

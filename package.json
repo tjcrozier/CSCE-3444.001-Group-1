@@ -2,11 +2,7 @@
   "name": "echo-code",
   "displayName": "Echo Code",
   "description": "Reads Python errors aloud using Pylint for visually impaired students.",
-  "version": "1.7.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tjcrozier/CSCE-3444.001-Group-1.git"
-  },
+  "version": "1.5.0",
   "icon": "images/icon.png",
   "publisher": "EchoCode",
   "engines": {
@@ -20,23 +16,7 @@
     "onLanguage:python",
     "onSave",
     "onView:echocode.chatView",
-    "onCommand:echocode.openChat",
-    "onCommand:echocode.readHotkeyGuide",
-    "onCommand:echocode.readErrors",
-    "onCommand:echocode.annotate",
-    "onCommand:echocode.readAllAnnotations",
-    "onCommand:echocode.jumpToNextFunction",
-    "onCommand:echocode.jumpToPreviousFunction",
-    "onCommand:echocode.summarizeClass",
-    "onCommand:echocode.summarizeFunction",
-    "onCommand:echocode.summarizeProgram",
-    "onCommand:echocode.startVoiceInput",
-    "onCommand:echocode.loadAssignmentFile",
-    "onCommand:echocode.increaseSpeechSpeed",
-    "onCommand:echocode.decreaseSpeechSpeed",
-    "onCommand:echocode.rescanUserCode",
-    "onCommand:echocode.readNextSequentialTask",
-    "onCommand:echocode.whereAmI"
+    "onCommand:echocode.openChat"
   ],
   "main": "./extension.js",
   "extensionDependencies": [
@@ -45,6 +25,34 @@
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "echocode.voiceWebview",
+        "title": "EchoCode: Open Voice Webview"
+      },
+      {
+        "command": "echocode.voiceCommand",
+        "title": "EchoCode: Use Voice Command"
+      },
+      {
+        "command": "echocode.voiceWebview",
+        "title": "EchoCode: Webview Voice Recorder"
+      },
+      {
+        "command": "echocode.stopSpeech",
+        "title": "Stop Speech"
+      },
+      {
+        "command": "echocode.speakNextAnnotation",
+        "title": "Speak Next Annotation"
+      },
+      {
+        "command": "echocode.markTaskComplete",
+        "title": "Mark Current Task as Complete"
+      },
+      {
+        "command": "echocode.readNextTask",
+        "title": "Read Next Task Aloud"
+      },
       {
         "command": "echocode.readHotkeyGuide",
         "title": "EchoCode: Read Hotkey Guide"
@@ -113,18 +121,6 @@
       {
         "command": "echocode.whereAmI",
         "title": "Where Am I?"
-      },
-      {
-        "command": "echocode.readCurrentLine",
-        "title": "Read Current Line"
-      },
-      {
-        "command": "echocode.describeCurrentLine",
-        "title": "Describe Current Line"
-      },
-      {
-        "command": "echocode.toggleCharacterReadOut",
-        "title": "Toggle Character Read-Out"
       }
     ],
     "configuration": {
@@ -143,6 +139,11 @@
       }
     },
     "keybindings": [
+      {
+        "key": "ctrl+alt+l",
+        "command": "echocode.voiceWebview",
+        "when": "editorTextFocus"
+      },
       {
         "key": "f1",
         "command": "echocode.readHotkeyGuide",
@@ -254,21 +255,6 @@
         "command": "echocode.markTaskComplete",
         "key": "ctrl+alt+m",
         "when": "editorTextFocus"
-      },
-      {
-        "command": "echocode.readCurrentLine",
-        "key": "ctrl+alt+l",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "echocode.describeCurrentLine",
-        "key": "ctrl+alt+k",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "echocode.toggleCharacterReadOut",
-        "key": "ctrl+alt+r",
-        "when": "editorTextFocus"
       }
     ],
     "viewsContainers": {
@@ -330,10 +316,14 @@
     "typescript-eslint": "^8.29.1"
   },
   "dependencies": {
+    "@google-cloud/speech": "^7.1.0",
     "@vscode/codicons": "^0.0.33",
     "axios": "^1.8.3",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "mammoth": "^1.9.0",
+    "mic": "^2.1.2",
+    "node-record-lpcm16": "^1.0.1",
+    "openai": "^5.7.0",
     "pdf-parse": "^1.1.1",
     "say": "^0.16.0",
     "sound-play": "^1.1.0"
