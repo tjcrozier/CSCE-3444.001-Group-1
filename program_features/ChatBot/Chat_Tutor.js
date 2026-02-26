@@ -1,6 +1,10 @@
 // program_features/ChatBot/chat_tutor.js
 const vscode = require("vscode");
-const { speakMessage } = require("../../Core/program_settings/speech_settings/speechHandler");
+const {
+  speakMessage,
+} = require("../../Core/program_settings/speech_settings/speechHandler");
+const externalRouter = require("../../Core/program_settings/program_settings/ExternalIntentRouter");
+const aiService = require("../../Core/program_settings/program_settings/AIrequest");
 
 // --- Simple mock voice input (kept for dev/demo) ---
 function performVoiceRecognition() {
@@ -45,57 +49,65 @@ class EchoCodeChatViewProvider {
     // Handle messages from the webview
     webviewView.webview.onDidReceiveMessage(
       async (message) => {
-        this.outputChannel.appendLine(`Received message from webview: ${message.type}`);
+        this.outputChannel.appendLine(
+          `Received message from webview: ${message.type}`
+        );
         if (message.type === "userInput") {
           await this.handleUserMessage(message.text);
-        }
-        else if (message.type === "executeVoiceCommand") {
+        } else if (message.type === "executeVoiceCommand") {
           const { tryExecuteVoiceCommand } = require("../../extension");
           const outputChannel = this.outputChannel;
           // FIX: Use 'message.text' instead of 'transcript'
-          const textToExecute = message.text || ""; 
-          const result = await tryExecuteVoiceCommand(textToExecute, outputChannel);
-          
+          const textToExecute = message.text || "";
+          const result = await tryExecuteVoiceCommand(
+            textToExecute,
+            outputChannel
+          );
+
           if (result && result.handled) {
             this._currentWebview.postMessage({
               type: "response",
-              text: `✅ Executed command: ${result.command}`
+              text: `✅ Executed command: ${result.command}`,
             });
-          }
-          else {
+          } else {
             // FIX: Use 'message.text' here too
             await this.handleUserMessage(textToExecute);
           }
-        }
-        else if (message.type === "startVoiceInput") {
+        } else if (message.type === "startVoiceInput") {
           await vscode.commands.executeCommand("echocode._voiceStart");
-        }
-        else if (message.type === "stopVoiceInput") {
+        } else if (message.type === "stopVoiceInput") {
           if (this._currentWebview) {
             this._currentWebview.postMessage({ type: "voiceStopping" });
           }
-          const result = await vscode.commands.executeCommand("echocode._voiceStop");
+          const result = await vscode.commands.executeCommand(
+            "echocode._voiceStop"
+          );
           if (this._currentWebview) {
             if (result && result.ok) {
-              this._currentWebview.postMessage({ type: "voiceRecognitionResult", text: result.text || "" });
+              this._currentWebview.postMessage({
+                type: "voiceRecognitionResult",
+                text: result.text || "",
+              });
 
               // Try to execute a voice-mapped command before Copilot ===
               const { tryExecuteVoiceCommand } = require("../../extension");
               const outputChannel = this.outputChannel;
-              const voiceResult = await tryExecuteVoiceCommand(transcript, outputChannel);
+              const voiceResult = await tryExecuteVoiceCommand(
+                transcript,
+                outputChannel
+              );
 
               if (voiceResult.handled) {
                 // Voice command recognized and executed — stop here
                 this._currentWebview.postMessage({
                   type: "response",
-                  text: `Executed command: ${voiceResult.command}`
+                  text: `Executed command: ${voiceResult.command}`,
                 });
                 return; // do NOT fall through to Copilot
               }
 
               // else: fall through to normal Copilot behavior
               await this.handleUserMessage(result.text || "");
-
             } else {
               this._currentWebview.postMessage({
                 type: "voiceRecognitionError",
@@ -133,7 +145,10 @@ class EchoCodeChatViewProvider {
         });
       }
     } catch (error) {
-      this._safePost({ type: "voiceRecognitionError", error: String(error?.message || error) });
+      this._safePost({
+        type: "voiceRecognitionError",
+        error: String(error?.message || error),
+      });
     } finally {
       this._isListening = false;
       this._safePost({ type: "voiceListeningStopped" });
@@ -144,8 +159,51 @@ class EchoCodeChatViewProvider {
   async handleUserMessage(userInput) {
     if (!this._view) return;
 
-    // Prefer active editor; fall back to any visible editor
-    const editor = vscode.window.activeTextEditor || vscode.window.visibleTextEditors?.[0] || null;
+    this.outputChannel.appendLine(
+      `[Chat] Processing user input: "${userInput}"`
+    );
+
+    // --- 1. ATTEMPT EXTERNAL EXPERIMENTAL COMMAND ROUTING FIRST ---
+    try {
+      // Show a different loading state
+      this._currentWebview.postMessage({
+        type: "responseLoading",
+        started: true,
+      });
+
+      // FORCE ROUTER CHECK
+      const externalId = await externalRouter.findExternalCommand(
+        userInput,
+        aiService
+      );
+
+      this.outputChannel.appendLine(`[Chat] Router Result: ${externalId}`);
+
+      if (externalId && externalId !== "none") {
+        const success = await externalRouter.executeCommand(externalId);
+        if (success) {
+          this._currentWebview.postMessage({
+            type: "responseLoading",
+            started: false,
+          });
+          this._safePost({
+            type: "response",
+            text: `✅ Executed command: \`${externalId}\``,
+          });
+          // CRITICAL: Return here to stop code generation
+          return;
+        }
+      }
+    } catch (err) {
+      this.outputChannel.appendLine(`[Chat] Router Error: ${err.message}`);
+    }
+    // -----------------------------------------------------------
+
+    // --- 2. If we get here, it WAS NOT a command. Proceed to Chat/Code ---
+    const editor =
+      vscode.window.activeTextEditor ||
+      vscode.window.visibleTextEditors?.[0] ||
+      null;
     const lang = editor?.document?.languageId || "unknown";
     let fileContent = "";
 
@@ -153,9 +211,13 @@ class EchoCodeChatViewProvider {
       fileContent = editor.document.getText() || "";
       const MAX = 60000; // prevent overly large context
       if (fileContent.length > MAX) fileContent = fileContent.slice(0, MAX);
-      this.outputChannel.appendLine(`Chat context captured for ${lang} (${fileContent.length} chars).`);
+      this.outputChannel.appendLine(
+        `Chat context captured for ${lang} (${fileContent.length} chars).`
+      );
     } else {
-      this.outputChannel.appendLine("No editor open; answering without file context.");
+      this.outputChannel.appendLine(
+        "No editor open; answering without file context."
+      );
     }
 
     // Build system/context prompt
@@ -175,12 +237,39 @@ class EchoCodeChatViewProvider {
     }
     messages.push(vscode.LanguageModelChatMessage.User(userInput));
 
+    // 1. Try internal EchoCode commands...
+    // (Existing logic)
+
+    // 2. If no internal match, ask External Router
+    const externalId = await externalRouter.findExternalCommand(
+      userInput,
+      aiService
+    );
+
+    if (externalId) {
+      this.outputChannel.appendLine(
+        `[Router] Executing external command: ${externalId}`
+      );
+      const success = await externalRouter.executeCommand(externalId);
+      if (success) {
+        this._safePost({
+          type: "response",
+          text: `I've executed the command: ${externalId}`,
+        });
+        return;
+      }
+    }
+
+    // 3. Fallback to normal Chat
     // FIX: Select ANY copilot model, do not hardcode 'gpt-4o' family
     const models = await vscode.lm.selectChatModels({ vendor: "copilot" });
     const model = models[0];
 
     if (!model) {
-      this._safePost({ type: "response", text: "No language model available. Please enable GitHub Copilot." });
+      this._safePost({
+        type: "response",
+        text: "No language model available. Please enable GitHub Copilot.",
+      });
       this.outputChannel.appendLine("No chat model available.");
       return;
     }
@@ -198,7 +287,10 @@ class EchoCodeChatViewProvider {
         this._safePost({ type: "responseFragment", text: fragment });
       }
 
-      this.conversationHistory.push({ user: userInput, response: responseText });
+      this.conversationHistory.push({
+        user: userInput,
+        response: responseText,
+      });
       this._safePost({ type: "responseComplete", text: responseText });
       this.outputChannel.appendLine("Chat response: " + responseText);
 
@@ -216,8 +308,12 @@ class EchoCodeChatViewProvider {
     if (this._view && this._currentWebview) {
       this._currentWebview.postMessage({ type: "startVoiceInput" });
     } else {
-      vscode.window.showInformationMessage("Please open the EchoCode Tutor view to use voice input.");
-      this.outputChannel.appendLine("Voice input command invoked with no active chat view.");
+      vscode.window.showInformationMessage(
+        "Please open the EchoCode Tutor view to use voice input."
+      );
+      this.outputChannel.appendLine(
+        "Voice input command invoked with no active chat view."
+      );
     }
     this.startVoiceRecognition();
   }
@@ -226,7 +322,7 @@ class EchoCodeChatViewProvider {
     if (this._view && this._currentWebview) {
       this._currentWebview.postMessage({
         type: "updateRecordingState",
-        recording: isRecording
+        recording: isRecording,
       });
     }
   }
@@ -282,8 +378,10 @@ class EchoCodeChatViewProvider {
 // --- Utils ---
 function getNonce() {
   let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
+  const possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < 32; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
   return text;
 }
 
